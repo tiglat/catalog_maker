@@ -1,0 +1,6 @@
+[plugininstall]
+description=Catalog Maker plugin v 3.1.9 (32+64bit)
+type=wcx
+file=CatalogMaker.wcx
+defaultdir=CatalogMaker
+defaultextension=lst
