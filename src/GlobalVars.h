@@ -13,6 +13,7 @@
 
 #include "windows.h"
 #include "wcxhead.h"
+#include <string>
 
 #define	SUCCESS				0
 #define	OPTION_PAGES		4
@@ -36,87 +37,94 @@
 typedef struct _TDlgDesc { 
     HWND hTabCtrl;
     HWND hCurDlg;  
-	HWND hChildDlg[OPTION_PAGES];
-	DLGTEMPLATE *ChildDlgRes[OPTION_PAGES];
+    HWND hChildDlg[OPTION_PAGES];
+    DLGTEMPLATE *ChildDlgRes[OPTION_PAGES];
 } TDlgDesc;
 
 typedef struct _TViewParam{ 
-	BOOL	bDirName;
+    BOOL	bDirName;
     BOOL    bApplyToDirs;
-	BOOL	bFileName;
-	BOOL	bFullName;
-	BOOL	bExt;
-	BOOL	bSize;
-	BOOL	bDate;
-	BOOL	bTime;
-	BOOL	bAttr;
-	char	sFileTypes[MASK_LIST_LENGTH];
+    BOOL	bFileName;
+    BOOL	bFullName;
+    BOOL	bExt;
+    BOOL	bSize;
+    BOOL	bDate;
+    BOOL	bTime;
+    BOOL	bAttr;
+    char	sFileTypes[MASK_LIST_LENGTH];
+    std::string WildCardMask;
 } TViewParam;
 
 typedef struct _TSortParam{ 
-	BOOL	bName;
-	BOOL	bSize;
-	BOOL	bDate;
-	BOOL	bExt;
-	BOOL	bUnsorted;
-	BOOL	bDescent;
+    BOOL	bName;
+    BOOL	bSize;
+    BOOL	bDate;
+    BOOL	bExt;
+    BOOL	bUnsorted;
+    BOOL	bDescent;
 } TSortParam;
 
 typedef struct _TFormatParam{ 
-	BOOL	bIndentFiles;
-	BOOL	bIndentAll;
-	UINT	Width;
-	BOOL	bExtSeparately;
+    BOOL	bIndentFiles;
+    BOOL	bIndentAll;
+    UINT	Width;
+    BOOL	bExtSeparately;
 } TFormatParam;
+
+typedef enum FileType
+{
+    TYPE_DIRECTORY,
+    TYPE_FILE
+};
 
 #define TYPE_DIRECTORY	0
 #define TYPE_FILE		1
 
 typedef struct _TFileList{
-	char		*pOriginalName;
-	char		*pName;
-	char		*pExt;
-	UCHAR		iType;
-	DWORD64		iSize;
-	FILETIME	DateTime;
-	DWORD		Attr;
+    char		*pOriginalName;
+    char		*pName;
+    char		*pExt;
+    UCHAR		iType;
+    DWORD64		iSize;
+    FILETIME	DateTime;
+    DWORD		Attr;
 } TFileList;
 
 typedef struct _TFileInfo{
-	char		Name[MAX_PATH];
-	DWORD64		iSize;
-	DWORD		Attr;
-	DWORD		Year;
-	DWORD		Month;
-	DWORD		Day;
-	DWORD		Hour;
-	DWORD		Minute;
-	DWORD		Second;
+    char		Name[MAX_PATH];
+    DWORD64		iSize;
+    DWORD		Attr;
+    DWORD		Year;
+    DWORD		Month;
+    DWORD		Day;
+    DWORD		Hour;
+    DWORD		Minute;
+    DWORD		Second;
 } TFileInfo;
 
 typedef struct _TRxDesc{
-	char		pBuf[STRING_LENGTH + 1];
-	char		DirName[STRING_LENGTH + 1];
-	USHORT		RootDirLen;
-	USHORT		iReadPos;
-	USHORT		iWritePos;
-	BOOL		bNeedData;
-	UCHAR		iThisIsHeader;
-	TFileInfo	CurrentFile;
-	DWORD		ReturnedLength;
+    char		pBuf[STRING_LENGTH + 1];
+    char		DirName[STRING_LENGTH + 1];
+    USHORT		RootDirLen;
+    USHORT		iReadPos;
+    USHORT		iWritePos;
+    BOOL		bNeedData;
+    UCHAR		iThisIsHeader;
+    TFileInfo	CurrentFile;
+    DWORD		ReturnedLength;
 } TRxDesc;
 
 typedef void( TColumnHandler )( 
-		char *pStr,
-		USHORT StrLen,
-		TFileInfo *pFileInfo
-		);
+        char *pStr,
+        USHORT StrLen,
+        TFileInfo *pFileInfo
+        );
 
 
 typedef struct _TListInfo{
-	TColumnHandler	*HandleFunc;
-	USHORT			StartIdx;
-	USHORT			Len;
+    TColumnHandler	*HandleFunc;
+    USHORT			StartIdx;
+    USHORT			Len;
 } TListInfo;
 
 // 

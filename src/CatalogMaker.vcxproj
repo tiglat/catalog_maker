@@ -246,18 +246,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnsiStringOperations.h" />
+    <ClInclude Include="FileList.h" />
     <ClInclude Include="GlobalVars.h" />
+    <ClInclude Include="IStringOperations.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SupportFunc.h" />
     <ClInclude Include="UIFunc.h" />
     <ClInclude Include="wcxapi.h" />
     <ClInclude Include="wcxhead.h" />
+    <ClInclude Include="WideStringOperations.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnsiStringOperations.cpp" />
     <ClCompile Include="CatalogMaker.cpp" />
+    <ClCompile Include="FileList.cpp" />
     <ClCompile Include="GlobalVars.cpp" />
     <ClCompile Include="SupportFunc.cpp" />
     <ClCompile Include="UIFunc.cpp" />
+    <ClCompile Include="WideStringOperations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CatalogMaker.rc" />
