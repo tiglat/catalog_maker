@@ -27,6 +27,8 @@ void DelSpacesAroundStr ( char *pResultStr, char *pStr, USHORT Len );
 BOOL ReadConfigData();
 void GetShortDirName(TFileInfo *pFileInfo);
 BOOL RemoveFileName(char *pFullPath);
+void ConvertWildCardToRegex(std::string &pattern);
+
 
 
 

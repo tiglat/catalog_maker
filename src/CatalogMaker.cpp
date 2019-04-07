@@ -518,20 +518,23 @@ WCX_API int STDCALL
     }
 
     // ---------------- create file list from AddList --------------
-    ErrorCode = CreateFileList( 
-                    AddList,
-                    SrcPath,
-                    &pFileList, 
-                    &CountItems, 
-                    &MaxLen,
-                    &MaxExtLen
-                    );
+    //ErrorCode = CreateFileList( 
+    //                AddList,
+    //                SrcPath,
+    //                &pFileList, 
+    //                &CountItems, 
+    //                &MaxLen,
+    //                &MaxExtLen
+    //                );
 
-    if ( ErrorCode != 0 )
-    {
-        CloseHandle( hCatalogFile );
-        return ( ErrorCode );
-    }
+    //if ( ErrorCode != 0 )
+    //{
+    //    CloseHandle( hCatalogFile );
+    //    return ( ErrorCode );
+    //}
+
+    g_WildCardPattern.assign(g_ViewParam.sFileTypes);
+    ConvertWildCardToRegex(g_WildCardPattern);
 
 
     AnsiStringOperations ops;

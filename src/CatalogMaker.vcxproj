@@ -73,6 +73,7 @@
     <IntDir>Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.wcx</TargetExt>
+    <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
@@ -99,7 +100,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
       <Message />
-      <Command />
+      <Command>copy /Y x64\Debug\CatalogMaker.wcx64 "c:\Program Files\totalcmd\plugins\wcx\CatalogMaker\CatalogMaker.wcx64</Command>
+      <Outputs>CatalogMaker.wcx64</Outputs>
+      <TreatOutputAsContent>true</TreatOutputAsContent>
     </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>

@@ -70,8 +70,10 @@ public:
             throw new std::invalid_argument("Null pointer is passed.");
         }
 
+        SetCurrentDirectory(pSourceFolder);
+
         _pOps = pOps;
-        std::basic_regex<TChar> WildCardAsRegex(g_ViewParam.WildCardMask);
+        std::basic_regex<TChar> WildCardAsRegex(g_WildCardPattern);
 
         // take pointer to the first file in the AddList
         TChar* pFileName = pAddList;
@@ -128,10 +130,10 @@ private:
     IStringOperations<TChar>* _pOps;
 
     // Maximum length of file name column. Take into account indent length.
-    USHORT _FileNameColWidth;
+    USHORT _FileNameColWidth = 0;
 
     // Maximum length of file extension column. 
-    USHORT _ExtensionColWidth;
+    USHORT _ExtensionColWidth = 0;
 
     bool IsDirectory(TChar* pFileName)
     {
@@ -154,6 +156,11 @@ private:
     *****************************************************************************/
     USHORT CalculateIndent(TChar* pStr)
     {
+        if (pStr == nullptr)
+        {
+            return 0;
+        }
+
         USHORT Indent = 0;
 
         if (g_FormatParam.bIndentAll)

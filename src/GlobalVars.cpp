@@ -18,6 +18,8 @@ TSortParam		g_SortParam =
 TFormatParam	g_FormatParam = 
 		{ TRUE, FALSE, 3, FALSE };
 
+std::string g_WildCardPattern("*.*");
+
 TDlgDesc		g_DlgDesc;		// 
 TRxDesc			g_RxDesc;
 TListInfo		g_ListInfo[COLUMN_NUMBER];

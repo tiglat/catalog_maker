@@ -13,6 +13,9 @@
 #include "stdio.h"
 #include "locale.h"
 #include <stdlib.h>
+#include <algorithm>
+#include <string>
+#include <regex>
 
 /*****************************************************************************
     Routine:     CalculateIndent
@@ -1135,3 +1138,37 @@ BOOL ReadConfigData()
     }
     return TRUE;
 }
+
+bool ReplaceAll(std::string &str, const std::string &from, const std::string &to) 
+{
+    size_t StartPos = str.find(from);
+    
+    if (StartPos == std::string::npos)
+    {
+        return false;
+    }
+    
+    str.replace(StartPos, from.length(), to);
+    return true;
+}
+
+void ConvertWildCardToRegex(std::string &pattern)
+{
+    ReplaceAll(pattern, "\\", "\\\\");
+    ReplaceAll(pattern, "^", "\\^");
+    ReplaceAll(pattern, ".", "\\.");
+    ReplaceAll(pattern, "$", "\\$");
+    ReplaceAll(pattern, "|", "\\|");
+    ReplaceAll(pattern, "(", "\\(");
+    ReplaceAll(pattern, ")", "\\)");
+    ReplaceAll(pattern, "[", "\\[");
+    ReplaceAll(pattern, "]", "\\]");
+    ReplaceAll(pattern, "*", ".*");
+    ReplaceAll(pattern, "+", "\\+");
+    ReplaceAll(pattern, "?", ".");
+    ReplaceAll(pattern, "/", "\\/");
+}
+
+
+
+

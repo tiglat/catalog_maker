@@ -52,7 +52,6 @@ typedef struct _TViewParam{
     BOOL	bTime;
     BOOL	bAttr;
     char	sFileTypes[MASK_LIST_LENGTH];
-    std::string WildCardMask;
 } TViewParam;
 
 typedef struct _TSortParam{ 
@@ -131,6 +130,7 @@ typedef struct _TListInfo{
 extern TViewParam		g_ViewParam;
 extern TSortParam		g_SortParam;
 extern TFormatParam		g_FormatParam;
+extern std::string      g_WildCardPattern;
 
 
 extern TDlgDesc		g_DlgDesc;		// 
