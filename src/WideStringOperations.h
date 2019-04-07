@@ -7,7 +7,10 @@
 class WideStringOperations : public IStringOperations<WCHAR>
 {
 public:
-    WideStringOperations();
-    ~WideStringOperations();
+    virtual bool IsNotNullOrEmpty(const WCHAR* pStr);
+    virtual size_t StrLen(const WCHAR* pStr);
+    virtual const WCHAR* StrRChr(const WCHAR* pStr, const WCHAR ch);
+    virtual UINT StrNChr(const WCHAR* pStr, const WCHAR ch);
+    virtual UINT StrCaseSensitiveCmp(const WCHAR* pLhsStr, const WCHAR* pRhsStr);
 };
 

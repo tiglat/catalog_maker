@@ -1,6 +1,8 @@
 /* Contents of file wcxhead.h */
 /* It contains definitions of error codes, flags and callbacks */
 
+#pragma once
+
 /* Error codes returned to calling application */
 #define E_END_ARCHIVE     10            /* No more files in archive */
 #define E_NO_MEMORY       11            /* Not enough memory */
@@ -153,10 +155,10 @@ typedef struct {
   } tOpenArchiveDataW;
 
 typedef struct {
-	int size;
-	DWORD PluginInterfaceVersionLow;
-	DWORD PluginInterfaceVersionHi;
-	char DefaultIniName[MAX_PATH];
+    int size;
+    DWORD PluginInterfaceVersionLow;
+    DWORD PluginInterfaceVersionHi;
+    char DefaultIniName[MAX_PATH];
 } PackDefaultParamStruct;
 
 /* Definition of callback functions called by the DLL

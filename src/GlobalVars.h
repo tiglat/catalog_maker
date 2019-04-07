@@ -71,10 +71,10 @@ typedef struct _TFormatParam{
     BOOL	bExtSeparately;
 } TFormatParam;
 
-typedef enum FileType
+enum FileType
 {
-    TYPE_DIRECTORY,
-    TYPE_FILE
+    FTYPE_DIRECTORY,
+    FTYPE_FILE
 };
 
 #define TYPE_DIRECTORY	0

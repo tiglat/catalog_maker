@@ -9,15 +9,19 @@
 **
 *****************************************************************************/
 
-#include "GlobalVars.h"
-#include "SupportFunc.h"
-#include "UIFunc.h"
 #include "wcxapi.h"
 #include "resource.h" 
 
 #include "stdio.h"
 #include "locale.h"
 #include "commctrl.h"
+
+#include "GlobalVars.h"
+#include "SupportFunc.h"
+#include "UIFunc.h"
+#include "AnsiStringOperations.h"
+#include "FileList.h"
+
 
 /*****************************************************************************
     Routine:     GetPackerCaps
@@ -529,408 +533,413 @@ WCX_API int STDCALL
         return ( ErrorCode );
     }
 
-    //----------- sort file list ---------------------------------
-
-    if ( !g_SortParam.bUnsorted )
-        qsort( 
-            pFileList, 
-            CountItems, 
-            sizeof( TFileList ), 
-            CompareFileDesc 
-            );
-
-    //----------- write file list to target file -----------------
-
-    // create header for list
-    memset( pBuf, 32, sizeof(pBuf) );
-    pBuf[sizeof(pBuf)-1] = 0;
-
-    sprintf( pBuf, "File name" );
-    pBuf[strlen( pBuf )] = 32;
-
-    idx = MaxLen + 4;
-
-    if ( g_ViewParam.bFileName )
-    {
-        if ( g_ViewParam.bExt && g_FormatParam.bExtSeparately )
-        {
-            idx += sprintf( pBuf + idx, "Ext" );
-            pBuf[idx] = 32;
-            idx += MaxExtLen;
-        }
-
-        if ( g_ViewParam.bSize )
-        {
-            idx += sprintf( pBuf + idx, "Size   " );
-            pBuf[idx] = 32;
-            idx += 11;
-        }
-
-        if ( g_ViewParam.bDate )
-            idx += sprintf( pBuf + idx, "Date        " );
-
-        if ( g_ViewParam.bTime )
-            idx += sprintf( pBuf + idx, "Time      " );
-
-        if ( g_ViewParam.bAttr )
-            idx += sprintf( pBuf + idx, "Attr" );
-    }
-    else if ( g_ViewParam.bDirName && g_ViewParam.bApplyToDirs )
-    {
-        if ( g_ViewParam.bDate )
-            idx += sprintf( pBuf + idx, "Date        " );
-
-        if ( g_ViewParam.bTime )
-            idx += sprintf( pBuf + idx, "Time      " );
-
-        if ( g_ViewParam.bAttr )
-            idx += sprintf( pBuf + idx, "Attr" );
-    }
-
-    idx += sprintf( pBuf + idx, "\r\n" );
-
-    rv = WriteFile( 
-        hCatalogFile,
-        pBuf,
-        idx,
-        &ReturnedLength,
-        NULL
-        );
-
-    if ( rv == NULL )
-    {
-        free( pFileList );
-        CloseHandle( hCatalogFile );
-        return ( E_EWRITE );
-    }
-
-    memset( pBuf, 32, sizeof(pBuf) );
-    pBuf[sizeof(pBuf)-1] = 0;
-
-    memset( pBuf, '-', MaxLen );
-    idx = MaxLen + 4;
-
-    if ( g_ViewParam.bFileName )
-    {
-        if ( g_ViewParam.bExt && g_FormatParam.bExtSeparately )
-        {
-            memset( pBuf + idx, '-', MaxExtLen );
-            idx += MaxExtLen + 3;
-        }
-
-        if ( g_ViewParam.bSize )
-            idx += sprintf( pBuf + idx, "---------------   " );
-
-        if ( g_ViewParam.bDate )
-            idx += sprintf( pBuf + idx, "----------  " );
-
-        if ( g_ViewParam.bTime )
-            idx += sprintf( pBuf + idx, "--------  " );
-
-        if ( g_ViewParam.bAttr )
-            idx += sprintf( pBuf + idx, "----" );
-    }
-    else if ( g_ViewParam.bDirName && g_ViewParam.bApplyToDirs )
-    {
-        if ( g_ViewParam.bDate )
-            idx += sprintf( pBuf + idx, "----------  " );
-
-        if ( g_ViewParam.bTime )
-            idx += sprintf( pBuf + idx, "--------  " );
-
-        if ( g_ViewParam.bAttr )
-            idx += sprintf( pBuf + idx, "----" );
-    }
-
-    idx += sprintf( pBuf + idx, "\r\n" );
-
-    rv = WriteFile( 
-        hCatalogFile,
-        pBuf,
-        idx,
-        &ReturnedLength,
-        NULL
-        );
-
-    if ( rv == NULL )
-    {
-        free( pFileList );
-        CloseHandle( hCatalogFile );
-        return ( E_EWRITE );
-    }
-    
-    pFileItem = pFileList;
-
-    for ( j = 0; j < CountItems; j++ )
-    {
-        idx = 0;
-        memset( pBuf, 32, sizeof(pBuf) );
-        pBuf[sizeof(pBuf)-1] = 0;
-
-        // tell Windows Comander what file we are proccessing
-        g_ProcessDataProc( pFileItem->pName, (int) pFileItem->iSize );
-
-        if ( pFileItem->iType == TYPE_DIRECTORY )
-        {
-            if ( g_ViewParam.bDirName )
-            {
-                if ( g_FormatParam.bIndentFiles )
-                    idxFileIndent = g_FormatParam.Width;
-
-                if ( g_FormatParam.bIndentAll )
-                {
-                    idxDirIndent = strnchr( pFileItem->pName, '\\' );
-                    idx = idxDirIndent = 
-                        (idxDirIndent-1) * g_FormatParam.Width;
-                }
-
-                if ( g_ViewParam.bApplyToDirs && g_ViewParam.bFullName )
-                {
-                    // print full name including path
-                    idx += sprintf( pBuf + idx, "%s", SrcPath );
-                }
-
-                len = (DWORD) strlen( pFileItem->pName );
-                memcpy( pBuf + idx, pFileItem->pName, len );
-                idx += len;
-
-                if ( g_ViewParam.bApplyToDirs )
-                {
-                    // make indent to get next column
-                    idx = MaxLen + 4;
-                    
-                    if ( g_ViewParam.bFileName && g_ViewParam.bExt && g_FormatParam.bExtSeparately )
-                    {
-                        idx += MaxExtLen + 3;
-                    }
-
-                    // make empty indent, don't print size
-                    if ( g_ViewParam.bFileName && g_ViewParam.bSize )
-                    {
-                        idx += 18;
-                    }
-                    
-                    // print file date and time
-                    if ( g_ViewParam.bDate || g_ViewParam.bTime )
-                    {
-                        rv = FileTimeToLocalFileTime( 
-                                &pFileItem->DateTime,
-                                &pFileItem->DateTime 
-                                );
-
-                        rv = FileTimeToSystemTime( 
-                                &pFileItem->DateTime, 
-                                &FileTime 
-                                );
-                    }
-
-                    if ( g_ViewParam.bDate )
-                    {
-                        idx += sprintf( pBuf + idx, "%02d.", FileTime.wDay );
-                        idx += sprintf( pBuf + idx, "%02d.", FileTime.wMonth );
-                        idx += sprintf( pBuf + idx, "%4d  ", FileTime.wYear );
-                    }
-
-                    if ( g_ViewParam.bTime )
-                    {
-                        idx += sprintf( pBuf + idx, "%02d:", FileTime.wHour );
-                        idx += sprintf( pBuf + idx, "%02d.", FileTime.wMinute );
-                        idx += sprintf( pBuf + idx, "%02d  ", FileTime.wSecond );
-                    }
-
-                    // print file attributes
-                    if ( g_ViewParam.bAttr )
-                    {
-                        if ( pFileItem->Attr & FILE_ATTRIBUTE_READONLY )
-                            idx += sprintf( pBuf + idx, "r" );
-                        else
-                            idx += sprintf( pBuf + idx, "-" );
-
-                        if ( pFileItem->Attr & FILE_ATTRIBUTE_ARCHIVE )
-                            idx += sprintf( pBuf + idx, "a" );
-                        else
-                            idx += sprintf( pBuf + idx, "-" );
-                        
-                        if ( pFileItem->Attr & FILE_ATTRIBUTE_HIDDEN )
-                            idx += sprintf( pBuf + idx, "h" );
-                        else
-                            idx += sprintf( pBuf + idx, "-" );
-
-                        if ( pFileItem->Attr & FILE_ATTRIBUTE_SYSTEM )
-                            idx += sprintf( pBuf + idx, "s" );
-                        else
-                            idx += sprintf( pBuf + idx, "-" );
-                    }
-                }            
-            }
-        }
-        else
-        {
-            if ( g_ViewParam.bFileName )
-            {
-                TotalFiles++;
-
-                if ( g_FormatParam.bIndentAll || g_FormatParam.bIndentFiles )
-                    idx = idxDirIndent + idxFileIndent; 
-
-                // print file path
-                if ( g_ViewParam.bFullName )
-                    idx += sprintf( pBuf + idx, "%s", SrcPath );
-
-                // print file name
-                len = (DWORD) strlen( pFileItem->pName );
-                memcpy( pBuf + idx, pFileItem->pName, len );
-                idx += len;
-
-                // print file extension with file name
-                if ( g_ViewParam.bExt && pFileItem->pExt && 
-                    !g_FormatParam.bExtSeparately )
-                {
-                    pBuf[idx++] = '.';
-                    memcpy( 
-                        pBuf + idx, 
-                        pFileItem->pExt, 
-                        strlen(pFileItem->pExt) 
-                        );
-                }
-
-                idx = MaxLen + 4;
-                
-                // print file extension separately
-                if ( g_ViewParam.bExt && pFileItem->pExt && 
-                    g_FormatParam.bExtSeparately )
-                {
-                    memcpy( 
-                        pBuf + idx, 
-                        pFileItem->pExt, 
-                        strlen(pFileItem->pExt) 
-                        );
-                }
-
-                if ( g_ViewParam.bExt && g_FormatParam.bExtSeparately )
-                {
-                    idx += MaxExtLen + 3;
-                }
-
-                // print file size
-                if ( g_ViewParam.bSize )
-                {
-                    TotalSize += pFileItem->iSize;
-                    FormatIntNumber( 
-                        pBuf + idx, 
-                        pFileItem->iSize 
-                        );
-                    idx += 18;
-                }
-
-                // print file date and time
-                if ( g_ViewParam.bDate || g_ViewParam.bTime )
-                {
-                    rv = FileTimeToLocalFileTime( 
-                            &pFileItem->DateTime,
-                            &pFileItem->DateTime 
-                            );
-
-                    rv = FileTimeToSystemTime( 
-                            &pFileItem->DateTime, 
-                            &FileTime 
-                            );
-                }
-
-                if ( g_ViewParam.bDate )
-                {
-                    idx += sprintf( pBuf + idx, "%02d.", FileTime.wDay );
-                    idx += sprintf( pBuf + idx, "%02d.", FileTime.wMonth );
-                    idx += sprintf( pBuf + idx, "%4d  ", FileTime.wYear );
-                }
-
-                if ( g_ViewParam.bTime )
-                {
-                    idx += sprintf( pBuf + idx, "%02d:", FileTime.wHour );
-                    idx += sprintf( pBuf + idx, "%02d.", FileTime.wMinute );
-                    idx += sprintf( pBuf + idx, "%02d  ", FileTime.wSecond );
-                }
-
-                // print file attributes
-                if ( g_ViewParam.bAttr )
-                {
-                    if ( pFileItem->Attr & FILE_ATTRIBUTE_READONLY )
-                        idx += sprintf( pBuf + idx, "r" );
-                    else
-                        idx += sprintf( pBuf + idx, "-" );
-
-                    if ( pFileItem->Attr & FILE_ATTRIBUTE_ARCHIVE )
-                        idx += sprintf( pBuf + idx, "a" );
-                    else
-                        idx += sprintf( pBuf + idx, "-" );
-                    
-                    if ( pFileItem->Attr & FILE_ATTRIBUTE_HIDDEN )
-                        idx += sprintf( pBuf + idx, "h" );
-                    else
-                        idx += sprintf( pBuf + idx, "-" );
-
-                    if ( pFileItem->Attr & FILE_ATTRIBUTE_SYSTEM )
-                        idx += sprintf( pBuf + idx, "s" );
-                    else
-                        idx += sprintf( pBuf + idx, "-" );
-                }
-            }
-        }
-
-        idx += sprintf( pBuf + idx, "\r\n" );
-        pFileItem++;
-
-        rv = WriteFile( 
-            hCatalogFile,
-            pBuf,
-            idx,
-            &ReturnedLength,
-            NULL
-            );
-
-        if ( rv == NULL )
-        {
-            free( pFileList );
-            CloseHandle( hCatalogFile );
-            return ( E_EWRITE );
-        }
-    }
-
-    // print total size and number of the files
-    if ( g_ViewParam.bFileName )
-    {
-        memset( pBuf, 32, sizeof(pBuf) );
-        pBuf[sizeof(pBuf)-1] = 0;
-
-        idx = 0;
-        idx = sprintf( pBuf, "\r\ntotal files %d", TotalFiles );
-
-        if ( g_ViewParam.bSize )
-        {
-            idx += sprintf( pBuf + idx, "    total size " );
-            pBuf[strlen(pBuf)] = 32;
-            idx += FormatIntNumber( pBuf + idx, TotalSize );
-        }
-
-        // don't include symbol '\r' in order to read 
-        // the list file easier
-        idx += sprintf( pBuf + idx, "\n" );
-
-        rv = WriteFile( 
-            hCatalogFile,
-            pBuf,
-            idx,
-            &ReturnedLength,
-            NULL
-            );
-
-        if ( rv == NULL )
-        {
-            free( pFileList );
-            CloseHandle( hCatalogFile );
-            return ( E_EWRITE );
-        }
-    }
+
+    AnsiStringOperations ops;
+
+    FileList<FileInfoBase<char>, char> list(AddList, SrcPath, &ops);
+
+    ////----------- sort file list ---------------------------------
+
+    //if ( !g_SortParam.bUnsorted )
+    //    qsort( 
+    //        pFileList, 
+    //        CountItems, 
+    //        sizeof( TFileList ), 
+    //        CompareFileDesc 
+    //        );
+
+    ////----------- write file list to target file -----------------
+
+    //// create header for list
+    //memset( pBuf, 32, sizeof(pBuf) );
+    //pBuf[sizeof(pBuf)-1] = 0;
+
+    //sprintf( pBuf, "File name" );
+    //pBuf[strlen( pBuf )] = 32;
+
+    //idx = MaxLen + 4;
+
+    //if ( g_ViewParam.bFileName )
+    //{
+    //    if ( g_ViewParam.bExt && g_FormatParam.bExtSeparately )
+    //    {
+    //        idx += sprintf( pBuf + idx, "Ext" );
+    //        pBuf[idx] = 32;
+    //        idx += MaxExtLen;
+    //    }
+
+    //    if ( g_ViewParam.bSize )
+    //    {
+    //        idx += sprintf( pBuf + idx, "Size   " );
+    //        pBuf[idx] = 32;
+    //        idx += 11;
+    //    }
+
+    //    if ( g_ViewParam.bDate )
+    //        idx += sprintf( pBuf + idx, "Date        " );
+
+    //    if ( g_ViewParam.bTime )
+    //        idx += sprintf( pBuf + idx, "Time      " );
+
+    //    if ( g_ViewParam.bAttr )
+    //        idx += sprintf( pBuf + idx, "Attr" );
+    //}
+    //else if ( g_ViewParam.bDirName && g_ViewParam.bApplyToDirs )
+    //{
+    //    if ( g_ViewParam.bDate )
+    //        idx += sprintf( pBuf + idx, "Date        " );
+
+    //    if ( g_ViewParam.bTime )
+    //        idx += sprintf( pBuf + idx, "Time      " );
+
+    //    if ( g_ViewParam.bAttr )
+    //        idx += sprintf( pBuf + idx, "Attr" );
+    //}
+
+    //idx += sprintf( pBuf + idx, "\r\n" );
+
+    //rv = WriteFile( 
+    //    hCatalogFile,
+    //    pBuf,
+    //    idx,
+    //    &ReturnedLength,
+    //    NULL
+    //    );
+
+    //if ( rv == NULL )
+    //{
+    //    free( pFileList );
+    //    CloseHandle( hCatalogFile );
+    //    return ( E_EWRITE );
+    //}
+
+    //memset( pBuf, 32, sizeof(pBuf) );
+    //pBuf[sizeof(pBuf)-1] = 0;
+
+    //memset( pBuf, '-', MaxLen );
+    //idx = MaxLen + 4;
+
+    //if ( g_ViewParam.bFileName )
+    //{
+    //    if ( g_ViewParam.bExt && g_FormatParam.bExtSeparately )
+    //    {
+    //        memset( pBuf + idx, '-', MaxExtLen );
+    //        idx += MaxExtLen + 3;
+    //    }
+
+    //    if ( g_ViewParam.bSize )
+    //        idx += sprintf( pBuf + idx, "---------------   " );
+
+    //    if ( g_ViewParam.bDate )
+    //        idx += sprintf( pBuf + idx, "----------  " );
+
+    //    if ( g_ViewParam.bTime )
+    //        idx += sprintf( pBuf + idx, "--------  " );
+
+    //    if ( g_ViewParam.bAttr )
+    //        idx += sprintf( pBuf + idx, "----" );
+    //}
+    //else if ( g_ViewParam.bDirName && g_ViewParam.bApplyToDirs )
+    //{
+    //    if ( g_ViewParam.bDate )
+    //        idx += sprintf( pBuf + idx, "----------  " );
+
+    //    if ( g_ViewParam.bTime )
+    //        idx += sprintf( pBuf + idx, "--------  " );
+
+    //    if ( g_ViewParam.bAttr )
+    //        idx += sprintf( pBuf + idx, "----" );
+    //}
+
+    //idx += sprintf( pBuf + idx, "\r\n" );
+
+    //rv = WriteFile( 
+    //    hCatalogFile,
+    //    pBuf,
+    //    idx,
+    //    &ReturnedLength,
+    //    NULL
+    //    );
+
+    //if ( rv == NULL )
+    //{
+    //    free( pFileList );
+    //    CloseHandle( hCatalogFile );
+    //    return ( E_EWRITE );
+    //}
+    //
+    //pFileItem = pFileList;
+
+    //for ( j = 0; j < CountItems; j++ )
+    //{
+    //    idx = 0;
+    //    memset( pBuf, 32, sizeof(pBuf) );
+    //    pBuf[sizeof(pBuf)-1] = 0;
+
+    //    // tell Windows Comander what file we are proccessing
+    //    g_ProcessDataProc( pFileItem->pName, (int) pFileItem->iSize );
+
+    //    if ( pFileItem->iType == TYPE_DIRECTORY )
+    //    {
+    //        if ( g_ViewParam.bDirName )
+    //        {
+    //            if ( g_FormatParam.bIndentFiles )
+    //                idxFileIndent = g_FormatParam.Width;
+
+    //            if ( g_FormatParam.bIndentAll )
+    //            {
+    //                idxDirIndent = strnchr( pFileItem->pName, '\\' );
+    //                idx = idxDirIndent = 
+    //                    (idxDirIndent-1) * g_FormatParam.Width;
+    //            }
+
+    //            if ( g_ViewParam.bApplyToDirs && g_ViewParam.bFullName )
+    //            {
+    //                // print full name including path
+    //                idx += sprintf( pBuf + idx, "%s", SrcPath );
+    //            }
+
+    //            len = (DWORD) strlen( pFileItem->pName );
+    //            memcpy( pBuf + idx, pFileItem->pName, len );
+    //            idx += len;
+
+    //            if ( g_ViewParam.bApplyToDirs )
+    //            {
+    //                // make indent to get next column
+    //                idx = MaxLen + 4;
+    //                
+    //                if ( g_ViewParam.bFileName && g_ViewParam.bExt && g_FormatParam.bExtSeparately )
+    //                {
+    //                    idx += MaxExtLen + 3;
+    //                }
+
+    //                // make empty indent, don't print size
+    //                if ( g_ViewParam.bFileName && g_ViewParam.bSize )
+    //                {
+    //                    idx += 18;
+    //                }
+    //                
+    //                // print file date and time
+    //                if ( g_ViewParam.bDate || g_ViewParam.bTime )
+    //                {
+    //                    rv = FileTimeToLocalFileTime( 
+    //                            &pFileItem->DateTime,
+    //                            &pFileItem->DateTime 
+    //                            );
+
+    //                    rv = FileTimeToSystemTime( 
+    //                            &pFileItem->DateTime, 
+    //                            &FileTime 
+    //                            );
+    //                }
+
+    //                if ( g_ViewParam.bDate )
+    //                {
+    //                    idx += sprintf( pBuf + idx, "%02d.", FileTime.wDay );
+    //                    idx += sprintf( pBuf + idx, "%02d.", FileTime.wMonth );
+    //                    idx += sprintf( pBuf + idx, "%4d  ", FileTime.wYear );
+    //                }
+
+    //                if ( g_ViewParam.bTime )
+    //                {
+    //                    idx += sprintf( pBuf + idx, "%02d:", FileTime.wHour );
+    //                    idx += sprintf( pBuf + idx, "%02d.", FileTime.wMinute );
+    //                    idx += sprintf( pBuf + idx, "%02d  ", FileTime.wSecond );
+    //                }
+
+    //                // print file attributes
+    //                if ( g_ViewParam.bAttr )
+    //                {
+    //                    if ( pFileItem->Attr & FILE_ATTRIBUTE_READONLY )
+    //                        idx += sprintf( pBuf + idx, "r" );
+    //                    else
+    //                        idx += sprintf( pBuf + idx, "-" );
+
+    //                    if ( pFileItem->Attr & FILE_ATTRIBUTE_ARCHIVE )
+    //                        idx += sprintf( pBuf + idx, "a" );
+    //                    else
+    //                        idx += sprintf( pBuf + idx, "-" );
+    //                    
+    //                    if ( pFileItem->Attr & FILE_ATTRIBUTE_HIDDEN )
+    //                        idx += sprintf( pBuf + idx, "h" );
+    //                    else
+    //                        idx += sprintf( pBuf + idx, "-" );
+
+    //                    if ( pFileItem->Attr & FILE_ATTRIBUTE_SYSTEM )
+    //                        idx += sprintf( pBuf + idx, "s" );
+    //                    else
+    //                        idx += sprintf( pBuf + idx, "-" );
+    //                }
+    //            }            
+    //        }
+    //    }
+    //    else
+    //    {
+    //        if ( g_ViewParam.bFileName )
+    //        {
+    //            TotalFiles++;
+
+    //            if ( g_FormatParam.bIndentAll || g_FormatParam.bIndentFiles )
+    //                idx = idxDirIndent + idxFileIndent; 
+
+    //            // print file path
+    //            if ( g_ViewParam.bFullName )
+    //                idx += sprintf( pBuf + idx, "%s", SrcPath );
+
+    //            // print file name
+    //            len = (DWORD) strlen( pFileItem->pName );
+    //            memcpy( pBuf + idx, pFileItem->pName, len );
+    //            idx += len;
+
+    //            // print file extension with file name
+    //            if ( g_ViewParam.bExt && pFileItem->pExt && 
+    //                !g_FormatParam.bExtSeparately )
+    //            {
+    //                pBuf[idx++] = '.';
+    //                memcpy( 
+    //                    pBuf + idx, 
+    //                    pFileItem->pExt, 
+    //                    strlen(pFileItem->pExt) 
+    //                    );
+    //            }
+
+    //            idx = MaxLen + 4;
+    //            
+    //            // print file extension separately
+    //            if ( g_ViewParam.bExt && pFileItem->pExt && 
+    //                g_FormatParam.bExtSeparately )
+    //            {
+    //                memcpy( 
+    //                    pBuf + idx, 
+    //                    pFileItem->pExt, 
+    //                    strlen(pFileItem->pExt) 
+    //                    );
+    //            }
+
+    //            if ( g_ViewParam.bExt && g_FormatParam.bExtSeparately )
+    //            {
+    //                idx += MaxExtLen + 3;
+    //            }
+
+    //            // print file size
+    //            if ( g_ViewParam.bSize )
+    //            {
+    //                TotalSize += pFileItem->iSize;
+    //                FormatIntNumber( 
+    //                    pBuf + idx, 
+    //                    pFileItem->iSize 
+    //                    );
+    //                idx += 18;
+    //            }
+
+    //            // print file date and time
+    //            if ( g_ViewParam.bDate || g_ViewParam.bTime )
+    //            {
+    //                rv = FileTimeToLocalFileTime( 
+    //                        &pFileItem->DateTime,
+    //                        &pFileItem->DateTime 
+    //                        );
+
+    //                rv = FileTimeToSystemTime( 
+    //                        &pFileItem->DateTime, 
+    //                        &FileTime 
+    //                        );
+    //            }
+
+    //            if ( g_ViewParam.bDate )
+    //            {
+    //                idx += sprintf( pBuf + idx, "%02d.", FileTime.wDay );
+    //                idx += sprintf( pBuf + idx, "%02d.", FileTime.wMonth );
+    //                idx += sprintf( pBuf + idx, "%4d  ", FileTime.wYear );
+    //            }
+
+    //            if ( g_ViewParam.bTime )
+    //            {
+    //                idx += sprintf( pBuf + idx, "%02d:", FileTime.wHour );
+    //                idx += sprintf( pBuf + idx, "%02d.", FileTime.wMinute );
+    //                idx += sprintf( pBuf + idx, "%02d  ", FileTime.wSecond );
+    //            }
+
+    //            // print file attributes
+    //            if ( g_ViewParam.bAttr )
+    //            {
+    //                if ( pFileItem->Attr & FILE_ATTRIBUTE_READONLY )
+    //                    idx += sprintf( pBuf + idx, "r" );
+    //                else
+    //                    idx += sprintf( pBuf + idx, "-" );
+
+    //                if ( pFileItem->Attr & FILE_ATTRIBUTE_ARCHIVE )
+    //                    idx += sprintf( pBuf + idx, "a" );
+    //                else
+    //                    idx += sprintf( pBuf + idx, "-" );
+    //                
+    //                if ( pFileItem->Attr & FILE_ATTRIBUTE_HIDDEN )
+    //                    idx += sprintf( pBuf + idx, "h" );
+    //                else
+    //                    idx += sprintf( pBuf + idx, "-" );
+
+    //                if ( pFileItem->Attr & FILE_ATTRIBUTE_SYSTEM )
+    //                    idx += sprintf( pBuf + idx, "s" );
+    //                else
+    //                    idx += sprintf( pBuf + idx, "-" );
+    //            }
+    //        }
+    //    }
+
+    //    idx += sprintf( pBuf + idx, "\r\n" );
+    //    pFileItem++;
+
+    //    rv = WriteFile( 
+    //        hCatalogFile,
+    //        pBuf,
+    //        idx,
+    //        &ReturnedLength,
+    //        NULL
+    //        );
+
+    //    if ( rv == NULL )
+    //    {
+    //        free( pFileList );
+    //        CloseHandle( hCatalogFile );
+    //        return ( E_EWRITE );
+    //    }
+    //}
+
+    //// print total size and number of the files
+    //if ( g_ViewParam.bFileName )
+    //{
+    //    memset( pBuf, 32, sizeof(pBuf) );
+    //    pBuf[sizeof(pBuf)-1] = 0;
+
+    //    idx = 0;
+    //    idx = sprintf( pBuf, "\r\ntotal files %d", TotalFiles );
+
+    //    if ( g_ViewParam.bSize )
+    //    {
+    //        idx += sprintf( pBuf + idx, "    total size " );
+    //        pBuf[strlen(pBuf)] = 32;
+    //        idx += FormatIntNumber( pBuf + idx, TotalSize );
+    //    }
+
+    //    // don't include symbol '\r' in order to read 
+    //    // the list file easier
+    //    idx += sprintf( pBuf + idx, "\n" );
+
+    //    rv = WriteFile( 
+    //        hCatalogFile,
+    //        pBuf,
+    //        idx,
+    //        &ReturnedLength,
+    //        NULL
+    //        );
+
+    //    if ( rv == NULL )
+    //    {
+    //        free( pFileList );
+    //        CloseHandle( hCatalogFile );
+    //        return ( E_EWRITE );
+    //    }
+    //}
 
     // ----------  finish work ---------------------
 

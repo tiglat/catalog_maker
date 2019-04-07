@@ -8,13 +8,13 @@
 **
 *****************************************************************************/
 
-#ifndef _WCXAPI_H_
-#define _WCXAPI_H_ 
+#pragma once
 
 #include "windows.h"
+#include "wcxhead.h"
 
 #ifdef __cplusplus
-extern "C" {
+///extern "C" {
 #endif
 
 #ifdef WCX_PLUGIN_EXPORTS
@@ -110,7 +110,6 @@ WCX_API void STDCALL
 
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
-#endif

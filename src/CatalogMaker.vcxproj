@@ -112,7 +112,7 @@
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <CallingConvention>Cdecl</CallingConvention>
+      <CallingConvention>StdCall</CallingConvention>
     </ClCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -260,7 +260,6 @@
   <ItemGroup>
     <ClCompile Include="AnsiStringOperations.cpp" />
     <ClCompile Include="CatalogMaker.cpp" />
-    <ClCompile Include="FileList.cpp" />
     <ClCompile Include="GlobalVars.cpp" />
     <ClCompile Include="SupportFunc.cpp" />
     <ClCompile Include="UIFunc.cpp" />
