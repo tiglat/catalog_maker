@@ -13,7 +13,7 @@ size_t WideStringOperations::StrLen(const WCHAR* pStr)
 }
 
 
-const WCHAR* WideStringOperations::StrRChr(const WCHAR* pStr, const WCHAR chr)
+WCHAR* WideStringOperations::StrRChr(WCHAR* pStr, WCHAR chr)
 {
     return wcsrchr(pStr, chr);
 }

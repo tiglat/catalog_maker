@@ -1,14 +1,15 @@
 LIBRARY
 EXPORTS
-	CloseArchive
-	;DeleteFiles
-	GetPackerCaps
-	OpenArchive
-	PackFiles
-	PackSetDefaultParams
-	ProcessFile
-	ReadHeaderEx
-	ReadHeader
-	SetChangeVolProc
-	SetProcessDataProc
-	ConfigurePacker
+    CloseArchive
+    ;DeleteFiles
+    GetPackerCaps
+    OpenArchive
+    PackFiles
+    PackFilesW
+    PackSetDefaultParams
+    ProcessFile
+    ReadHeaderEx
+    ReadHeader
+    SetChangeVolProc
+    SetProcessDataProc
+    ConfigurePacker

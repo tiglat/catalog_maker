@@ -63,23 +63,23 @@ template <typename TFile, typename TChar>
 class FileList
 {
 public:
-    FileList(TChar* pAddList, TChar* pSourceFolder, IStringOperations<TChar>* pOps)
+    FileList(TChar* pAddList, TChar* pSourceFolder, IStringOperations<TChar>* pOps, std::basic_regex<TChar>& WildCardAsRegex)
     {
         if (pAddList == nullptr || pSourceFolder == nullptr || pOps == nullptr)
         {
             throw new std::invalid_argument("Null pointer is passed.");
         }
 
-        SetCurrentDirectory(pSourceFolder);
-
         _pOps = pOps;
-        std::basic_regex<TChar> WildCardAsRegex(g_WildCardPattern);
 
         // take pointer to the first file in the AddList
         TChar* pFileName = pAddList;
 
         while (_pOps->IsNotNullOrEmpty(pFileName))
         {
+            // calc length in advance because the file name will be splited in CreateFileInfo
+            auto Len = _pOps->StrLen(pFileName) + 1;
+
             if (IsDirectory(pFileName))
             {
                 if (g_ViewParam.bDirName)
@@ -102,7 +102,7 @@ public:
             }
 
             // take pointer to the next file
-            pFileName += _pOps->StrLen(pFileName) + 1;
+            pFileName += Len;
         }
 
         // increase MaxLen if we will include full file name
@@ -229,6 +229,24 @@ private:
         return pShortName;
     }
 
+    bool GetFileAttr(TChar* pFileName, LPVOID FileDescriptor);
+
+
+    /*****************************************************************************
+        Routine:     CreateDirInfo
+    ------------------------------------------------------------------------------
+        Description:
+                    Gets meta information about the specified directory and creates
+                    file descriptor object.
+
+        Arguments:
+                    pFileName - pointer to dir name
+
+        Return Value:
+                    File descriptor.
+
+
+    *****************************************************************************/
     decltype(auto) CreateDirInfo(TChar* pFileName)
     {
         WIN32_FILE_ATTRIBUTE_DATA FileDescription;
@@ -238,11 +256,7 @@ private:
         pFileInfo->pPath = pFileName;
         pFileInfo->pName = nullptr;
 
-        bool rc = GetFileAttributesEx(
-            pFileName,
-            GetFileExInfoStandard,
-            &FileDescription
-        );
+        bool rc = GetFileAttr(pFileName, &FileDescription);
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
         pFileInfo->DateTime = FileDescription.ftLastWriteTime;
@@ -254,11 +268,12 @@ private:
         auto length = _pOps->StrLen(pFileInfo->pPath) + CalculateIndent(pFileInfo->pPath);
         if (length > _FileNameColWidth)
         {
-            _FileNameColWidth = (USHORT) length;
+            _FileNameColWidth = (USHORT)length;
         }
 
         return pFileInfo;
     }
+
 
     /*****************************************************************************
         Routine:     CreateFileInfo
@@ -281,11 +296,7 @@ private:
 
         auto pFileInfo = std::unique_ptr<TFile>(new TFile());
 
-        bool rc = GetFileAttributesEx(
-            pFileName,
-            GetFileExInfoStandard,
-            &FileDescription
-        );
+        bool rc = GetFileAttr(pFileName, &FileDescription);
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
         pFileInfo->DateTime = FileDescription.ftLastWriteTime;
@@ -322,7 +333,7 @@ private:
             }
         }
 
-        auto Length = (USHORT)strlen(pFileInfo->pName) + CalculateIndent(pFileInfo->pPath);
+        auto Length = (USHORT)_pOps->StrLen(pFileInfo->pName) + CalculateIndent(pFileInfo->pPath);
 
         if (g_ViewParam.bExt && !g_FormatParam.bExtSeparately)
         {
@@ -460,3 +471,27 @@ private:
 //
 //}
 //
+
+
+template <>
+bool FileList<FileInfoBase<char>, char>::GetFileAttr(char* pFileName, LPVOID FileDescriptor)
+{
+    return GetFileAttributesExA(
+        pFileName,
+        GetFileExInfoStandard,
+        FileDescriptor
+    );
+}
+
+
+template <>
+bool FileList<FileInfoBase<WCHAR>, WCHAR>::GetFileAttr(WCHAR* pFileName, LPVOID FileDescriptor)
+{
+    return GetFileAttributesExW(
+        pFileName,
+        GetFileExInfoStandard,
+        FileDescriptor
+    );
+}
+
+

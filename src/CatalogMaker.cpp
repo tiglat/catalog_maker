@@ -20,6 +20,7 @@
 #include "SupportFunc.h"
 #include "UIFunc.h"
 #include "AnsiStringOperations.h"
+#include "WideStringOperations.h"
 #include "FileList.h"
 
 
@@ -426,6 +427,47 @@ DWORD CreateFileList (
 }
 
 /*****************************************************************************
+    Routine:     PackFilesW
+------------------------------------------------------------------------------
+    Description:
+        PackFiles specifies what should happen when a user creates,
+        or adds files to the archive.
+
+    Arguments:
+
+    Return Value:
+
+*****************************************************************************/
+
+WCX_API int STDCALL
+PackFilesW(
+    WCHAR *PackedFile,
+    WCHAR *SubPath,
+    WCHAR *SrcPath,
+    WCHAR *AddList,
+    int Flags
+)
+{
+    WCHAR WildCardPatternWChar[MASK_LIST_LENGTH];
+    memset(WildCardPatternWChar, 0, MASK_LIST_LENGTH);
+    MultiByteToWideChar(CP_ACP, 0, g_ViewParam.sFileTypes, strlen(g_ViewParam.sFileTypes), WildCardPatternWChar, MASK_LIST_LENGTH);
+
+    std::wstring WildCardPattern(WildCardPatternWChar);
+    ConvertWildCardToRegexW(WildCardPattern);
+
+    std::basic_regex<WCHAR> WildCardAsRegex(WildCardPattern);
+    
+    WideStringOperations ops;
+
+    SetCurrentDirectoryW(SrcPath);
+
+    FileList<FileInfoBase<WCHAR>, WCHAR> list(AddList, SrcPath, &ops, WildCardAsRegex);
+
+    return (SUCCESS);
+}
+
+
+/*****************************************************************************
     Routine:     PackFiles
 ------------------------------------------------------------------------------
     Description: 
@@ -533,13 +575,16 @@ WCX_API int STDCALL
     //    return ( ErrorCode );
     //}
 
-    g_WildCardPattern.assign(g_ViewParam.sFileTypes);
-    ConvertWildCardToRegex(g_WildCardPattern);
+    std::string WildCardPattern(g_ViewParam.sFileTypes);
+    ConvertWildCardToRegexA(WildCardPattern);
+    std::basic_regex<char> WildCardAsRegex(WildCardPattern);
 
 
     AnsiStringOperations ops;
 
-    FileList<FileInfoBase<char>, char> list(AddList, SrcPath, &ops);
+    SetCurrentDirectory(SrcPath);
+
+    FileList<FileInfoBase<char>, char> list(AddList, SrcPath, &ops, WildCardAsRegex);
 
     ////----------- sort file list ---------------------------------
 

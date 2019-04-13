@@ -17,6 +17,8 @@
 #include <string>
 #include <regex>
 
+using namespace std;
+
 /*****************************************************************************
     Routine:     CalculateIndent
 ------------------------------------------------------------------------------
@@ -1139,35 +1141,39 @@ BOOL ReadConfigData()
     return TRUE;
 }
 
-bool ReplaceAll(std::string &str, const std::string &from, const std::string &to) 
+void ConvertWildCardToRegexA(string& pattern)
 {
-    size_t StartPos = str.find(from);
-    
-    if (StartPos == std::string::npos)
-    {
-        return false;
-    }
-    
-    str.replace(StartPos, from.length(), to);
-    return true;
+    ReplaceAll<string>(pattern, "\\", "\\\\");
+    ReplaceAll<string>(pattern, "^", "\\^");
+    ReplaceAll<string>(pattern, ".", "\\.");
+    ReplaceAll<string>(pattern, "$", "\\$");
+    ReplaceAll<string>(pattern, "|", "\\|");
+    ReplaceAll<string>(pattern, "(", "\\(");
+    ReplaceAll<string>(pattern, ")", "\\)");
+    ReplaceAll<string>(pattern, "[", "\\[");
+    ReplaceAll<string>(pattern, "]", "\\]");
+    ReplaceAll<string>(pattern, "*", ".*");
+    ReplaceAll<string>(pattern, "+", "\\+");
+    ReplaceAll<string>(pattern, "?", ".");
+    ReplaceAll<string>(pattern, "/", "\\/");
 }
 
-void ConvertWildCardToRegex(std::string &pattern)
+void ConvertWildCardToRegexW(wstring& pattern)
 {
-    ReplaceAll(pattern, "\\", "\\\\");
-    ReplaceAll(pattern, "^", "\\^");
-    ReplaceAll(pattern, ".", "\\.");
-    ReplaceAll(pattern, "$", "\\$");
-    ReplaceAll(pattern, "|", "\\|");
-    ReplaceAll(pattern, "(", "\\(");
-    ReplaceAll(pattern, ")", "\\)");
-    ReplaceAll(pattern, "[", "\\[");
-    ReplaceAll(pattern, "]", "\\]");
-    ReplaceAll(pattern, "*", ".*");
-    ReplaceAll(pattern, "+", "\\+");
-    ReplaceAll(pattern, "?", ".");
-    ReplaceAll(pattern, "/", "\\/");
-}
+    ReplaceAll<wstring>(pattern, L"\\", L"\\\\");
+    ReplaceAll<wstring>(pattern, L"^", L"\\^");
+    ReplaceAll<wstring>(pattern, L".", L"\\.");
+    ReplaceAll<wstring>(pattern, L"$", L"\\$");
+    ReplaceAll<wstring>(pattern, L"|", L"\\|");
+    ReplaceAll<wstring>(pattern, L"(", L"\\(");
+    ReplaceAll<wstring>(pattern, L")", L"\\)");
+    ReplaceAll<wstring>(pattern, L"[", L"\\[");
+    ReplaceAll<wstring>(pattern, L"]", L"\\]");
+    ReplaceAll<wstring>(pattern, L"*", L".*");
+    ReplaceAll<wstring>(pattern, L"+", L"\\+");
+    ReplaceAll<wstring>(pattern, L"?", L".");
+    ReplaceAll<wstring>(pattern, L"/", L"\\/");
+}                                
 
 
 
