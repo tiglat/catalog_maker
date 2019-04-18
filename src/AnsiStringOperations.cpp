@@ -32,7 +32,7 @@ UINT AnsiStringOperations::StrNChr(const char* pStr, const char ch)
 }
 
 
-UINT AnsiStringOperations::StrCaseSensitiveCmp(const char* pLhsStr, const char* pRhsStr)
+INT AnsiStringOperations::StrCaseInsensitiveCmp(const char* pLhsStr, const char* pRhsStr)
 {
     return _stricmp(pLhsStr, pRhsStr);
 }

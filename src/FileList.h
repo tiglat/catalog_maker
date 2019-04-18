@@ -10,7 +10,7 @@
 #include "IStringOperations.h"
 
 template <typename TChar>
-struct FileInfoBase
+struct FileListItem
 {
     FileType    iType;
     DWORD64		iSize;
@@ -27,36 +27,6 @@ struct FileInfoBase
     // File name extension
     TChar* pExt;
 };
-
-////ANSI version
-//struct AnsiFileInfo : FileInfoBase
-//{
-//    // Pointer to path part of file name passed into the plugin by TotalCommander.
-//    // It could be full, partly full or short.
-//    char* pPath;
-//
-//    // Short file name
-//    char* pName;
-//
-//    // File name extension
-//    char* pExt;
-//};
-//
-//
-//// Unicode version
-//struct WideFileInfo : FileInfoBase
-//{
-//    // Pointer to path part of file name passed into the plugin by TotalCommander.
-//    // It could be full, partly full or short.
-//    WCHAR* pPath;
-//
-//    // Short file name
-//    WCHAR* pName;
-//
-//    // File name extension
-//    WCHAR* pExt;
-//};
-
 
 
 template <typename TFile, typename TChar> 
@@ -75,6 +45,8 @@ public:
         // take pointer to the first file in the AddList
         TChar* pFileName = pAddList;
 
+        _List = TListPtr(new std::set<std::shared_ptr<TFile>, LessFileComparer>(LessFileComparer(_pOps)));
+
         while (_pOps->IsNotNullOrEmpty(pFileName))
         {
             // calc length in advance because the file name will be splited in CreateFileInfo
@@ -84,7 +56,7 @@ public:
             {
                 if (g_ViewParam.bDirName)
                 {
-                    _List.insert(CreateDirInfo(pFileName));
+                    _List->insert(CreateDirInfo(pFileName));
                 }
             }
             else
@@ -96,7 +68,7 @@ public:
                     // check if the file name is matched to mask list
                     if (regex_match(pShortFileName, WildCardAsRegex))
                     {
-                        _List.insert(CreateFileInfo(pFileName));
+                        _List->insert(CreateFileInfo(pFileName));
                     }
                 }
             }
@@ -118,22 +90,179 @@ public:
 
 
 private:
-    //class LessFileComparer
-    //{
-    //    bool operator() (std::shared_ptr<TFile> &lhs, std::shared_ptr<TFile> &rhs);
-    //};
+
+    /*****************************************************************************
+        Routine:     operator()
+    ------------------------------------------------------------------------------
+        Description:
+                    This function is used to sort file list and implements less operator
+                    It compares two file descriptors
+
+        Arguments:
+                    lhs	- pointer to first descriptor
+                    rhs	- pointer to second descriptor
+
+        Return Value:
+                    returns true if the first argument goes before the second argument
+                    (first < second)
+
+    *****************************************************************************/
+//    template <typename TChar>
+    class LessFileComparer
+    {
+    private:
+        IStringOperations<TChar>* _pOps;
+    public:
+        LessFileComparer(IStringOperations<TChar>* ops) : _pOps(ops) {}
+
+        bool operator() (const std::shared_ptr<TFile> &lhs, const std::shared_ptr<TFile> &rhs)
+        {
+            bool rv = false;
+
+            // compare paths and then compare another attributes
+            // depending on settings
+            if (lhs->pPath && rhs->pPath)
+            {
+                auto result = _pOps->StrCaseInsensitiveCmp(lhs->pPath, rhs->pPath);
+
+                if (result < 0)
+                {
+                    return GetResult(true);
+                }
+
+                if (result > 0)
+                {
+                    return GetResult(false);
+                }
+            }
+            else
+            {
+                if (lhs->pPath == nullptr && rhs->pPath != nullptr)
+                {
+                    return GetResult(true);
+                }
+
+                if (lhs->pPath != nullptr && rhs->pPath == nullptr)
+                {
+                    return GetResult(false);
+                }
+            }
+
+            // if paths are equal then we need to compare another attributes
+
+            // if one of the items is directory than it is always less
+            if (lhs->iType == FileType::FTYPE_DIRECTORY && rhs->iType == FileType::FTYPE_FILE)
+            {
+                return GetResult(true);
+            }
+            else if (rhs->iType == FileType::FTYPE_DIRECTORY && lhs->iType == FileType::FTYPE_FILE)
+            {
+                return GetResult(false);
+            }
+
+            // if user selected sort by extension
+            if (g_SortParam.bExt)
+            {
+                if (lhs->pExt == nullptr)
+                {
+                    return GetResult(true);
+                }
+
+                if (rhs->pExt == nullptr)
+                {
+                    return GetResult(false);
+                }
+
+                auto result = _pOps->StrCaseInsensitiveCmp(lhs->pExt, rhs->pExt);
+
+                if (result < 0)
+                {
+                    return GetResult(true);
+                }
+
+                if (result > 0)
+                {
+                    return GetResult(false);
+                }
+
+            }
+            else if (g_SortParam.bSize) // if user selected sort by size
+            {
+                if (lhs->iSize < rhs->iSize)
+                {
+                    return GetResult(true);
+                }
+                else if (lhs->iSize > rhs->iSize)
+                {
+                    return GetResult(false);
+                }
+            }
+            else if (g_SortParam.bDate) // if user selected sort by date
+            {
+                auto result = CompareFileTime(&lhs->DateTime, &rhs->DateTime);
+
+                if (result < 0)
+                {
+                    return GetResult(true);
+                }
+
+                if (result > 0)
+                {
+                    return GetResult(false);
+                }
+
+            }
+            else if (g_SortParam.bName) // if user selected sort by name
+            {
+                if (lhs->pName == nullptr)
+                {
+                    return GetResult(true);
+                }
+
+                if (rhs->pName == nullptr)
+                {
+                    return GetResult(false);
+                }
+
+                auto result = _pOps->StrCaseInsensitiveCmp(lhs->pName, rhs->pName);
+
+                if (result < 0)
+                {
+                    return GetResult(true);
+                }
+
+                if (result > 0)
+                {
+                    return GetResult(false);
+                }
+            }
+
+            return GetResult(false);
+        }
+
+    private:
 
 
-    std::set<std::shared_ptr<TFile>> _List;
+        bool GetResult(bool value)
+        {
+            return g_SortParam.bDescent ? !value : value;
+        }
+
+    };
 
     // Proxy class for string operations
     IStringOperations<TChar>* _pOps;
+
+    typedef std::shared_ptr<std::set<std::shared_ptr<TFile>, LessFileComparer>>    TListPtr;
+
+    TListPtr _List;
 
     // Maximum length of file name column. Take into account indent length.
     USHORT _FileNameColWidth = 0;
 
     // Maximum length of file extension column. 
     USHORT _ExtensionColWidth = 0;
+
 
     bool IsDirectory(TChar* pFileName)
     {
@@ -249,14 +378,16 @@ private:
     *****************************************************************************/
     decltype(auto) CreateDirInfo(TChar* pFileName)
     {
-        WIN32_FILE_ATTRIBUTE_DATA FileDescription;
-
+        WIN32_FILE_ATTRIBUTE_DATA FileDescription = {0};
         auto pFileInfo = std::unique_ptr<TFile>(new TFile());
 
         pFileInfo->pPath = pFileName;
         pFileInfo->pName = nullptr;
 
-        bool rc = GetFileAttr(pFileName, &FileDescription);
+        if ((g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr) && g_ViewParam.bApplyToDirs)
+        {
+            GetFileAttr(pFileName, &FileDescription);
+        }
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
         pFileInfo->DateTime = FileDescription.ftLastWriteTime;
@@ -265,11 +396,15 @@ private:
         pFileInfo->pExt = nullptr;
         pFileInfo->iType = FileType::FTYPE_DIRECTORY;
 
-        auto length = _pOps->StrLen(pFileInfo->pPath) + CalculateIndent(pFileInfo->pPath);
+        auto PathLen = _pOps->StrLen(pFileInfo->pPath);
+        auto length = PathLen + CalculateIndent(pFileInfo->pPath);
         if (length > _FileNameColWidth)
         {
             _FileNameColWidth = (USHORT)length;
         }
+
+        auto ptr = pFileInfo->pPath + PathLen - 1;
+        *ptr = 0;
 
         return pFileInfo;
     }
@@ -292,11 +427,16 @@ private:
     *****************************************************************************/
     decltype(auto) CreateFileInfo(TChar* pFileName)
     {
-        WIN32_FILE_ATTRIBUTE_DATA FileDescription;
+        WIN32_FILE_ATTRIBUTE_DATA FileDescription = {0};
 
         auto pFileInfo = std::unique_ptr<TFile>(new TFile());
 
-        bool rc = GetFileAttr(pFileName, &FileDescription);
+        bool rc = false;
+
+        if (g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr || g_ViewParam.bSize)
+        {
+            rc = GetFileAttr(pFileName, &FileDescription);
+        }
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
         pFileInfo->DateTime = FileDescription.ftLastWriteTime;
@@ -348,133 +488,14 @@ private:
         return pFileInfo;
     }
 
+
 };
 
-/*****************************************************************************
-    Routine:     operator()
-------------------------------------------------------------------------------
-    Description:
-                This function is used to sort file list and implements less operator
-                It compares two file descriptors
 
-    Arguments:
-                lhs	- pointer to first descriptor
-                rhs	- pointer to second descriptor
-
-    Return Value:
-                returns true if the first argument goes before the second argument
-
-*****************************************************************************/
-
-//template <typename TFile, typename TChar>
-//bool FileList<TFile, TChar>::LessFileComparer::operator() (std::shared_ptr<TFile> &lhs, std::shared_ptr<TFile> &rhs)
-//{
-//    bool rv;
-//
-//    // compare paths and then compare another attributes
-//    // depending on settings
-//    if (lhs->pPath && rhs->pPath)
-//    {
-//        rv = _pOps->StrCaseInsensitiveCmp(lhs->pPath, rhs->pPath);
-//    }
-//    else
-//    {
-//        if (lhs->pPath == 0 && rhs->pPath == 0)
-//        {
-//            rv = 0;
-//        }
-//        else
-//        {
-//            if (lhs->pPath == 0)
-//                rv = -1;
-//            else
-//                rv = 1;
-//        }
-//    }
-//
-//    // if paths are equal then we need to compare another attributes
-//    if (rv == 0)
-//    {
-//        // if one of the items is directory than it is always less
-//        if (lhs->pName == 0)
-//        {
-//            rv = -1;
-//            return (rv >= 0 ? false : true);
-//        }
-//        else
-//            if (rhs->pName == 0)
-//            {
-//                rv = 1;
-//                return (rv >= 0 ? false : true);
-//            }
-//
-//        // if user selected sort by extension
-//        if (g_SortParam.bExt)
-//        {
-//            if (lhs->pExt == 0)
-//                rv = -1;
-//
-//            if (rhs->pExt == 0)
-//                rv = 1;
-//
-//            if (lhs->pExt && rhs->pExt)
-//                rv = _stricmp(lhs->pExt, rhs->pExt);
-//        }
-//
-//        // if user selected sort by size
-//        if (g_SortParam.bSize)
-//        {
-//            if (lhs->iSize < rhs->iSize)
-//            {
-//                rv = -1;
-//            }
-//            else
-//            {
-//                if (lhs->iSize > rhs->iSize)
-//                    rv = 1;
-//                else
-//                    rv = 0;
-//            }
-//        }
-//
-//        // if user selected sort by date
-//        if (g_SortParam.bDate)
-//        {
-//            rv = CompareFileTime(
-//                &lhs->DateTime,
-//                &rhs->DateTime
-//            );
-//        }
-//
-//        // if user selected sort by name
-//        if (g_SortParam.bName || rv == 0)
-//        {
-//            if (lhs->pName == 0)
-//                rv = -1;
-//
-//            if (rhs->pName == 0)
-//                rv = 1;
-//
-//            if (lhs->pName && rhs->pName)
-//                //rv = _wcsicmp( (wchar_t*)lhs->pName, (wchar_t*)rhs->pName );
-//                rv = _stricmp(lhs->pName, rhs->pName);
-//        }
-//
-//        if (g_SortParam.bDescent)
-//        {
-//            rv *= -1;
-//        }
-//
-//    } // if rv
-//
-//    return (rv >= 0 ? false : true);
-//
-//}
-//
 
 
 template <>
-bool FileList<FileInfoBase<char>, char>::GetFileAttr(char* pFileName, LPVOID FileDescriptor)
+bool FileList<FileListItem<char>, char>::GetFileAttr(char* pFileName, LPVOID FileDescriptor)
 {
     return GetFileAttributesExA(
         pFileName,
@@ -485,7 +506,7 @@ bool FileList<FileInfoBase<char>, char>::GetFileAttr(char* pFileName, LPVOID Fil
 
 
 template <>
-bool FileList<FileInfoBase<WCHAR>, WCHAR>::GetFileAttr(WCHAR* pFileName, LPVOID FileDescriptor)
+bool FileList<FileListItem<WCHAR>, WCHAR>::GetFileAttr(WCHAR* pFileName, LPVOID FileDescriptor)
 {
     return GetFileAttributesExW(
         pFileName,

@@ -9,6 +9,6 @@ public:
     virtual size_t StrLen(const char* pStr);
     virtual char* StrRChr(char* pStr, char ch);
     virtual UINT StrNChr(const char* pStr, const char ch);
-    virtual UINT StrCaseSensitiveCmp(const char* pLhsStr, const char* pRhsStr);
+    virtual INT StrCaseInsensitiveCmp(const char* pLhsStr, const char* pRhsStr);
 };
 

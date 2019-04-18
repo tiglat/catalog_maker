@@ -227,7 +227,7 @@ int CompareFileDesc( const void *p1, const void *p2 )
         // if user selected sort by date
         if ( g_SortParam.bDate )
         {
-            rv = CompareFileTime( 
+            rv = CompareFileTime(
                     &pItem1->DateTime,
                     &pItem2->DateTime
                     );
@@ -461,7 +461,7 @@ PackFilesW(
 
     SetCurrentDirectoryW(SrcPath);
 
-    FileList<FileInfoBase<WCHAR>, WCHAR> list(AddList, SrcPath, &ops, WildCardAsRegex);
+    FileList<FileListItem<WCHAR>, WCHAR> list(AddList, SrcPath, &ops, WildCardAsRegex);
 
     return (SUCCESS);
 }
@@ -584,7 +584,7 @@ WCX_API int STDCALL
 
     SetCurrentDirectory(SrcPath);
 
-    FileList<FileInfoBase<char>, char> list(AddList, SrcPath, &ops, WildCardAsRegex);
+    FileList<FileListItem<char>, char> list(AddList, SrcPath, &ops, WildCardAsRegex);
 
     ////----------- sort file list ---------------------------------
 

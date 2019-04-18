@@ -27,6 +27,6 @@ public:
     virtual UINT StrNChr(const TChar* pStr, const TChar ch) = 0;
 
 
-    virtual UINT StrCaseSensitiveCmp(const TChar* pLhsStr, const TChar* pRhsStr) = 0;
+    virtual INT StrCaseInsensitiveCmp(const TChar* pLhsStr, const TChar* pRhsStr) = 0;
 };
 

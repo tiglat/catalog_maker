@@ -33,7 +33,7 @@ UINT WideStringOperations::StrNChr(const WCHAR* pStr, const WCHAR ch)
 }
 
 
-UINT WideStringOperations::StrCaseSensitiveCmp(const WCHAR* pLhsStr, const WCHAR* pRhsStr)
+INT WideStringOperations::StrCaseInsensitiveCmp(const WCHAR* pLhsStr, const WCHAR* pRhsStr)
 {
     return _wcsicmp(pLhsStr, pRhsStr);
 }
