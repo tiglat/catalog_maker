@@ -12,6 +12,7 @@
 #include "wcxapi.h"
 #include "resource.h" 
 
+#include <string>
 #include "stdio.h"
 #include "locale.h"
 #include "commctrl.h"
@@ -23,6 +24,7 @@
 #include "WideStringOperations.h"
 #include "FileList.h"
 
+using namespace std;
 
 /*****************************************************************************
     Routine:     GetPackerCaps
@@ -448,22 +450,102 @@ PackFilesW(
     int Flags
 )
 {
+    setlocale(LC_ALL, "[lang]");
+
+    if (g_hinst == NULL)
+    {
+        SetupConfigFileName();
+        if (!ReadConfigData())
+        {
+            MessageBox(
+                NULL,
+                "Configuration data read error. Default settings will be used.",
+                "Warning",
+                MB_OK
+            );
+        }
+    }
+
+    // ------- check if the file is exist -----------------------
+
+    LPWIN32_FIND_DATAW FileInfo = {0};
+    auto hFindFile = FindFirstFileW(PackedFile, FileInfo );
+
+    // if file is exist
+    if (hFindFile != INVALID_HANDLE_VALUE)
+    {
+        FindClose(hFindFile);
+
+        auto rv = MessageBox(
+            NULL,
+            "The file is already exist. Overwrite it?",
+            "Warning",
+            MB_YESNO ||
+            MB_ICONWARNING ||
+            MB_SYSTEMMODAL
+        );
+
+        if (rv == IDCANCEL)
+        {
+            return (SUCCESS);
+        }
+    }
+
+    // ------- open file to write file list-----------------------
+
+    auto hCatalogFile = CreateFileW(
+        PackedFile,					// file name
+        GENERIC_WRITE,				// access mode
+        0,							// share mode
+        NULL,						// SD
+        CREATE_ALWAYS,				// how to create
+        FILE_ATTRIBUTE_NORMAL,      // file attributes
+        NULL                        // handle to template file
+    );
+
+    if (hCatalogFile == INVALID_HANDLE_VALUE)
+    {
+        return (E_ECREATE);
+    }
+
     WCHAR WildCardPatternWChar[MASK_LIST_LENGTH];
     memset(WildCardPatternWChar, 0, MASK_LIST_LENGTH);
     MultiByteToWideChar(CP_ACP, 0, g_ViewParam.sFileTypes, strlen(g_ViewParam.sFileTypes), WildCardPatternWChar, MASK_LIST_LENGTH);
 
     std::wstring WildCardPattern(WildCardPatternWChar);
     ConvertWildCardToRegexW(WildCardPattern);
-
     std::basic_regex<WCHAR> WildCardAsRegex(WildCardPattern);
     
     WideStringOperations ops;
 
     SetCurrentDirectoryW(SrcPath);
+    int result = SUCCESS;
 
-    FileList<FileListItem<WCHAR>, WCHAR> list(AddList, SrcPath, &ops, WildCardAsRegex);
+    try
+    {
+        FileList<FileListItem<WCHAR>, WCHAR, std::wstring> list(AddList, SrcPath, &ops, WildCardAsRegex);
+        
+        for (list.First(); !list.IsEnd(); list.Next())
+        {
+            wstring s = list.GetCurrentElementLine();
 
-    return (SUCCESS);
+            DWORD BytesWritten = 0;
+            auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+
+            if (rv == NULL)
+            {
+                result = E_EWRITE;
+                break;
+            }
+        }
+    }
+    catch (...)
+    {
+        result = E_EWRITE;
+    }
+
+    CloseHandle(hCatalogFile);
+    return (result);
 }
 
 
@@ -489,16 +571,6 @@ WCX_API int STDCALL
         int Flags
         )
 {
-    TFileList	*pFileList = 0, *pFileItem;
-    HANDLE		hCatalogFile, hFindFile;
-    DWORD		ErrorCode, CountItems = 0, j;
-    DWORD		idx, len, idxDirIndent = 0, idxFileIndent = 0;
-    DWORD		ReturnedLength, rv;
-    DWORD64		TotalSize = 0;
-    DWORD		TotalFiles = 0;
-    char		pBuf[STRING_LENGTH];
-    USHORT		MaxLen = 9, MaxExtLen = 3;
-    SYSTEMTIME	FileTime;
     WIN32_FIND_DATA FileInfo;
 
     setlocale( LC_ALL, "[lang]" );
@@ -519,32 +591,29 @@ WCX_API int STDCALL
 
     // ------- check if the file is exist -----------------------
 
-    hFindFile = FindFirstFile(
-        PackedFile,
-        &FileInfo
-    );
+    auto hFindFile = FindFirstFile(PackedFile, &FileInfo);
 
     // if file is exist
     if ( hFindFile != INVALID_HANDLE_VALUE  )
     {
         FindClose( hFindFile );
 
-        rv = MessageBox(
+        auto rv = MessageBox(
             NULL,
             "The file is already exist. Overwrite it?",
             "Warning",
-            MB_YESNO ||
-            MB_ICONWARNING ||
-            MB_SYSTEMMODAL
+            MB_YESNO || MB_ICONWARNING || MB_SYSTEMMODAL
         );
 
-        if  ( rv == IDCANCEL )
-            return ( SUCCESS);
+        if (rv == IDCANCEL)
+        {
+            return (SUCCESS);
+        }
     }
 
     // ------- open file to write file list-----------------------
 
-    hCatalogFile = CreateFile(
+    auto hCatalogFile = CreateFile(
         PackedFile,					// file name
         GENERIC_WRITE,				// access mode
         0,							// share mode
@@ -559,42 +628,38 @@ WCX_API int STDCALL
         return ( E_ECREATE );
     }
 
-    // ---------------- create file list from AddList --------------
-    //ErrorCode = CreateFileList( 
-    //                AddList,
-    //                SrcPath,
-    //                &pFileList, 
-    //                &CountItems, 
-    //                &MaxLen,
-    //                &MaxExtLen
-    //                );
-
-    //if ( ErrorCode != 0 )
-    //{
-    //    CloseHandle( hCatalogFile );
-    //    return ( ErrorCode );
-    //}
-
-    std::string WildCardPattern(g_ViewParam.sFileTypes);
+    string WildCardPattern(g_ViewParam.sFileTypes);
     ConvertWildCardToRegexA(WildCardPattern);
-    std::basic_regex<char> WildCardAsRegex(WildCardPattern);
-
+    basic_regex<char> WildCardAsRegex(WildCardPattern);
 
     AnsiStringOperations ops;
 
     SetCurrentDirectory(SrcPath);
+    int result = SUCCESS;
 
-    FileList<FileListItem<char>, char> list(AddList, SrcPath, &ops, WildCardAsRegex);
+    try
+    {
+        FileList<FileListItem<char>, char, std::string> list(AddList, SrcPath, &ops, WildCardAsRegex);
 
-    ////----------- sort file list ---------------------------------
+        for (list.First(); !list.IsEnd(); list.Next())
+        {
+            string s = list.GetCurrentElementLine();
+            DWORD BytesWritten = 0;
 
-    //if ( !g_SortParam.bUnsorted )
-    //    qsort( 
-    //        pFileList, 
-    //        CountItems, 
-    //        sizeof( TFileList ), 
-    //        CompareFileDesc 
-    //        );
+            auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+
+            if (rv == NULL)
+            {
+                result = E_EWRITE;
+                break;
+            }
+
+        }
+    }
+    catch (...)
+    {
+        result = E_EWRITE;
+    }
 
     ////----------- write file list to target file -----------------
 
@@ -991,9 +1056,8 @@ WCX_API int STDCALL
 
     // ----------  finish work ---------------------
 
-    free( pFileList );
     CloseHandle( hCatalogFile );
-    return ( SUCCESS );
+    return (result);
 }
 
 /*****************************************************************************

@@ -2,7 +2,7 @@
 
 #include "windows.h"
 
-template <typename TChar> class IStringOperations
+template <typename TChar, typename TString> class IStringOperations
 {
 public:
     virtual bool IsNotNullOrEmpty(const TChar* pStr) = 0;
@@ -28,5 +28,12 @@ public:
 
 
     virtual INT StrCaseInsensitiveCmp(const TChar* pLhsStr, const TChar* pRhsStr) = 0;
+
+    virtual TString ConvertDateToString(SYSTEMTIME& DateTime) = 0;
+    virtual TString ConvertTimeToString(SYSTEMTIME& DateTime) = 0;
+    virtual TString ConvertIntToString(DWORD64 num) = 0;
+
+    virtual TString GetEndLineChars() = 0;
+
 };
 

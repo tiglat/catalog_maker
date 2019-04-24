@@ -1,10 +1,10 @@
 #pragma once
 
 #include "windows.h"
-
+#include <string>
 #include "IStringOperations.h"
 
-class WideStringOperations : public IStringOperations<WCHAR>
+class WideStringOperations : public IStringOperations<WCHAR, std::wstring>
 {
 public:
     virtual bool IsNotNullOrEmpty(const WCHAR* pStr);
@@ -12,5 +12,10 @@ public:
     virtual WCHAR* StrRChr(WCHAR* pStr, const WCHAR ch);
     virtual UINT StrNChr(const WCHAR* pStr, const WCHAR ch);
     virtual INT StrCaseInsensitiveCmp(const WCHAR* pLhsStr, const WCHAR* pRhsStr);
+    virtual std::wstring ConvertDateToString(SYSTEMTIME& DateTime);
+    virtual std::wstring ConvertTimeToString(SYSTEMTIME& DateTime);
+    virtual std::wstring ConvertIntToString(DWORD64 num);
+    virtual std::wstring GetEndLineChars();
+
 };
 
