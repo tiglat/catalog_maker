@@ -525,6 +525,23 @@ PackFilesW(
     {
         FileList<FileListItem<WCHAR>, WCHAR, std::wstring> list(AddList, SrcPath, &ops, WildCardAsRegex);
         
+        DWORD BytesWritten = 0;
+        wstring s = list.GetHeaderLine();
+        auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
+        s = list.GetDividingLine();
+        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
         for (list.First(); !list.IsEnd(); list.Next())
         {
             wstring s = list.GetCurrentElementLine();
@@ -534,10 +551,19 @@ PackFilesW(
 
             if (rv == NULL)
             {
-                result = E_EWRITE;
-                break;
+                CloseHandle(hCatalogFile);
+                return E_EWRITE;
             }
         }
+
+        s = list.GetFooterLine();
+        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
     }
     catch (...)
     {
@@ -641,20 +667,43 @@ WCX_API int STDCALL
     {
         FileList<FileListItem<char>, char, std::string> list(AddList, SrcPath, &ops, WildCardAsRegex);
 
+        DWORD BytesWritten = 0;
+        string s = list.GetHeaderLine();
+        auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
+        s = list.GetDividingLine();
+        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
         for (list.First(); !list.IsEnd(); list.Next())
         {
             string s = list.GetCurrentElementLine();
-            DWORD BytesWritten = 0;
-
-            auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
-
+            rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
             if (rv == NULL)
             {
-                result = E_EWRITE;
-                break;
+                CloseHandle(hCatalogFile);
+                return E_EWRITE;
             }
 
         }
+
+        s = list.GetFooterLine();
+        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
     }
     catch (...)
     {

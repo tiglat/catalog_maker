@@ -120,6 +120,73 @@ public:
         return result;
     }
 
+    TString GetHeaderLine();
+
+    TString GetDividingLine()
+    {
+        TString result;
+
+        InsertChar(result, '-', _FileNameColWidth);
+        InsertIndent(result, 4);
+
+        if ( g_ViewParam.bFileName )
+        {
+            if ( g_ViewParam.bExt && g_FormatParam.bExtSeparately )
+            {
+                InsertChar(result, '-', _FileExtColWidth);
+                InsertIndent(result, 3);
+            }
+
+            if (g_ViewParam.bSize)
+            {
+                InsertChar(result, '-', 15);
+                InsertIndent(result, 3);
+            }
+
+            if (g_ViewParam.bDate)
+            {
+                InsertChar(result, '-', 10);
+                InsertIndent(result, 2);
+            }
+
+            if ( g_ViewParam.bTime )
+            {
+                InsertChar(result, '-', 8);
+                InsertIndent(result, 2);
+            }
+
+            if ( g_ViewParam.bAttr )
+            {
+                InsertChar(result, '-', 4);
+            }
+            
+        }
+        else if ( g_ViewParam.bDirName && g_ViewParam.bApplyToDirs )
+        {
+            if (g_ViewParam.bDate)
+            {
+                InsertChar(result, '-', 10);
+                InsertIndent(result, 2);
+            }
+
+            if (g_ViewParam.bTime)
+            {
+                InsertChar(result, '-', 8);
+                InsertIndent(result, 2);
+            }
+
+            if (g_ViewParam.bAttr)
+            {
+                InsertChar(result, '-', 4);
+            }
+        }
+
+        result += _pOps->GetEndLineChars();
+        return result;
+    }
+
+    TString GetFooterLine();
+
 private:
 
     /*****************************************************************************
@@ -324,7 +391,9 @@ private:
 
             if (g_FormatParam.bIndentAll)
             {
-                _DirIndent = _pOps->StrNChr(pFileInfo->pPath, '\\') + 1;
+                // I removed last slash when created the item so I need to add 1 now.
+                // DirIndent cannot be zero.
+                _DirIndent = _pOps->StrNChr(pFileInfo->pPath, '\\') + 1; 
                 _DirIndent = (_DirIndent)* g_FormatParam.Width;
             }
 
@@ -447,6 +516,14 @@ private:
         for (auto i = 0; i < num; i++)
         {
             str += ' ';
+        }
+    }
+
+    void InsertChar(TString& str, TChar ch, USHORT num)
+    {
+        for (auto i = 0; i < num; i++)
+        {
+            str += ch;
         }
     }
 
@@ -766,4 +843,173 @@ bool FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFileAttr(WCHAR* pFil
     );
 }
 
+template <>
+std::string FileList<FileListItem<char>, char, std::string>::GetHeaderLine()
+{
+    std::string result;
 
+    result += "File name";
+
+    InsertIndent(result, _FileNameColWidth + 4 - result.length());
+
+    if (g_ViewParam.bFileName)
+    {
+        if (g_ViewParam.bExt && g_FormatParam.bExtSeparately)
+        {
+            result += "Ext";
+            InsertIndent(result, _FileExtColWidth);
+        }
+
+        if (g_ViewParam.bSize)
+        {
+            result += "Size   ";
+            InsertIndent(result, 11);
+        }
+
+        if (g_ViewParam.bDate)
+        {
+            result += "Date        ";
+        }
+
+        if (g_ViewParam.bTime)
+        {
+            result += "Time      ";
+        }
+
+        if (g_ViewParam.bAttr)
+        {
+            result += "Attr";
+        }
+    }
+    else if (g_ViewParam.bDirName && g_ViewParam.bApplyToDirs)
+    {
+        if (g_ViewParam.bDate)
+        {
+            result += "Date        ";
+        }
+
+        if (g_ViewParam.bTime)
+        {
+            result += "Time      ";
+        }
+
+        if (g_ViewParam.bAttr)
+        {
+            result += "Attr";
+        }
+    }
+
+    result += _pOps->GetEndLineChars();
+    return result;
+}
+
+
+template <>
+std::wstring FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetHeaderLine()
+{
+    std::wstring result;
+
+    result += L"File name";
+
+    InsertIndent(result, _FileNameColWidth + 4 - result.length());
+
+    if (g_ViewParam.bFileName)
+    {
+        if (g_ViewParam.bExt && g_FormatParam.bExtSeparately)
+        {
+            result += L"Ext";
+            InsertIndent(result, _FileExtColWidth);
+        }
+
+        if (g_ViewParam.bSize)
+        {
+            result += L"Size   ";
+            InsertIndent(result, 11);
+        }
+
+        if (g_ViewParam.bDate)
+        {
+            result += L"Date        ";
+        }
+
+        if (g_ViewParam.bTime)
+        {
+            result += L"Time      ";
+        }
+
+        if (g_ViewParam.bAttr)
+        {
+            result += L"Attr";
+        }
+    }
+    else if (g_ViewParam.bDirName && g_ViewParam.bApplyToDirs)
+    {
+        if (g_ViewParam.bDate)
+        {
+            result += L"Date        ";
+        }
+
+        if (g_ViewParam.bTime)
+        {
+            result += L"Time      ";
+        }
+
+        if (g_ViewParam.bAttr)
+        {
+            result += L"Attr";
+        }
+    }
+
+    result += _pOps->GetEndLineChars();
+    return result;
+}
+
+template <>
+std::wstring FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFooterLine()
+{
+    std::wstring result;
+
+    // print total size and number of the files
+    if (g_ViewParam.bFileName)
+    {
+        result += L"\r\ntotal files ";
+        result += std::to_wstring(_TotalFiles);
+
+        if (g_ViewParam.bSize)
+        {
+            result += L"    total size ";
+            result += _pOps->ConvertIntToString(_TotalSize);
+        }
+
+        // don't include symbol '\r' in order to read 
+        // the list file easier
+        result += '\n';
+    }
+
+    return result;
+}
+
+template <>
+std::string FileList<FileListItem<char>, char, std::string>::GetFooterLine()
+{
+    std::string result;
+
+    // print total size and number of the files
+    if (g_ViewParam.bFileName)
+    {
+        result += "\r\ntotal files ";
+        result += std::to_string(_TotalFiles);
+
+        if (g_ViewParam.bSize)
+        {
+            result += "    total size ";
+            result += _pOps->ConvertIntToString(_TotalSize);
+        }
+
+        // don't include symbol '\r' in order to read 
+        // the list file easier
+        result += '\n';
+    }
+
+    return result;
+}
