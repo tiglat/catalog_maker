@@ -324,7 +324,7 @@ private:
 
             if (g_FormatParam.bIndentAll)
             {
-                _DirIndent = _pOps->StrNChr(pFileInfo->pPath, '\\');
+                _DirIndent = _pOps->StrNChr(pFileInfo->pPath, '\\') + 1;
                 _DirIndent = (_DirIndent)* g_FormatParam.Width;
             }
 
@@ -385,15 +385,14 @@ private:
             if (g_ViewParam.bFullName)
             {
                 str += _pSourceFolder;
+                if (pFileInfo->pPath != nullptr)
+                {
+                    str += pFileInfo->pPath;
+                    str += '\\';
+                }
             }
 
             // print file name
-            if (pFileInfo->pPath != nullptr)
-            {
-                str += pFileInfo->pPath;
-                str += '\\';
-            }
-
             if (pFileInfo->pName != nullptr)
             {
                 str += pFileInfo->pName;
@@ -424,8 +423,9 @@ private:
             {
                 auto intStr = _pOps->ConvertIntToString(pFileInfo->iSize);
                 auto len = intStr.length();
+                InsertIndent(str, 15 - len);
                 str += intStr;
-                InsertIndent(str, 18-len);
+                InsertIndent(str, 3);
             }
 
             // print file date and time
