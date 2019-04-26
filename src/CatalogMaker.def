@@ -5,7 +5,7 @@ EXPORTS
     GetPackerCaps
     OpenArchive
     PackFiles
-    ;PackFilesW
+    PackFilesW
     PackSetDefaultParams
     ProcessFile
     ReadHeaderEx

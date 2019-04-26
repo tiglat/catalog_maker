@@ -526,8 +526,19 @@ PackFilesW(
         FileList<FileListItem<WCHAR>, WCHAR, std::wstring> list(AddList, SrcPath, &ops, WildCardAsRegex);
         
         DWORD BytesWritten = 0;
+
+        // insert Byte Order Mark (BOM) for UTF-16 LE.
+        unsigned char bom[] = {0xFF, 0xFE};
+
+        auto rv = WriteFile(hCatalogFile, bom, sizeof(bom), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
         wstring s = list.GetHeaderLine();
-        auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
@@ -535,7 +546,7 @@ PackFilesW(
         }
 
         s = list.GetDividingLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
@@ -544,10 +555,9 @@ PackFilesW(
 
         for (list.First(); !list.IsEnd(); list.Next())
         {
-            wstring s = list.GetCurrentElementLine();
+            s = list.GetCurrentElementLine();
 
-            DWORD BytesWritten = 0;
-            auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+            rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
 
             if (rv == NULL)
             {
@@ -557,7 +567,7 @@ PackFilesW(
         }
 
         s = list.GetFooterLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
