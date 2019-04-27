@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <set>
+#include <list>
 #include <regex>
 
 #include "windows.h"
@@ -44,7 +44,7 @@ public:
         // take pointer to the first file in the AddList
         TChar* pFileName = pAddList;
 
-        _List = TListPtr(new TList(LessFileComparer(_pOps)));
+        _List = TListPtr(new TList());
 
         while (_pOps->IsNotNullOrEmpty(pFileName))
         {
@@ -55,7 +55,7 @@ public:
             {
                 if (g_ViewParam.bDirName)
                 {
-                    _List->insert(CreateDirInfo(pFileName));
+                    _List->push_back(CreateDirInfo(pFileName));
                 }
             }
             else
@@ -65,9 +65,9 @@ public:
                     auto pShortFileName = GetShortFileName(pFileName);
 
                     // check if the file name is matched to mask list
-                    if (regex_match(pShortFileName, WildCardAsRegex))
+                    if (std::regex_match(pShortFileName, WildCardAsRegex))
                     {
-                        _List->insert(CreateFileInfo(pFileName));
+                        _List->push_back(CreateFileInfo(pFileName));
                     }
                 }
             }
@@ -81,6 +81,8 @@ public:
         {
             _FileNameColWidth += (USHORT) _pOps->StrLen(pSourceFolder);
         }
+
+        _List->sort(LessFileComparer(_pOps));
 
         First();
     }
@@ -352,13 +354,12 @@ private:
     IStringOperations<TChar, TString>* _pOps;
     TString _pSourceFolder;
 
-    typedef std::set<std::shared_ptr<TFile>, LessFileComparer> TList;
-    //typedef std::set<std::shared_ptr<TFile>, LessFileComparer>::interator TListIt;
-    typedef std::shared_ptr<TList>    TListPtr;
     typedef std::shared_ptr<TFile> TFilePtr;
+    typedef std::list<TFilePtr> TList;
+    typedef std::shared_ptr<TList> TListPtr;
 
     TListPtr _List;
-    typename std::set<std::shared_ptr<TFile>, LessFileComparer>::iterator  _Cursor;
+    typename std::list<TFilePtr>::iterator  _Cursor;
 
 
 
