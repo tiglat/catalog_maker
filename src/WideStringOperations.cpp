@@ -50,7 +50,7 @@ std::wstring WideStringOperations::ConvertDateToString(SYSTEMTIME& DateTime)
     WCHAR wbuf[BufLen];
     USHORT WBufLen = sizeof(wbuf);
     memset(wbuf, 0, WBufLen);
-    MultiByteToWideChar(CP_ACP, 0, buf, BufLen, wbuf, WBufLen);
+    MultiByteToWideChar(CP_ACP, 0, buf, -1, wbuf, WBufLen);
 
     std::wstring rv(wbuf);
 
@@ -68,7 +68,7 @@ std::wstring WideStringOperations::ConvertTimeToString(SYSTEMTIME& DateTime)
     WCHAR wbuf[BufLen];
     USHORT WBufLen = sizeof(wbuf);
     memset(wbuf, 0, WBufLen);
-    MultiByteToWideChar(CP_ACP, 0, buf, BufLen, wbuf, WBufLen);
+    MultiByteToWideChar(CP_ACP, 0, buf, -1, wbuf, WBufLen);
 
     std::wstring rv(wbuf);
 

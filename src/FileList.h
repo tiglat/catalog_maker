@@ -227,24 +227,24 @@ private:
 
                 if (result < 0)
                 {
-                    return GetResult(true);
+                    return true;
                 }
 
                 if (result > 0)
                 {
-                    return GetResult(false);
+                    return false;
                 }
             }
             else
             {
                 if (lhs->pPath == nullptr && rhs->pPath != nullptr)
                 {
-                    return GetResult(true);
+                    return true;
                 }
 
                 if (lhs->pPath != nullptr && rhs->pPath == nullptr)
                 {
-                    return GetResult(false);
+                    return false;
                 }
             }
 
@@ -253,11 +253,11 @@ private:
             // if one of the items is directory than it is always less
             if (lhs->iType == FileType::FTYPE_DIRECTORY && rhs->iType == FileType::FTYPE_FILE)
             {
-                return GetResult(true);
+                return true;
             }
             else if (rhs->iType == FileType::FTYPE_DIRECTORY && lhs->iType == FileType::FTYPE_FILE)
             {
-                return GetResult(false);
+                return false;
             }
 
             // if user selected sort by extension
@@ -337,7 +337,7 @@ private:
                 }
             }
 
-            return GetResult(false);
+            return false;
         }
 
     private:
@@ -512,7 +512,7 @@ private:
         }
     }
 
-    void InsertIndent(TString& str, USHORT num)
+    void InsertIndent(TString& str, size_t num)
     {
         for (auto i = 0; i < num; i++)
         {
@@ -797,7 +797,7 @@ private:
         {
             *pFileInfo->pExt = 0;
             ++pFileInfo->pExt;
-            ExtLen = _pOps->StrLen(pFileInfo->pExt);
+            ExtLen = (int)_pOps->StrLen(pFileInfo->pExt);
             if (ExtLen > _FileExtColWidth)
             {
                 _FileExtColWidth = (USHORT) ExtLen;

@@ -170,7 +170,7 @@ PackFilesW(
 
     WCHAR WildCardPatternWChar[MASK_LIST_LENGTH];
     memset(WildCardPatternWChar, 0, MASK_LIST_LENGTH);
-    MultiByteToWideChar(CP_ACP, 0, g_ViewParam.sFileTypes, strlen(g_ViewParam.sFileTypes), WildCardPatternWChar, MASK_LIST_LENGTH);
+    MultiByteToWideChar(CP_ACP, 0, g_ViewParam.sFileTypes, -1, WildCardPatternWChar, MASK_LIST_LENGTH);
 
     std::wstring WildCardPattern(WildCardPatternWChar);
     ConvertWildCardToRegexW(WildCardPattern);
@@ -198,7 +198,7 @@ PackFilesW(
         }
 
         wstring s = list.GetHeaderLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.size() * sizeof(wchar_t), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
@@ -206,7 +206,7 @@ PackFilesW(
         }
 
         s = list.GetDividingLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.size() * sizeof(wchar_t), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
@@ -217,7 +217,7 @@ PackFilesW(
         {
             s = list.GetCurrentElementLine();
 
-            rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
+            rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.size() * sizeof(wchar_t), &BytesWritten, NULL);
 
             if (rv == NULL)
             {
@@ -227,7 +227,7 @@ PackFilesW(
         }
 
         s = list.GetFooterLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), s.size() * sizeof(wchar_t), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.size() * sizeof(wchar_t), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
@@ -339,7 +339,7 @@ WCX_API int STDCALL
 
         DWORD BytesWritten = 0;
         string s = list.GetHeaderLine();
-        auto rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        auto rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
@@ -347,7 +347,7 @@ WCX_API int STDCALL
         }
 
         s = list.GetDividingLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
@@ -357,7 +357,7 @@ WCX_API int STDCALL
         for (list.First(); !list.IsEnd(); list.Next())
         {
             string s = list.GetCurrentElementLine();
-            rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+            rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
             if (rv == NULL)
             {
                 CloseHandle(hCatalogFile);
@@ -367,7 +367,7 @@ WCX_API int STDCALL
         }
 
         s = list.GetFooterLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), s.length(), &BytesWritten, NULL);
+        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
         if (rv == NULL)
         {
             CloseHandle(hCatalogFile);
