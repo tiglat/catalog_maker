@@ -137,11 +137,12 @@ extern TDlgDesc		g_DlgDesc;		//
 extern TRxDesc		g_RxDesc;
 extern TListInfo	g_ListInfo[COLUMN_NUMBER];
 
-extern HINSTANCE		g_hinst;		// handle to dll instance
-extern tProcessDataProc g_ProcessDataProc;
-extern HWND				g_MainWin;
-extern char				g_pWorkingDir[MAX_PATH];
-extern char				g_pCfgFileName[MAX_PATH];
+extern HINSTANCE		 g_hinst;		// handle to dll instance
+extern tProcessDataProc  g_ProcessDataProc;
+extern tProcessDataProcW g_ProcessDataProcW;
+extern HWND				 g_MainWin;
+extern char				 g_pWorkingDir[MAX_PATH];
+extern char				 g_pCfgFileName[MAX_PATH];
 
 
 #endif

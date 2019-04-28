@@ -12,4 +12,5 @@ EXPORTS
     ReadHeader
     SetChangeVolProc
     SetProcessDataProc
+    SetProcessDataProcW
     ConfigurePacker

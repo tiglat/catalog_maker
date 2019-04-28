@@ -103,7 +103,17 @@ public:
         return _Cursor == _List->end();
     }
 
-    TString GetCurrentElementLine()
+    TChar* GetCurrentFileName()
+    {
+        return (*_Cursor)->pName;
+    }
+
+    DWORD64 GetCurrentFileSize()
+    {
+        return (*_Cursor)->iSize;
+    }
+
+    TString GetCurrentFileLine()
     {
         TString result;
         auto pFileInfo = (*_Cursor);

@@ -215,7 +215,10 @@ PackFilesW(
 
         for (list.First(); !list.IsEnd(); list.Next())
         {
-            s = list.GetCurrentElementLine();
+            // tell Windows Comander what file we are proccessing
+            g_ProcessDataProcW(list.GetCurrentFileName(), (int)list.GetCurrentFileSize());
+
+            s = list.GetCurrentFileLine();
 
             rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.size() * sizeof(wchar_t), &BytesWritten, NULL);
 
@@ -356,7 +359,10 @@ WCX_API int STDCALL
 
         for (list.First(); !list.IsEnd(); list.Next())
         {
-            string s = list.GetCurrentElementLine();
+            // tell Windows Comander what file we are proccessing
+            g_ProcessDataProc(list.GetCurrentFileName(), (int)list.GetCurrentFileSize());
+
+            string s = list.GetCurrentFileLine();
             rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
             if (rv == NULL)
             {
@@ -933,6 +939,28 @@ WCX_API void STDCALL
         )
 {
     g_ProcessDataProc = pProcessDataProc;
+    return;
+}
+
+/*****************************************************************************
+    Routine:     SetProcessDataProcW
+------------------------------------------------------------------------------
+    Description:
+
+    Arguments:
+
+    Return Value:
+
+
+*****************************************************************************/
+
+WCX_API void STDCALL
+SetProcessDataProcW(
+    HANDLE hArcData,
+    tProcessDataProcW pProcessDataProc
+)
+{
+    g_ProcessDataProcW = pProcessDataProc;
     return;
 }
 
