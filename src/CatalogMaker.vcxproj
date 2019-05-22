@@ -250,6 +250,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnsiStringOperations.h" />
+    <ClInclude Include="CatalogReader.h" />
     <ClInclude Include="FileList.h" />
     <ClInclude Include="GlobalVars.h" />
     <ClInclude Include="IStringOperations.h" />

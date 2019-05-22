@@ -76,6 +76,13 @@ enum FileType
     FTYPE_FILE
 };
 
+enum FileEncoding
+{
+    WRONG,
+    ANSI,
+    UNICODE
+};
+
 #define TYPE_DIRECTORY	0
 #define TYPE_FILE		1
 
@@ -89,8 +96,9 @@ typedef struct _TFileList{
     DWORD		Attr;
 } TFileList;
 
-typedef struct _TFileInfo{
-    char		Name[MAX_PATH];
+template <typename TChar> 
+struct TFileInfo{
+    TChar		Name[MAX_PATH];
     DWORD64		iSize;
     DWORD		Attr;
     DWORD		Year;
@@ -99,7 +107,7 @@ typedef struct _TFileInfo{
     DWORD		Hour;
     DWORD		Minute;
     DWORD		Second;
-} TFileInfo;
+};
 
 typedef struct _TRxDesc{
     char		pBuf[STRING_LENGTH + 1];
@@ -109,14 +117,15 @@ typedef struct _TRxDesc{
     USHORT		iWritePos;
     BOOL		bNeedData;
     UCHAR		iThisIsHeader;
-    TFileInfo	CurrentFile;
+    TFileInfo<char>	CurrentFile;
     DWORD		ReturnedLength;
 } TRxDesc;
 
-typedef void( TColumnHandler )( 
+
+typedef void( TColumnHandler )(
         char *pStr,
         USHORT StrLen,
-        TFileInfo *pFileInfo
+        TFileInfo<char> *pFileInfo
         );
 
 

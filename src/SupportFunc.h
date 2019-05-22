@@ -14,11 +14,11 @@
 #include "windows.h"
 #include "GlobalVars.h"
 
-void FileInfoStringParser( char *Str, TFileInfo *FileInfo );
+void FileInfoStringParser( char *Str, TFileInfo<char> *FileInfo );
 BOOL HeaderInfoStringParser( char *pStr );
 void DelSpacesAroundStr ( char *pResultStr, char *pStr, USHORT Len );
 BOOL ReadConfigData();
-void GetShortDirName(TFileInfo *pFileInfo);
+void GetShortDirName(TFileInfo<char> *pFileInfo);
 BOOL RemoveFileName(char *pFullPath);
 void ConvertWildCardToRegexA(std::string& pattern);
 void ConvertWildCardToRegexW(std::wstring& pattern);

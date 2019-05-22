@@ -214,7 +214,7 @@ Return Value:
 
 *****************************************************************************/
 
-void GetShortDirName( TFileInfo *pFileInfo )
+void GetShortDirName( TFileInfo<char> *pFileInfo )
 {
     char* pstr;
 
@@ -293,7 +293,7 @@ BOOL RemoveFileName(char *pFullPath)
 void GetFileName( 
         char *pStr,
         USHORT StrLen,
-        TFileInfo *pFileInfo )
+        TFileInfo<char> *pFileInfo )
 {
     if ( pStr == NULL ) 
         return;
@@ -334,7 +334,7 @@ void GetFileName(
 void GetExt( 
         char *pStr,
         USHORT StrLen,
-        TFileInfo *pFileInfo )
+        TFileInfo<char> *pFileInfo )
 {
     char pExt[256];
 
@@ -372,7 +372,7 @@ void GetExt(
 void GetSize( 
         char *pStr,
         USHORT StrLen,
-        TFileInfo *pFileInfo )
+        TFileInfo<char> *pFileInfo )
 {
     char seps[] = ",";
     char *token, idx=0;
@@ -416,7 +416,7 @@ void GetSize(
 void GetDate( 
         char *pStr,
         USHORT StrLen,
-        TFileInfo *pFileInfo )
+        TFileInfo<char> *pFileInfo )
 {
     char seps[] = ".";
     char *token;
@@ -471,7 +471,7 @@ void GetDate(
 void GetTime( 
         char *pStr,
         USHORT StrLen,
-        TFileInfo *pFileInfo )
+        TFileInfo<char> *pFileInfo )
 {
     char seps[] = ":.";
     char *token;
@@ -524,7 +524,7 @@ void GetTime(
 void GetAttr( 
         char *pStr,
         USHORT StrLen,
-        TFileInfo *pFileInfo )
+        TFileInfo<char> *pFileInfo )
 {
     DWORD Result = 0;
     char Source[20];
@@ -581,7 +581,7 @@ void GetAttr(
 
 *****************************************************************************/
 
-void FileInfoStringParser( char *pStr, TFileInfo *pFileInfo )
+void FileInfoStringParser( char *pStr, TFileInfo<char> *pFileInfo )
 {
     // we don't know what colomns exist so we have to check all descriptors
     for ( int i = 0; i < COLUMN_NUMBER; i++ )

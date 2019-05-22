@@ -19,13 +19,13 @@ struct FileListItem
 
     // Pointer to path part of file name passed into the plugin by TotalCommander.
     // It could be full, partly full or short.
-    TChar* pPath;
+    TChar *pPath;
 
     // Short file name
-    TChar* pName;
+    TChar *pName;
 
     // File name extension
-    TChar* pExt;
+    TChar *pExt;
 };
 
 
@@ -33,8 +33,8 @@ template <typename TFile, typename TChar, typename TString>
 class FileList
 {
 public:
-    FileList(TChar* pAddList, TChar* pSourceFolder, IStringOperations<TChar, TString>* pOps, std::basic_regex<TChar>& WildCardAsRegex) 
-        : _pOps(pOps), _pSourceFolder(pSourceFolder)
+    FileList(TChar *pAddList, TChar *pSourceFolder, IStringOperations<TChar, TString> *pOps, std::basic_regex<TChar> &WildCardAsRegex) 
+        : _pStringOperations(pOps), _pSourceFolder(pSourceFolder)
     {
         if (pAddList == nullptr || pSourceFolder == nullptr || pOps == nullptr)
         {
@@ -42,14 +42,14 @@ public:
         }
 
         // take pointer to the first file in the AddList
-        TChar* pFileName = pAddList;
+        TChar *pFileName = pAddList;
 
         _List = TListPtr(new TList());
 
-        while (_pOps->IsNotNullOrEmpty(pFileName))
+        while (_pStringOperations->IsNotNullOrEmpty(pFileName))
         {
             // calc length in advance because the file name will be splited in CreateFileInfo
-            auto Len = _pOps->StrLen(pFileName) + 1;
+            auto Len = _pStringOperations->StrLen(pFileName) + 1;
 
             if (IsDirectory(pFileName))
             {
@@ -79,10 +79,10 @@ public:
         // increase MaxLen if we will include full file name
         if (g_ViewParam.bFullName)
         {
-            _FileNameColWidth += (USHORT) _pOps->StrLen(pSourceFolder);
+            _FileNameColWidth += (USHORT) _pStringOperations->StrLen(pSourceFolder);
         }
 
-        _List->sort(LessFileComparer(_pOps));
+        _List->sort(LessFileComparer(_pStringOperations));
 
         First();
     }
@@ -127,7 +127,7 @@ public:
             GetFileLine(result, pFileInfo);
         }
 
-        result += _pOps->GetEndLineChars();
+        result += _pStringOperations->GetEndLineChars();
 
         return result;
     }
@@ -193,7 +193,7 @@ public:
             }
         }
 
-        result += _pOps->GetEndLineChars();
+        result += _pStringOperations->GetEndLineChars();
         return result;
     }
 
@@ -221,9 +221,9 @@ private:
     class LessFileComparer
     {
     private:
-        IStringOperations<TChar, TString>* _pOps;
+        IStringOperations<TChar, TString>* _pStringOperations;
     public:
-        LessFileComparer(IStringOperations<TChar, TString>* ops) : _pOps(ops) {}
+        LessFileComparer(IStringOperations<TChar, TString>* ops) : _pStringOperations(ops) {}
 
         bool operator() (const std::shared_ptr<TFile> &lhs, const std::shared_ptr<TFile> &rhs)
         {
@@ -233,7 +233,7 @@ private:
             // depending on settings
             if (lhs->pPath && rhs->pPath)
             {
-                auto result = _pOps->StrCaseInsensitiveCmp(lhs->pPath, rhs->pPath);
+                auto result = _pStringOperations->StrCaseInsensitiveCmp(lhs->pPath, rhs->pPath);
 
                 if (result < 0)
                 {
@@ -283,7 +283,7 @@ private:
                     return GetResult(false);
                 }
 
-                auto result = _pOps->StrCaseInsensitiveCmp(lhs->pExt, rhs->pExt);
+                auto result = _pStringOperations->StrCaseInsensitiveCmp(lhs->pExt, rhs->pExt);
 
                 if (result < 0)
                 {
@@ -334,7 +334,7 @@ private:
                     return GetResult(false);
                 }
 
-                auto result = _pOps->StrCaseInsensitiveCmp(lhs->pName, rhs->pName);
+                auto result = _pStringOperations->StrCaseInsensitiveCmp(lhs->pName, rhs->pName);
 
                 if (result < 0)
                 {
@@ -361,7 +361,7 @@ private:
     };
 
     // Proxy class for string operations
-    IStringOperations<TChar, TString>* _pOps;
+    IStringOperations<TChar, TString> *_pStringOperations;
     TString _pSourceFolder;
 
     typedef std::shared_ptr<TFile> TFilePtr;
@@ -388,12 +388,12 @@ private:
 
 
 
-    bool IsDirectory(TChar* pFileName)
+    bool IsDirectory(TChar *pFileName)
     {
-        return pFileName[_pOps->StrLen(pFileName) - 1] == '\\';
+        return pFileName[_pStringOperations->StrLen(pFileName) - 1] == '\\';
     }
 
-    void GetDirLine(TString& str, TFilePtr& pFileInfo)
+    void GetDirLine(TString &str, TFilePtr &pFileInfo)
     {
         if (g_ViewParam.bDirName)
         {
@@ -404,7 +404,7 @@ private:
             {
                 // I removed last slash when created the item so I need to add 1 now.
                 // DirIndent cannot be zero.
-                _DirIndent = _pOps->StrNChr(pFileInfo->pPath, '\\') + 1; 
+                _DirIndent = _pStringOperations->StrNChr(pFileInfo->pPath, '\\') + 1; 
                 _DirIndent = (_DirIndent)* g_FormatParam.Width;
             }
 
@@ -451,7 +451,7 @@ private:
 
     }
 
-    void GetFileLine(TString& str, TFilePtr& pFileInfo)
+    void GetFileLine(TString &str, TFilePtr &pFileInfo)
     {
 
         if (g_ViewParam.bFileName)
@@ -501,7 +501,7 @@ private:
             // print file size
             if (g_ViewParam.bSize)
             {
-                auto intStr = _pOps->ConvertIntToString(pFileInfo->iSize);
+                auto intStr = _pStringOperations->ConvertIntToString(pFileInfo->iSize);
                 auto len = intStr.length();
                 InsertIndent(str, 15 - len);
                 str += intStr;
@@ -522,7 +522,7 @@ private:
         }
     }
 
-    void InsertIndent(TString& str, size_t num)
+    void InsertIndent(TString &str, size_t num)
     {
         for (auto i = 0; i < num; i++)
         {
@@ -594,12 +594,12 @@ private:
 
         if (g_ViewParam.bDate)
         {
-            str += _pOps->ConvertDateToString(FileTime);
+            str += _pStringOperations->ConvertDateToString(FileTime);
         }
 
         if (g_ViewParam.bTime)
         {
-            str += _pOps->ConvertTimeToString(FileTime);
+            str += _pStringOperations->ConvertTimeToString(FileTime);
         }
 
     }
@@ -618,7 +618,7 @@ private:
 
 
     *****************************************************************************/
-    USHORT CalculateIndent(TChar* pStr)
+    USHORT CalculateIndent(TChar *pStr)
     {
         if (pStr == nullptr)
         {
@@ -629,13 +629,13 @@ private:
 
         if (g_FormatParam.bIndentAll)
         {
-            Indent = _pOps->StrNChr(pStr, '\\');
+            Indent = _pStringOperations->StrNChr(pStr, '\\');
             Indent = Indent * g_FormatParam.Width;
         }
         else
             if (g_FormatParam.bIndentFiles && g_ViewParam.bFileName)
             {
-                Indent = _pOps->StrNChr(pStr, '\\');
+                Indent = _pStringOperations->StrNChr(pStr, '\\');
                 Indent = Indent ? g_FormatParam.Width : 0;
             }
 
@@ -657,9 +657,9 @@ private:
                     full file name
 
     *****************************************************************************/
-    decltype(auto) GetShortFileName(TChar* pFullName)
+    decltype(auto) GetShortFileName(TChar *pFullName)
     {
-        TChar* pFileName = _pOps->StrRChr(pFullName, '\\');
+        TChar *pFileName = _pStringOperations->StrRChr(pFullName, '\\');
 
         if (pFileName)
         {
@@ -693,7 +693,7 @@ private:
         return pShortName;
     }
 
-    bool GetFileAttr(TChar* pFileName, LPVOID FileDescriptor);
+    bool GetFileAttr(TChar *pFileName, LPVOID FileDescriptor);
 
 
     /*****************************************************************************
@@ -711,7 +711,7 @@ private:
 
 
     *****************************************************************************/
-    decltype(auto) CreateDirInfo(TChar* pFileName)
+    decltype(auto) CreateDirInfo(TChar *pFileName)
     {
         WIN32_FILE_ATTRIBUTE_DATA FileDescription = {0};
         auto pFileInfo = std::unique_ptr<TFile>(new TFile());
@@ -731,7 +731,7 @@ private:
         pFileInfo->pExt = nullptr;
         pFileInfo->iType = FileType::FTYPE_DIRECTORY;
 
-        auto PathLen = _pOps->StrLen(pFileInfo->pPath);
+        auto PathLen = _pStringOperations->StrLen(pFileInfo->pPath);
         auto length = PathLen + CalculateIndent(pFileInfo->pPath);
         if (length > _FileNameColWidth)
         {
@@ -760,7 +760,7 @@ private:
 
 
     *****************************************************************************/
-    decltype(auto) CreateFileInfo(TChar* pFileName)
+    decltype(auto) CreateFileInfo(TChar *pFileName)
     {
         WIN32_FILE_ATTRIBUTE_DATA FileDescription = {0};
 
@@ -790,11 +790,11 @@ private:
         _TotalSize += pFileInfo->iSize;
         _TotalFiles++;
 
-        auto Length = (USHORT)_pOps->StrLen(pFileName) + CalculateIndent(pFileName);
+        auto Length = (USHORT)_pStringOperations->StrLen(pFileName) + CalculateIndent(pFileName);
 
         pFileInfo->pName = SplitFileName(pFileName, &pFileInfo->pPath);
 
-        pFileInfo->pExt = _pOps->StrRChr(pFileInfo->pName, '.');
+        pFileInfo->pExt = _pStringOperations->StrRChr(pFileInfo->pName, '.');
 
         // if file name starts with '.' then think the file doesn't have extension
         if (pFileInfo->pExt == pFileInfo->pName)
@@ -807,7 +807,7 @@ private:
         {
             *pFileInfo->pExt = 0;
             ++pFileInfo->pExt;
-            ExtLen = (int)_pOps->StrLen(pFileInfo->pExt);
+            ExtLen = (int)_pStringOperations->StrLen(pFileInfo->pExt);
             if (ExtLen > _FileExtColWidth)
             {
                 _FileExtColWidth = (USHORT) ExtLen;
@@ -834,7 +834,7 @@ private:
 
 
 template <>
-bool FileList<FileListItem<char>, char, std::string>::GetFileAttr(char* pFileName, LPVOID FileDescriptor)
+bool FileList<FileListItem<char>, char, std::string>::GetFileAttr(char *pFileName, LPVOID FileDescriptor)
 {
     return GetFileAttributesExA(
         pFileName,
@@ -845,7 +845,7 @@ bool FileList<FileListItem<char>, char, std::string>::GetFileAttr(char* pFileNam
 
 
 template <>
-bool FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFileAttr(WCHAR* pFileName, LPVOID FileDescriptor)
+bool FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFileAttr(WCHAR *pFileName, LPVOID FileDescriptor)
 {
     return GetFileAttributesExW(
         pFileName,
@@ -910,7 +910,7 @@ std::string FileList<FileListItem<char>, char, std::string>::GetHeaderLine()
         }
     }
 
-    result += _pOps->GetEndLineChars();
+    result += _pStringOperations->GetEndLineChars();
     return result;
 }
 
@@ -971,7 +971,7 @@ std::wstring FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetHeaderLine()
         }
     }
 
-    result += _pOps->GetEndLineChars();
+    result += _pStringOperations->GetEndLineChars();
     return result;
 }
 
@@ -989,7 +989,7 @@ std::wstring FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFooterLine()
         if (g_ViewParam.bSize)
         {
             result += L"    total size ";
-            result += _pOps->ConvertIntToString(_TotalSize);
+            result += _pStringOperations->ConvertIntToString(_TotalSize);
         }
 
         // don't include symbol '\r' in order to read 
@@ -1014,7 +1014,7 @@ std::string FileList<FileListItem<char>, char, std::string>::GetFooterLine()
         if (g_ViewParam.bSize)
         {
             result += "    total size ";
-            result += _pOps->ConvertIntToString(_TotalSize);
+            result += _pStringOperations->ConvertIntToString(_TotalSize);
         }
 
         // don't include symbol '\r' in order to read 
