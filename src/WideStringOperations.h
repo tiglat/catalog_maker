@@ -9,9 +9,11 @@ class WideStringOperations : public IStringOperations<WCHAR, std::wstring>
 public:
     virtual bool IsNotNullOrEmpty(const WCHAR* pStr);
     virtual size_t StrLen(const WCHAR* pStr);
+    virtual WCHAR* StrChr(WCHAR* pStr, const WCHAR ch);
     virtual WCHAR* StrRChr(WCHAR* pStr, const WCHAR ch);
     virtual UINT StrNChr(const WCHAR* pStr, const WCHAR ch);
     virtual INT StrCaseInsensitiveCmp(const WCHAR* pLhsStr, const WCHAR* pRhsStr);
+    virtual WCHAR* StrTok(WCHAR* strToken, const WCHAR* strDelimit);
     virtual std::wstring ConvertDateToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertTimeToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertIntToString(DWORD64 num);

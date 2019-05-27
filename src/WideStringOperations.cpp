@@ -14,6 +14,10 @@ size_t WideStringOperations::StrLen(const WCHAR* pStr)
     return wcslen(pStr);
 }
 
+WCHAR* WideStringOperations::StrChr(WCHAR* pStr, WCHAR chr)
+{
+    return wcschr(pStr, chr);
+}
 
 WCHAR* WideStringOperations::StrRChr(WCHAR* pStr, WCHAR chr)
 {
@@ -115,4 +119,10 @@ wstring WideStringOperations::ConvertIntToString(DWORD64 num)
 wstring WideStringOperations::GetEndLineChars()
 {
     return L"\r\n";
+}
+
+
+WCHAR* StrTok(WCHAR* strToken, const WCHAR* strDelimit)
+{
+    return wcstok(strToken, strDelimit);
 }

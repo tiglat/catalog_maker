@@ -827,23 +827,6 @@ WCX_API	int STDCALL
     HeaderData->PackSize = (int)FileInfo.iSize;
     HeaderData->UnpSize = (int)FileInfo.iSize;
 
-    // if file is directory copy its name 
-    if (FileInfo.Attr & 0x10)
-    {
-        strcpy(HeaderData->FileName, g_RxDesc.DirName);
-    }
-    // if file is file :)  build full name for that file
-    else
-    {
-        strcpy(HeaderData->FileName, g_RxDesc.DirName);
-        // get short file name
-        char* pstr = strrchr(FileInfo.Name, '\\');
-        if (pstr)
-            strcat(HeaderData->FileName, ++pstr);
-        else
-            strcat(HeaderData->FileName, FileInfo.Name);
-    }
-
     // make date and time for Win Com
     if (FileInfo.Year)
     {

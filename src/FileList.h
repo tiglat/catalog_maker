@@ -32,6 +32,34 @@ struct FileListItem
 template <typename TFile, typename TChar, typename TString> 
 class FileList
 {
+private:
+    // Proxy class for string operations
+    IStringOperations<TChar, TString> *_pStringOperations;
+    TString _pSourceFolder;
+
+    typedef std::shared_ptr<TFile> TFilePtr;
+    typedef std::list<TFilePtr> TList;
+    typedef std::shared_ptr<TList> TListPtr;
+
+    TListPtr _List;
+    typename std::list<TFilePtr>::iterator  _Cursor;
+
+
+
+    // Maximum length of file name column. Take into account indent length.
+    USHORT _FileNameColWidth = 0;
+
+    // Maximum length of file extension column. 
+    USHORT _FileExtColWidth = 0;
+
+    DWORD64	_TotalSize = 0;
+
+    DWORD _TotalFiles = 0;
+
+    USHORT _DirIndent = 0;
+    USHORT _FileIndent = 0;
+
+
 public:
     FileList(TChar *pAddList, TChar *pSourceFolder, IStringOperations<TChar, TString> *pOps, std::basic_regex<TChar> &WildCardAsRegex) 
         : _pStringOperations(pOps), _pSourceFolder(pSourceFolder)
@@ -359,33 +387,6 @@ private:
         }
 
     };
-
-    // Proxy class for string operations
-    IStringOperations<TChar, TString> *_pStringOperations;
-    TString _pSourceFolder;
-
-    typedef std::shared_ptr<TFile> TFilePtr;
-    typedef std::list<TFilePtr> TList;
-    typedef std::shared_ptr<TList> TListPtr;
-
-    TListPtr _List;
-    typename std::list<TFilePtr>::iterator  _Cursor;
-
-
-
-    // Maximum length of file name column. Take into account indent length.
-    USHORT _FileNameColWidth = 0;
-
-    // Maximum length of file extension column. 
-    USHORT _FileExtColWidth = 0;
-
-    DWORD64	_TotalSize = 0;
-
-    DWORD _TotalFiles = 0;
-
-    USHORT _DirIndent = 0;
-    USHORT _FileIndent = 0;
-
 
 
     bool IsDirectory(TChar *pFileName)

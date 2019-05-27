@@ -7,6 +7,7 @@ template <typename TChar, typename TString> class IStringOperations
 public:
     virtual bool IsNotNullOrEmpty(const TChar* pStr) = 0;
     virtual size_t StrLen(const TChar* pStr) = 0;
+    virtual TChar* StrChr(TChar* pStr, TChar ch) = 0;
     virtual TChar* StrRChr(TChar* pStr, TChar ch) = 0;
 
     /*****************************************************************************
@@ -28,6 +29,8 @@ public:
 
 
     virtual INT StrCaseInsensitiveCmp(const TChar* pLhsStr, const TChar* pRhsStr) = 0;
+
+    virtual TChar* StrTok(TChar* strToken, const TChar* strDelimit) = 0;
 
     virtual TString ConvertDateToString(SYSTEMTIME& DateTime) = 0;
     virtual TString ConvertTimeToString(SYSTEMTIME& DateTime) = 0;

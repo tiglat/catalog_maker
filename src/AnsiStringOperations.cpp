@@ -13,6 +13,11 @@ size_t AnsiStringOperations::StrLen(const char* pStr)
 }
 
 
+char* AnsiStringOperations::StrChr(char* pStr, char chr)
+{
+    return strchr(pStr, chr);
+}
+
 char* AnsiStringOperations::StrRChr(char* pStr, char chr)
 {
     return strrchr(pStr, chr);
@@ -131,4 +136,9 @@ string AnsiStringOperations::ConvertIntToString(DWORD64 num)
 string AnsiStringOperations::GetEndLineChars()
 {
     return "\r\n";
+}
+
+char* StrTok(char* strToken, const char* strDelimit)
+{
+    return strtok(strToken, strDelimit);
 }
