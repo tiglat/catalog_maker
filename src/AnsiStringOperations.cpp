@@ -42,7 +42,7 @@ UINT AnsiStringOperations::StrNChr(const char* pStr, const char ch)
     UINT len = (UINT)strlen(pStr);
     UINT Counter = 0;
 
-    for (auto i = 0; i < len; i++)
+    for (UINT i = 0; i < len; i++)
     {
         if (pStr[i] == ch)
             Counter++;
@@ -138,7 +138,17 @@ string AnsiStringOperations::GetEndLineChars()
     return "\r\n";
 }
 
-char* StrTok(char* strToken, const char* strDelimit)
+char* AnsiStringOperations::StrTok(char* strToken, const char* strDelimit)
 {
     return strtok(strToken, strDelimit);
+}
+
+char* AnsiStringOperations::StrCpy(char* destination, const char* source)
+{
+    return strcpy(destination, source);
+}
+
+char* AnsiStringOperations::StrCat(char* destination, const char* source)
+{
+    return strcat(destination, source);
 }

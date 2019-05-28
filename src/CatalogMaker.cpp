@@ -827,6 +827,8 @@ WCX_API	int STDCALL
     HeaderData->PackSize = (int)FileInfo.iSize;
     HeaderData->UnpSize = (int)FileInfo.iSize;
 
+    g_CatalogReaderDesc.pReaderA->GetFullFileName(FileInfo, HeaderData->FileName);
+
     // make date and time for Win Com
     if (FileInfo.Year)
     {

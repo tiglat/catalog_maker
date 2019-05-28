@@ -21,16 +21,15 @@ private:
     // Directory path without root dir.
     TChar		_DirectoryShortName[TEXT_LINE_LENGTH + 1] = { 0 };
 
-    // Length of path to root directory which was listed in the list file.
-    // For example, list file has content of c:\somedir1\somedir2.
-    // somedir2 is a root directory for this list.
-    // Root dir is always the first item in a list.
-    USHORT		_RootDirLen = 0xFFFF;
+    // Beginning position of short dir name. Short dir name is a part of path from root of file list.
+    // For example, list file was created for files and subdirs of c:\somedir1\somedir2\somedir3.
+    // c:\somedir1\somedir2 is a root directory for this list; somedir3 - short dir name
+    USHORT		_ShortDirNamePos = 0xFFFF;
 
     USHORT		_iReadPos = 0;
     USHORT		_iWritePos = 0;
     BOOL		_bNeedData = true;
-    UCHAR		_iThisIsHeader = 2;
+    UCHAR		_IsHeader = 2;
     DWORD		_ReturnedLength = 0;
     TFileInfo<TChar> _CurrentFileInfo;
 
@@ -46,7 +45,7 @@ public:
 
     int ReadNext(TFileInfo<TChar>& FileInfo)
     {
-        TChar seps = 0x0A;
+        const TChar seps = 0x0A;
         TChar* token;
         int	rv;
         USHORT  len;
@@ -70,7 +69,7 @@ public:
             }
 
             // get next string from read buffer
-            token = _pStringOperations->StrTok(&_pBuf[_iReadPos], seps);
+            token = _pStringOperations->StrTok(&_pBuf[_iReadPos], &seps);
 
             // if there is no data for analyse 
             // then we should read next block
@@ -108,7 +107,7 @@ public:
             }
 
             // Analyse string if it is correct
-            if (_iThisIsHeader)
+            if (_IsHeader)
             {
                 if (HeaderInfoStringParser(token) == FALSE)
                 {
@@ -123,41 +122,36 @@ public:
 
             _CurrentFileInfo = FileInfo;
 
-            // if current file is directory than store its short name
-            // to use in future to make full file name
-            if (FileInfo.Attr & 0x10)
-            {
-                if (_RootDirLen == 0)
-                {
-                    GetShortDirName(&FileInfo);
-                }
-                else
-                {
-                    strcpy(_DirectoryShortName, &FileInfo.Name[_RootDirLen]);
-                }
-            }
-
-            // if file is directory copy its name 
-            if (FileInfo.Attr & 0x10)
-            {
-                strcpy(HeaderData->FileName, _DirectoryShortName);
-            }
-            // if file is file :)  build full name for that file
-            else
-            {
-                strcpy(HeaderData->FileName, g_RxDesc.DirName);
-                // get short file name
-                char* pstr = strrchr(FileInfo.Name, '\\');
-                if (pstr)
-                    strcat(HeaderData->FileName, ++pstr);
-                else
-                    strcat(HeaderData->FileName, FileInfo.Name);
-            }
+            GetShortDirName(FileInfo);
 
             break;
         }
 
         return SUCCESS;
+    }
+
+    void GetFullFileName(TFileInfo<TChar>& FileInfo, TChar* FullFileName)
+    {
+        // if file is directory copy its name 
+        if (FileInfo.Attr & 0x10)
+        {
+            _pStringOperations->StrCpy(FullFileName, _DirectoryShortName);
+        }
+        else
+        {
+            // if file is file :)  build full name for that file
+            _pStringOperations->StrCpy(FullFileName, _DirectoryShortName);
+            // get short file name
+            TChar* pstr = _pStringOperations->StrRChr(FileInfo.Name, '\\');
+            if (pstr)
+            {
+                _pStringOperations->StrCat(FullFileName, ++pstr);
+            }
+            else
+            {
+                _pStringOperations->StrCat(FullFileName, FileInfo.Name);
+            }
+        }
     }
 
 private:
@@ -201,14 +195,14 @@ private:
 
 
     /*****************************************************************************
-    Routine:     GetDirName
+    Routine:     GetShortDirName
     ------------------------------------------------------------------------------
     Description:
         Extract short directory name from a full directory name. 
         Remember position of beginning of short dir name.
 
     Arguments:
-        pFileInfo   - structure contained the name to parse
+        FileInfo   - structure contained the name to parse
 
     Return Value:
 
@@ -216,44 +210,55 @@ private:
 
     void GetShortDirName(TFileInfo<TChar>& FileInfo)
     {
-        if (_RootDirLen == 0xFFFF)
+        if (_ShortDirNamePos == 0xFFFF)
         {
-            _RootDirLen = GetShortDirNameStartPos(FileInfo);
+            _ShortDirNamePos = GetShortDirNameStartPos(FileInfo);
         }
 
-        _pStringOperations->StrCpy(_DirectoryShortName, &pFileInfo->Name[_RootDirLen]);
+        _pStringOperations->StrCpy(_DirectoryShortName, &FileInfo.Name[_ShortDirNamePos]);
     }
+
+    /*****************************************************************************
+    Routine:     GetShortDirNameStartPos
+    ------------------------------------------------------------------------------
+    Description:
+        Calculates start position of short dir name (see explanation above)
+
+    Arguments:
+        FileInfo   - structure contained the name to parse
+
+    Return Value:
+
+    *****************************************************************************/
 
     int GetShortDirNameStartPos(TFileInfo<TChar>& FileInfo)
     {
         TChar* pstr;
 
-        if (pFileInfo == NULL)
-        {
-            return;
-        }
-
         // Check if dir name is full
-        pstr = _pStringOperations->StrChr(pFileInfo->Name, ':');
+        pstr = _pStringOperations->StrChr(FileInfo.Name, ':');
 
         // If it is full, then extract the short dir name
         if (pstr)
         {
             // if file name is full then we need to cut root dir
-            USHORT len = (USHORT)_pStringOperations->StrLen(pFileInfo->Name);
-            pFileInfo->Name[len - 1] = 0;
-            pstr = _pStringOperations->StrRChr(pFileInfo->Name, '\\');
-            pFileInfo->Name[len - 1] = '\\';
+            USHORT len = (USHORT)_pStringOperations->StrLen(FileInfo.Name);
+            FileInfo.Name[len - 1] = 0;
+            pstr = _pStringOperations->StrRChr(FileInfo.Name, '\\');
+            FileInfo.Name[len - 1] = '\\';
 
             if (pstr)
             {
-                return _pStringOperations->StrLen(pFileInfo->Name) - _pStringOperations->StrLen(++pstr);
+                return _pStringOperations->StrLen(FileInfo.Name) - _pStringOperations->StrLen(++pstr);
 
             }
         }
         
         return 0;
     }
+
+
+
 
 };
 

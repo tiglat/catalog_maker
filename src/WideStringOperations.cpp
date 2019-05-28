@@ -29,7 +29,7 @@ UINT WideStringOperations::StrNChr(const WCHAR* pStr, const WCHAR ch)
     UINT len = (UINT)wcslen(pStr);
     UINT Counter = 0;
 
-    for (auto i = 0; i < len; i++)
+    for (UINT i = 0; i < len; i++)
     {
         if (pStr[i] == ch)
             Counter++;
@@ -122,7 +122,17 @@ wstring WideStringOperations::GetEndLineChars()
 }
 
 
-WCHAR* StrTok(WCHAR* strToken, const WCHAR* strDelimit)
+WCHAR* WideStringOperations::StrTok(WCHAR* strToken, const WCHAR* strDelimit)
 {
     return wcstok(strToken, strDelimit);
+}
+
+WCHAR* WideStringOperations::StrCpy(WCHAR* destination, const WCHAR* source)
+{
+    return wcscpy(destination, source);
+}
+
+WCHAR* WideStringOperations::StrCat(WCHAR* destination, const WCHAR* source)
+{
+    return wcscat(destination, source);
 }

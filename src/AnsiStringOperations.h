@@ -13,6 +13,8 @@ public:
     virtual UINT StrNChr(const char* pStr, const char ch);
     virtual INT StrCaseInsensitiveCmp(const char* pLhsStr, const char* pRhsStr);
     virtual char* StrTok(char* strToken, const char* strDelimit);
+    virtual char* StrCpy(char* destination, const char* source);
+    virtual char* StrCat(char* destination, const char* source);
     virtual std::string ConvertDateToString(SYSTEMTIME& DateTime);
     virtual std::string ConvertTimeToString(SYSTEMTIME& DateTime);
     virtual std::string ConvertIntToString(DWORD64 num);
