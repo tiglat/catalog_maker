@@ -136,3 +136,9 @@ WCHAR* WideStringOperations::StrCat(WCHAR* destination, const WCHAR* source)
 {
     return wcscat(destination, source);
 }
+
+
+const WCHAR* WideStringOperations::StrStr(const WCHAR* destination, const WCHAR* source)
+{
+    return wcsstr(destination, source);
+}

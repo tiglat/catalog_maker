@@ -12,6 +12,7 @@ class CatalogReader
 {
 private: 
     static const USHORT TEXT_LINE_LENGTH = 1000;
+    static const USHORT LIST_COLUMN_NUMBER = 6;
 
     HANDLE _CatalogFile;
     IStringOperations<TChar, TString> *_pStringOperations;
@@ -32,6 +33,17 @@ private:
     UCHAR		_IsHeader = 2;
     DWORD		_ReturnedLength = 0;
     TFileInfo<TChar> _CurrentFileInfo;
+
+    using TColumnHandlerPtr = void (CatalogReader::*)(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo);
+    
+    struct TListInfo 
+    {
+        TColumnHandlerPtr	HandleFunc;
+        USHORT              StartIdx;
+        USHORT              Len;
+    };
+
+    TListInfo _ListInfo[LIST_COLUMN_NUMBER] = {0};
 
 public:
     
@@ -109,7 +121,7 @@ public:
             // Analyse string if it is correct
             if (_IsHeader)
             {
-                if (HeaderInfoStringParser(token) == FALSE)
+                if (ParseListHeader(token) == FALSE)
                 {
                     return (E_BAD_ARCHIVE);
                 }
@@ -231,7 +243,7 @@ private:
 
     *****************************************************************************/
 
-    int GetShortDirNameStartPos(TFileInfo<TChar>& FileInfo)
+    size_t GetShortDirNameStartPos(TFileInfo<TChar>& FileInfo)
     {
         TChar* pstr;
 
@@ -257,10 +269,329 @@ private:
         return 0;
     }
 
+    /*****************************************************************************
+        Routine:     ParseListHeader
+    ------------------------------------------------------------------------------
+        Description:
+                    Analyse header of list file and fill array of column
+                    descriptors which will use to read list file on the next steps
 
+        Arguments:
+                    pStr	-	pointer to string from list file
 
+        Return Value:
+                    If this string matches list file format than TRUE
+                    will be returned
 
+    *****************************************************************************/
+
+    BOOL ParseListHeader(TChar *pStr);
+
+    void FileNameColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    {
+
+    }
+
+    void ExtColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    {
+
+    }
+
+    void SizeColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    {
+
+    }
+
+    void DateColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    {
+
+    }
+
+    void TimeColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    {
+
+    }
+
+    void AttrColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    {
+
+    }
 };
 
 
+template <>
+BOOL CatalogReader<char, std::string>::ParseListHeader(char* pStr)
+{
+    char *Offset;
 
+    if (_IsHeader == 2) // first line of the header
+    {
+        //======= find and handle column "File name" ============
+        Offset = strstr(pStr, "File name");
+
+        if (Offset == NULL || Offset != pStr)
+        {
+            return FALSE;
+        }
+
+        _ListInfo[COL_NAME].StartIdx = 1;
+        _ListInfo[COL_NAME].HandleFunc = &CatalogReader::FileNameColumnHandler;
+
+        //======= find and handle column "Ext" ============
+        Offset = strstr(pStr, "Ext");
+
+        _ListInfo[COL_EXT].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_EXT].HandleFunc = &CatalogReader::ExtColumnHandler;
+        _ListInfo[COL_NAME].Len =
+            Offset ?
+            (USHORT)(Offset - pStr) :
+            0;
+
+        //======= find and handle column "Size" ============
+        Offset = strstr(pStr, "Size");
+
+        _ListInfo[COL_SIZE].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_SIZE].HandleFunc = &CatalogReader::SizeColumnHandler;
+        _ListInfo[COL_SIZE].Len = 15;
+
+        // if Size field exist and File name column width 
+        // was not calculated yet
+        if (Offset && _ListInfo[COL_NAME].Len == 0)
+        {
+            _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+        }
+
+        // if Size field exist and Ext column width 
+        // was not calculated yet
+        if (Offset && _ListInfo[COL_EXT].Len == 0)
+        {
+            _ListInfo[COL_EXT].Len =
+                (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
+        }
+
+        //======= find and handle column "Date" ============
+        Offset = strstr(pStr, "Date");
+
+        _ListInfo[COL_DATE].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_DATE].HandleFunc = &CatalogReader::DateColumnHandler;
+        _ListInfo[COL_DATE].Len = 10;
+
+        if (Offset && _ListInfo[COL_NAME].Len == 0)
+        {
+            _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+        }
+
+        if (Offset && _ListInfo[COL_EXT].Len == 0)
+        {
+            _ListInfo[COL_EXT].Len =
+                (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
+        }
+
+        //======= find and handle column "Time" ============
+        Offset = strstr(pStr, "Time");
+
+        _ListInfo[COL_TIME].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_TIME].HandleFunc = &CatalogReader::TimeColumnHandler;
+        _ListInfo[COL_TIME].Len = 8;
+
+        if (Offset && _ListInfo[COL_NAME].Len == 0)
+        {
+            _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+        }
+
+        if (Offset && _ListInfo[COL_EXT].Len == 0)
+        {
+            _ListInfo[COL_EXT].Len =
+                (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
+        }
+
+        //======= find and handle column "Attr" ============
+        Offset = strstr(pStr, "Attr");
+
+        _ListInfo[COL_ATTR].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_ATTR].HandleFunc = &CatalogReader::AttrColumnHandler;
+        _ListInfo[COL_ATTR].Len = 4;
+
+        _ListInfo[COL_NAME].Len =
+            _ListInfo[COL_NAME].Len ?
+            _ListInfo[COL_NAME].Len :
+            (Offset ? (USHORT)(Offset - pStr) : (USHORT)strlen(pStr));
+
+        _ListInfo[COL_EXT].Len =
+            _ListInfo[COL_EXT].Len ?
+            _ListInfo[COL_EXT].Len :
+            (Offset ?
+            (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1) :
+                (USHORT)strlen(pStr) - _ListInfo[COL_EXT].StartIdx - 1);
+    }
+
+    if (_IsHeader == 1) // second and the last line of the header
+    {
+        // wrong file
+        if (_ListInfo[COL_NAME].StartIdx == 0)
+            return FALSE;
+    }
+
+    _IsHeader--;
+
+    return TRUE;
+}
+
+
+template <>
+BOOL CatalogReader<WCHAR, std::wstring>::ParseListHeader(WCHAR* pStr)
+{
+    WCHAR *Offset;
+
+    if (_IsHeader == 2) // first line of the header
+    {
+        //======= find and handle column "File name" ============
+        Offset = wcsstr(pStr, L"File name");
+
+        if (Offset == NULL || Offset != pStr)
+        {
+            return FALSE;
+        }
+
+        _ListInfo[COL_NAME].StartIdx = 1;
+        _ListInfo[COL_NAME].HandleFunc = &CatalogReader::FileNameColumnHandler;
+
+        //======= find and handle column "Ext" ============
+        Offset = wcsstr(pStr, L"Ext");
+
+        _ListInfo[COL_EXT].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_EXT].HandleFunc = &CatalogReader::ExtColumnHandler;
+        _ListInfo[COL_NAME].Len =
+            Offset ?
+            (USHORT)(Offset - pStr) :
+            0;
+
+        //======= find and handle column "Size" ============
+        Offset = wcsstr(pStr, L"Size");
+
+        _ListInfo[COL_SIZE].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_SIZE].HandleFunc = &CatalogReader::SizeColumnHandler;
+        _ListInfo[COL_SIZE].Len = 15;
+
+        // if Size field exist and File name column width 
+        // was not calculated yet
+        if (Offset && _ListInfo[COL_NAME].Len == 0)
+        {
+            _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+        }
+
+        // if Size field exist and Ext column width 
+        // was not calculated yet
+        if (Offset && _ListInfo[COL_EXT].Len == 0)
+        {
+            _ListInfo[COL_EXT].Len =
+                (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
+        }
+
+        //======= find and handle column "Date" ============
+        Offset = wcsstr(pStr, L"Date");
+
+        _ListInfo[COL_DATE].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_DATE].HandleFunc = &CatalogReader::DateColumnHandler;
+        _ListInfo[COL_DATE].Len = 10;
+
+        if (Offset && _ListInfo[COL_NAME].Len == 0)
+        {
+            _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+        }
+
+        if (Offset && _ListInfo[COL_EXT].Len == 0)
+        {
+            _ListInfo[COL_EXT].Len =
+                (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
+        }
+
+        //======= find and handle column "Time" ============
+        Offset = wcsstr(pStr, L"Time");
+
+        _ListInfo[COL_TIME].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_TIME].HandleFunc = &CatalogReader::TimeColumnHandler;
+        _ListInfo[COL_TIME].Len = 8;
+
+        if (Offset && _ListInfo[COL_NAME].Len == 0)
+        {
+            _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+        }
+
+        if (Offset && _ListInfo[COL_EXT].Len == 0)
+        {
+            _ListInfo[COL_EXT].Len =
+                (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
+        }
+
+        //======= find and handle column "Attr" ============
+        Offset = wcsstr(pStr, L"Attr");
+
+        _ListInfo[COL_ATTR].StartIdx =
+            Offset ?
+            (USHORT)(Offset - pStr + 1) :
+            0;
+
+        _ListInfo[COL_ATTR].HandleFunc = &CatalogReader::AttrColumnHandler;
+        _ListInfo[COL_ATTR].Len = 4;
+
+        _ListInfo[COL_NAME].Len =
+            _ListInfo[COL_NAME].Len ?
+            _ListInfo[COL_NAME].Len :
+            (Offset ? (USHORT)(Offset - pStr) : (USHORT)wcslen(pStr));
+
+        _ListInfo[COL_EXT].Len =
+            _ListInfo[COL_EXT].Len ?
+            _ListInfo[COL_EXT].Len :
+            (Offset ?
+            (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1) :
+                (USHORT)wcslen(pStr) - _ListInfo[COL_EXT].StartIdx - 1);
+    }
+
+    if (_IsHeader == 1) // second and the last line of the header
+    {
+        // wrong file
+        if (_ListInfo[COL_NAME].StartIdx == 0)
+            return FALSE;
+    }
+
+    _IsHeader--;
+
+    return TRUE;
+}

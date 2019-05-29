@@ -16,6 +16,7 @@ public:
     virtual WCHAR* StrTok(WCHAR* strToken, const WCHAR* strDelimit);
     virtual WCHAR* StrCpy(WCHAR* destination, const WCHAR* source);
     virtual WCHAR* StrCat(WCHAR* destination, const WCHAR* source);
+    virtual const WCHAR* StrStr(const WCHAR* destination, const WCHAR* source);
     virtual std::wstring ConvertDateToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertTimeToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertIntToString(DWORD64 num);

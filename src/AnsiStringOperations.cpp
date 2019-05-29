@@ -109,9 +109,9 @@ string AnsiStringOperations::ConvertIntToString(DWORD64 num)
     auto remainderPart = source.length() % 3;
 
     string result;
-    int j = 0;
+    size_t j = 0;
 
-    for (auto i = 0; i < source.length(); i++)
+    for (size_t i = 0; i < source.length(); i++)
     {
         result.push_back(source[i]);
         j++;
@@ -151,4 +151,9 @@ char* AnsiStringOperations::StrCpy(char* destination, const char* source)
 char* AnsiStringOperations::StrCat(char* destination, const char* source)
 {
     return strcat(destination, source);
+}
+
+const char* AnsiStringOperations::StrStr(const char* destination, const char* source)
+{
+    return strstr(destination, source);
 }

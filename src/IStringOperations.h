@@ -33,6 +33,7 @@ public:
     virtual TChar* StrTok(TChar* strToken, const TChar* strDelimit) = 0;
     virtual TChar* StrCpy(TChar* destination, const TChar* source) = 0;
     virtual TChar* StrCat(TChar* destination, const TChar* source) = 0;
+    virtual const TChar* StrStr(const TChar* destination, const TChar* source) = 0;
 
     virtual TString ConvertDateToString(SYSTEMTIME& DateTime) = 0;
     virtual TString ConvertTimeToString(SYSTEMTIME& DateTime) = 0;

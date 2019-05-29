@@ -66,7 +66,7 @@ public:
     {
         if (pAddList == nullptr || pSourceFolder == nullptr || pOps == nullptr)
         {
-            throw new std::invalid_argument("Null pointer is passed.");
+            throw std::invalid_argument("Null pointer is passed.");
         }
 
         // take pointer to the first file in the AddList
@@ -525,7 +525,7 @@ private:
 
     void InsertIndent(TString &str, size_t num)
     {
-        for (auto i = 0; i < num; i++)
+        for (size_t i = 0; i < num; i++)
         {
             str += ' ';
         }
@@ -533,7 +533,7 @@ private:
 
     void InsertChar(TString& str, TChar ch, USHORT num)
     {
-        for (auto i = 0; i < num; i++)
+        for (USHORT i = 0; i < num; i++)
         {
             str += ch;
         }

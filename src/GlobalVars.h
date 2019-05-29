@@ -129,11 +129,11 @@ typedef void( TColumnHandler )(
         );
 
 
-typedef struct _TListInfo{
+struct TListInfo{
     TColumnHandler	*HandleFunc;
     USHORT			StartIdx;
     USHORT			Len;
-} TListInfo;
+};
 
 // 
 extern TViewParam		g_ViewParam;
