@@ -6,6 +6,7 @@
 class AnsiStringOperations : public IStringOperations<char, std::string>
 {
 public:
+
     virtual bool IsNotNullOrEmpty(const char* pStr);
     virtual size_t StrLen(const char* pStr);
     virtual char* StrChr(char* pStr, char ch);
@@ -15,17 +16,11 @@ public:
     virtual char* StrTok(char* strToken, const char* strDelimit);
     virtual char* StrCpy(char* destination, const char* source);
     virtual char* StrCat(char* destination, const char* source);
-    virtual const char* StrStr(const char* destination, const char* source);
+    virtual char* StrStr(const char* destination, const char* source);
     virtual std::string ConvertDateToString(SYSTEMTIME& DateTime);
     virtual std::string ConvertTimeToString(SYSTEMTIME& DateTime);
-    virtual std::string ConvertIntToString(DWORD64 num);
+    virtual std::string ConvertFileSizeToString(DWORD64 num);
+    virtual std::string ConvertIntToString(DWORD num);
     virtual std::string GetEndLineChars();
-    virtual char* GetFileNameColumnPtr(const char* pStr);
-    virtual char* GetExtColumnPtr(const char* pStr);
-    virtual char* GetSizeColumnPtr(const char* pStr);
-    virtual char* GetDateColumnPtr(const char* pStr);
-    virtual char* GetTimeColumnPtr(const char* pStr);
-    virtual char* GetAttrColumnPtr(const char* pStr);
-
 };
 

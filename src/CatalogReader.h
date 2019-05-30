@@ -224,7 +224,7 @@ private:
     {
         if (_ShortDirNamePos == 0xFFFF)
         {
-            _ShortDirNamePos = GetShortDirNameStartPos(FileInfo);
+            _ShortDirNamePos = (USHORT) GetShortDirNameStartPos(FileInfo);
         }
 
         _pStringOperations->StrCpy(_DirectoryShortName, &FileInfo.Name[_ShortDirNamePos]);
@@ -292,7 +292,7 @@ private:
         if (_IsHeader == 2) // first line of the header
         {
             //======= find and handle column "File name" ============
-            Offset = _pStringOperations->GetFileNameColumnPtr(pStr);
+            Offset = _pStringOperations->StrStr(pStr, _pStringOperations->FILE_NAME_COLUMN);
 
             if (Offset == NULL || Offset != pStr)
             {
@@ -303,7 +303,7 @@ private:
             _ListInfo[COL_NAME].HandleFunc = &CatalogReader::FileNameColumnHandler;
 
             //======= find and handle column "Ext" ============
-            Offset = _pStringOperations->GetExtColumnPtr(pStr);
+            Offset = _pStringOperations->StrStr(pStr, _pStringOperations->EXT_COLUMN);
 
             _ListInfo[COL_EXT].StartIdx =
                 Offset ?
@@ -317,7 +317,7 @@ private:
                 0;
 
             //======= find and handle column "Size" ============
-            Offset = _pStringOperations->GetSizeColumnPtr(pStr);
+            Offset = _pStringOperations->StrStr(pStr, _pStringOperations->SIZE_COLUMN);
 
             _ListInfo[COL_SIZE].StartIdx =
                 Offset ?
@@ -343,7 +343,7 @@ private:
             }
 
             //======= find and handle column "Date" ============
-            Offset = _pStringOperations->GetDateColumnPtr(pStr);
+            Offset = _pStringOperations->StrStr(pStr, _pStringOperations->DATE_COLUMN);
 
             _ListInfo[COL_DATE].StartIdx =
                 Offset ?
@@ -365,7 +365,7 @@ private:
             }
 
             //======= find and handle column "Time" ============
-            Offset = _pStringOperations->GetTimeColumnPtr(pStr);
+            Offset = _pStringOperations->StrStr(pStr, _pStringOperations->TIME_COLUMN);
 
             _ListInfo[COL_TIME].StartIdx =
                 Offset ?
@@ -387,7 +387,7 @@ private:
             }
 
             //======= find and handle column "Attr" ============
-            Offset = _pStringOperations->GetAttrColumnPtr(pStr);
+            Offset = _pStringOperations->StrStr(pStr, _pStringOperations->ATTR_COLUMN);
 
             _ListInfo[COL_ATTR].StartIdx =
                 Offset ?

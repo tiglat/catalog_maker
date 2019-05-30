@@ -4,6 +4,16 @@
 
 using namespace std;
 
+const WCHAR* IStringOperations<WCHAR, wstring>::FILE_NAME_COLUMN   = L"File name";
+const WCHAR* IStringOperations<WCHAR, wstring>::EXT_COLUMN         = L"Ext";
+const WCHAR* IStringOperations<WCHAR, wstring>::SIZE_COLUMN        = L"Size";
+const WCHAR* IStringOperations<WCHAR, wstring>::DATE_COLUMN        = L"Date";
+const WCHAR* IStringOperations<WCHAR, wstring>::TIME_COLUMN        = L"Time";
+const WCHAR* IStringOperations<WCHAR, wstring>::ATTR_COLUMN        = L"Attr";
+
+const WCHAR* IStringOperations<WCHAR, wstring>::FOOTER_TOTAL_FILES = L"\r\ntotal files ";
+const WCHAR* IStringOperations<WCHAR, wstring>::FOOTER_TOTAL_SIZE  = L"    total size ";
+
 bool WideStringOperations::IsNotNullOrEmpty(const WCHAR* pStr)
 {
     return pStr != nullptr && wcslen(pStr) > 0;
@@ -80,7 +90,7 @@ std::wstring WideStringOperations::ConvertTimeToString(SYSTEMTIME& DateTime)
 }
 
 
-wstring WideStringOperations::ConvertIntToString(DWORD64 num)
+wstring WideStringOperations::ConvertFileSizeToString(DWORD64 num)
 {
     wstring source = to_wstring(num);
 
@@ -116,6 +126,12 @@ wstring WideStringOperations::ConvertIntToString(DWORD64 num)
     return result;
 }
 
+wstring WideStringOperations::ConvertIntToString(DWORD num)
+{
+    return std::to_wstring(num);
+}
+
+
 wstring WideStringOperations::GetEndLineChars()
 {
     return L"\r\n";
@@ -138,37 +154,8 @@ WCHAR* WideStringOperations::StrCat(WCHAR* destination, const WCHAR* source)
 }
 
 
-const WCHAR* WideStringOperations::StrStr(const WCHAR* destination, const WCHAR* source)
+WCHAR* WideStringOperations::StrStr(const WCHAR* destination, const WCHAR* source)
 {
-    return wcsstr(destination, source);
+    return const_cast<WCHAR*> (wcsstr(destination, source));
 }
 
-WCHAR* WideStringOperations::GetFileNameColumnPtr(const WCHAR* pStr)
-{
-    return const_cast<WCHAR*> (wcsstr(pStr, L"File name"));
-}
-
-WCHAR* WideStringOperations::GetExtColumnPtr(const WCHAR* pStr)
-{
-    return const_cast<WCHAR*> (wcsstr(pStr, L"Ext"));
-}
-
-WCHAR* WideStringOperations::GetSizeColumnPtr(const WCHAR* pStr)
-{
-    return const_cast<WCHAR*> (wcsstr(pStr, L"Size"));
-}
-
-WCHAR* WideStringOperations::GetDateColumnPtr(const WCHAR* pStr)
-{
-    return const_cast<WCHAR*> (wcsstr(pStr, L"Date"));
-}
-
-WCHAR* WideStringOperations::GetTimeColumnPtr(const WCHAR* pStr)
-{
-    return const_cast<WCHAR*> (wcsstr(pStr, L"Time"));
-}
-
-WCHAR* WideStringOperations::GetAttrColumnPtr(const WCHAR* pStr)
-{
-    return const_cast<WCHAR*> (wcsstr(pStr, L"Attr"));
-}

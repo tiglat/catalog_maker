@@ -2,6 +2,17 @@
 
 using namespace std;
 
+const char* IStringOperations<char, string>::FILE_NAME_COLUMN   = "File name";
+const char* IStringOperations<char, string>::EXT_COLUMN         = "Ext";
+const char* IStringOperations<char, string>::SIZE_COLUMN        = "Size";
+const char* IStringOperations<char, string>::DATE_COLUMN        = "Date";
+const char* IStringOperations<char, string>::TIME_COLUMN        = "Time";
+const char* IStringOperations<char, string>::ATTR_COLUMN        = "Attr";
+
+const char* IStringOperations<char, string>::FOOTER_TOTAL_FILES = "\r\ntotal files ";
+const char* IStringOperations<char, string>::FOOTER_TOTAL_SIZE  = "    total size ";
+
+
 bool AnsiStringOperations::IsNotNullOrEmpty(const char* pStr)
 {
     return pStr != nullptr && strlen(pStr) > 0;
@@ -97,7 +108,7 @@ string AnsiStringOperations::ConvertTimeToString(SYSTEMTIME& DateTime)
 
 *****************************************************************************/
 
-string AnsiStringOperations::ConvertIntToString(DWORD64 num)
+string AnsiStringOperations::ConvertFileSizeToString(DWORD64 num)
 {
     string source = to_string(num);
 
@@ -133,6 +144,11 @@ string AnsiStringOperations::ConvertIntToString(DWORD64 num)
     return result;
 }
 
+string AnsiStringOperations::ConvertIntToString(DWORD num)
+{
+    return std::to_string(num);
+}
+
 string AnsiStringOperations::GetEndLineChars()
 {
     return "\r\n";
@@ -153,37 +169,7 @@ char* AnsiStringOperations::StrCat(char* destination, const char* source)
     return strcat(destination, source);
 }
 
-const char* AnsiStringOperations::StrStr(const char* destination, const char* source)
+char* AnsiStringOperations::StrStr(const char* destination, const char* source)
 {
-    return strstr(destination, source);
-}
-
-char* AnsiStringOperations::GetFileNameColumnPtr(const char* pStr)
-{
-    return const_cast<char*> (strstr(pStr, "File name"));
-}
-
-char* AnsiStringOperations::GetExtColumnPtr(const char* pStr)
-{
-    return const_cast<char*> (strstr(pStr, "Ext"));
-}
-
-char* AnsiStringOperations::GetSizeColumnPtr(const char* pStr)
-{
-    return const_cast<char*> (strstr(pStr, "Size"));
-}
-
-char* AnsiStringOperations::GetDateColumnPtr(const char* pStr)
-{
-    return const_cast<char*> (strstr(pStr, "Date"));
-}
-
-char* AnsiStringOperations::GetTimeColumnPtr(const char* pStr)
-{
-    return const_cast<char*> (strstr(pStr, "Time"));
-}
-
-char* AnsiStringOperations::GetAttrColumnPtr(const char* pStr)
-{
-    return const_cast<char*> (strstr(pStr, "Attr"));
+    return const_cast<char*> (strstr(destination, source));
 }

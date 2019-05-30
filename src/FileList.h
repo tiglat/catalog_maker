@@ -160,7 +160,69 @@ public:
         return result;
     }
 
-    TString GetHeaderLine();
+    TString GetHeaderLine()
+    {
+        TString result;
+
+        result += _pStringOperations->FILE_NAME_COLUMN;
+
+        InsertIndent(result, _FileNameColWidth + 4 - result.length());
+
+        if (g_ViewParam.bFileName)
+        {
+            if (g_ViewParam.bExt && g_FormatParam.bExtSeparately)
+            {
+                result += _pStringOperations->EXT_COLUMN;
+                InsertIndent(result, _FileExtColWidth);
+            }
+
+            if (g_ViewParam.bSize)
+            {
+                result += _pStringOperations->SIZE_COLUMN;
+                InsertIndent(result, 14);
+            }
+
+            if (g_ViewParam.bDate)
+            {
+                result += _pStringOperations->DATE_COLUMN;
+                InsertIndent(result, 8);
+            }
+
+            if (g_ViewParam.bTime)
+            {
+                result += _pStringOperations->TIME_COLUMN;
+                InsertIndent(result, 6);
+            }
+
+            if (g_ViewParam.bAttr)
+            {
+                result += _pStringOperations->ATTR_COLUMN;
+            }
+        }
+        else if (g_ViewParam.bDirName && g_ViewParam.bApplyToDirs)
+        {
+            if (g_ViewParam.bDate)
+            {
+                result += _pStringOperations->DATE_COLUMN;
+                InsertIndent(result, 8);
+            }
+
+            if (g_ViewParam.bTime)
+            {
+                result += _pStringOperations->TIME_COLUMN;
+                InsertIndent(result, 6);
+            }
+
+            if (g_ViewParam.bAttr)
+            {
+                result += _pStringOperations->ATTR_COLUMN;
+            }
+        }
+
+        result += _pStringOperations->GetEndLineChars();
+        return result;
+    }
+
 
     TString GetDividingLine()
     {
@@ -225,7 +287,30 @@ public:
         return result;
     }
 
-    TString GetFooterLine();
+    TString GetFooterLine()
+    {
+        TString result;
+
+        // print total size and number of the files
+        if (g_ViewParam.bFileName)
+        {
+            result += _pStringOperations->FOOTER_TOTAL_FILES;
+            result += _pStringOperations->ConvertIntToString(_TotalFiles);
+
+            if (g_ViewParam.bSize)
+            {
+                result += _pStringOperations->FOOTER_TOTAL_SIZE;
+                result += _pStringOperations->ConvertFileSizeToString(_TotalSize);
+            }
+
+            // don't include symbol '\r' in order to read 
+            // the list file easier
+            result += '\n';
+        }
+
+        return result;
+    }
+
 
 private:
 
@@ -502,7 +587,7 @@ private:
             // print file size
             if (g_ViewParam.bSize)
             {
-                auto intStr = _pStringOperations->ConvertIntToString(pFileInfo->iSize);
+                auto intStr = _pStringOperations->ConvertFileSizeToString(pFileInfo->iSize);
                 auto len = intStr.length();
                 InsertIndent(str, 15 - len);
                 str += intStr;
@@ -855,173 +940,4 @@ bool FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFileAttr(WCHAR *pFil
     );
 }
 
-template <>
-std::string FileList<FileListItem<char>, char, std::string>::GetHeaderLine()
-{
-    std::string result;
 
-    result += "File name";
-
-    InsertIndent(result, _FileNameColWidth + 4 - result.length());
-
-    if (g_ViewParam.bFileName)
-    {
-        if (g_ViewParam.bExt && g_FormatParam.bExtSeparately)
-        {
-            result += "Ext";
-            InsertIndent(result, _FileExtColWidth);
-        }
-
-        if (g_ViewParam.bSize)
-        {
-            result += "Size   ";
-            InsertIndent(result, 11);
-        }
-
-        if (g_ViewParam.bDate)
-        {
-            result += "Date        ";
-        }
-
-        if (g_ViewParam.bTime)
-        {
-            result += "Time      ";
-        }
-
-        if (g_ViewParam.bAttr)
-        {
-            result += "Attr";
-        }
-    }
-    else if (g_ViewParam.bDirName && g_ViewParam.bApplyToDirs)
-    {
-        if (g_ViewParam.bDate)
-        {
-            result += "Date        ";
-        }
-
-        if (g_ViewParam.bTime)
-        {
-            result += "Time      ";
-        }
-
-        if (g_ViewParam.bAttr)
-        {
-            result += "Attr";
-        }
-    }
-
-    result += _pStringOperations->GetEndLineChars();
-    return result;
-}
-
-
-template <>
-std::wstring FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetHeaderLine()
-{
-    std::wstring result;
-
-    result += L"File name";
-
-    InsertIndent(result, _FileNameColWidth + 4 - result.length());
-
-    if (g_ViewParam.bFileName)
-    {
-        if (g_ViewParam.bExt && g_FormatParam.bExtSeparately)
-        {
-            result += L"Ext";
-            InsertIndent(result, _FileExtColWidth);
-        }
-
-        if (g_ViewParam.bSize)
-        {
-            result += L"Size   ";
-            InsertIndent(result, 11);
-        }
-
-        if (g_ViewParam.bDate)
-        {
-            result += L"Date        ";
-        }
-
-        if (g_ViewParam.bTime)
-        {
-            result += L"Time      ";
-        }
-
-        if (g_ViewParam.bAttr)
-        {
-            result += L"Attr";
-        }
-    }
-    else if (g_ViewParam.bDirName && g_ViewParam.bApplyToDirs)
-    {
-        if (g_ViewParam.bDate)
-        {
-            result += L"Date        ";
-        }
-
-        if (g_ViewParam.bTime)
-        {
-            result += L"Time      ";
-        }
-
-        if (g_ViewParam.bAttr)
-        {
-            result += L"Attr";
-        }
-    }
-
-    result += _pStringOperations->GetEndLineChars();
-    return result;
-}
-
-template <>
-std::wstring FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFooterLine()
-{
-    std::wstring result;
-
-    // print total size and number of the files
-    if (g_ViewParam.bFileName)
-    {
-        result += L"\r\ntotal files ";
-        result += std::to_wstring(_TotalFiles);
-
-        if (g_ViewParam.bSize)
-        {
-            result += L"    total size ";
-            result += _pStringOperations->ConvertIntToString(_TotalSize);
-        }
-
-        // don't include symbol '\r' in order to read 
-        // the list file easier
-        result += '\n';
-    }
-
-    return result;
-}
-
-template <>
-std::string FileList<FileListItem<char>, char, std::string>::GetFooterLine()
-{
-    std::string result;
-
-    // print total size and number of the files
-    if (g_ViewParam.bFileName)
-    {
-        result += "\r\ntotal files ";
-        result += std::to_string(_TotalFiles);
-
-        if (g_ViewParam.bSize)
-        {
-            result += "    total size ";
-            result += _pStringOperations->ConvertIntToString(_TotalSize);
-        }
-
-        // don't include symbol '\r' in order to read 
-        // the list file easier
-        result += '\n';
-    }
-
-    return result;
-}
