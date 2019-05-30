@@ -41,5 +41,12 @@ public:
 
     virtual TString GetEndLineChars() = 0;
 
+    virtual TChar* GetFileNameColumnPtr(const TChar* pStr) = 0;
+    virtual TChar* GetExtColumnPtr(const TChar* pStr) = 0;
+    virtual TChar* GetSizeColumnPtr(const TChar* pStr) = 0;
+    virtual TChar* GetDateColumnPtr(const TChar* pStr) = 0;
+    virtual TChar* GetTimeColumnPtr(const TChar* pStr) = 0;
+    virtual TChar* GetAttrColumnPtr(const TChar* pStr) = 0;
+
 };
 

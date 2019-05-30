@@ -157,3 +157,33 @@ const char* AnsiStringOperations::StrStr(const char* destination, const char* so
 {
     return strstr(destination, source);
 }
+
+char* AnsiStringOperations::GetFileNameColumnPtr(const char* pStr)
+{
+    return const_cast<char*> (strstr(pStr, "File name"));
+}
+
+char* AnsiStringOperations::GetExtColumnPtr(const char* pStr)
+{
+    return const_cast<char*> (strstr(pStr, "Ext"));
+}
+
+char* AnsiStringOperations::GetSizeColumnPtr(const char* pStr)
+{
+    return const_cast<char*> (strstr(pStr, "Size"));
+}
+
+char* AnsiStringOperations::GetDateColumnPtr(const char* pStr)
+{
+    return const_cast<char*> (strstr(pStr, "Date"));
+}
+
+char* AnsiStringOperations::GetTimeColumnPtr(const char* pStr)
+{
+    return const_cast<char*> (strstr(pStr, "Time"));
+}
+
+char* AnsiStringOperations::GetAttrColumnPtr(const char* pStr)
+{
+    return const_cast<char*> (strstr(pStr, "Attr"));
+}

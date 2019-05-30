@@ -142,3 +142,33 @@ const WCHAR* WideStringOperations::StrStr(const WCHAR* destination, const WCHAR*
 {
     return wcsstr(destination, source);
 }
+
+WCHAR* WideStringOperations::GetFileNameColumnPtr(const WCHAR* pStr)
+{
+    return const_cast<WCHAR*> (wcsstr(pStr, L"File name"));
+}
+
+WCHAR* WideStringOperations::GetExtColumnPtr(const WCHAR* pStr)
+{
+    return const_cast<WCHAR*> (wcsstr(pStr, L"Ext"));
+}
+
+WCHAR* WideStringOperations::GetSizeColumnPtr(const WCHAR* pStr)
+{
+    return const_cast<WCHAR*> (wcsstr(pStr, L"Size"));
+}
+
+WCHAR* WideStringOperations::GetDateColumnPtr(const WCHAR* pStr)
+{
+    return const_cast<WCHAR*> (wcsstr(pStr, L"Date"));
+}
+
+WCHAR* WideStringOperations::GetTimeColumnPtr(const WCHAR* pStr)
+{
+    return const_cast<WCHAR*> (wcsstr(pStr, L"Time"));
+}
+
+WCHAR* WideStringOperations::GetAttrColumnPtr(const WCHAR* pStr)
+{
+    return const_cast<WCHAR*> (wcsstr(pStr, L"Attr"));
+}

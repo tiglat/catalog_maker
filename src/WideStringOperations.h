@@ -21,6 +21,11 @@ public:
     virtual std::wstring ConvertTimeToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertIntToString(DWORD64 num);
     virtual std::wstring GetEndLineChars();
-
+    virtual WCHAR* GetFileNameColumnPtr(const WCHAR* pStr);
+    virtual WCHAR* GetExtColumnPtr(const WCHAR* pStr);
+    virtual WCHAR* GetSizeColumnPtr(const WCHAR* pStr);
+    virtual WCHAR* GetDateColumnPtr(const WCHAR* pStr);
+    virtual WCHAR* GetTimeColumnPtr(const WCHAR* pStr);
+    virtual WCHAR* GetAttrColumnPtr(const WCHAR* pStr);
 };
 
