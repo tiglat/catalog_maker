@@ -8,8 +8,8 @@ EXPORTS
     PackFilesW
     PackSetDefaultParams
     ProcessFile
-    ReadHeaderEx
     ReadHeader
+    ;ReadHeaderEx
     SetChangeVolProc
     SetProcessDataProc
     SetProcessDataProcW

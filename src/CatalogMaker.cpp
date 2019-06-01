@@ -539,34 +539,9 @@ WCX_API HANDLE STDCALL
         tOpenArchiveData *ArchiveData
         )
 {
-    //HANDLE CatalogFile;
+    HANDLE CatalogFile;
 
-    //CatalogFile = CreateFile(
-    //    ArchiveData->ArcName,
-    //    GENERIC_READ,
-    //    0,
-    //    NULL,
-    //    OPEN_EXISTING,
-    //    FILE_ATTRIBUTE_NORMAL,
-    //    NULL
-    //);
-
-    //if (CatalogFile == INVALID_HANDLE_VALUE)
-    //{
-    //    ArchiveData->OpenResult = E_BAD_ARCHIVE;
-    //    return 0;
-    //}
-    //   
-    //AnsiStringOperations ops;
-    //g_CatalogReaderDesc.isUnicode = false;
-    //g_CatalogReaderDesc.pReaderW  = nullptr;
-    //g_CatalogReaderDesc.pReaderA  = new CatalogReader<char, string>(CatalogFile, &ops);
-
-    //return CatalogFile;
-
-    HANDLE hFile;
-
-    hFile = CreateFile(
+    CatalogFile = CreateFile(
         ArchiveData->ArcName,
         GENERIC_READ,
         0,
@@ -576,29 +551,54 @@ WCX_API HANDLE STDCALL
         NULL
     );
 
-    if ( hFile == INVALID_HANDLE_VALUE )
+    if (CatalogFile == INVALID_HANDLE_VALUE)
     {
-        hFile = 0;
         ArchiveData->OpenResult = E_BAD_ARCHIVE;
+        return 0;
     }
+       
+    static AnsiStringOperations ops;
+    g_CatalogReaderDesc.isUnicode = false;
+    g_CatalogReaderDesc.pReaderW  = nullptr;
+    g_CatalogReaderDesc.pReaderA  = new CatalogReader<char, string>(CatalogFile, &ops);
 
-    memset( &g_RxDesc, 0, sizeof(g_RxDesc) );
+    return CatalogFile;
 
-    g_RxDesc.iReadPos	= 0;
-    g_RxDesc.iWritePos	= 0;
-    g_RxDesc.bNeedData	= TRUE;
-    g_RxDesc.DirName[0] = 0;
-    g_RxDesc.RootDirLen = 0;
-    g_RxDesc.iThisIsHeader	= 2;
-    g_RxDesc.ReturnedLength = 0;
+    //HANDLE hFile;
 
-    for ( int i = 0; i < COLUMN_NUMBER; i++ )
-    {
-        g_ListInfo[i].StartIdx	= 0;
-        g_ListInfo[i].Len		= 0;
-    }
+    //hFile = CreateFile(
+    //    ArchiveData->ArcName,
+    //    GENERIC_READ,
+    //    0,
+    //    NULL,
+    //    OPEN_EXISTING,
+    //    FILE_ATTRIBUTE_NORMAL,
+    //    NULL
+    //);
 
-    return ( hFile );
+    //if ( hFile == INVALID_HANDLE_VALUE )
+    //{
+    //    hFile = 0;
+    //    ArchiveData->OpenResult = E_BAD_ARCHIVE;
+    //}
+
+    //memset( &g_RxDesc, 0, sizeof(g_RxDesc) );
+
+    //g_RxDesc.iReadPos	= 0;
+    //g_RxDesc.iWritePos	= 0;
+    //g_RxDesc.bNeedData	= TRUE;
+    //g_RxDesc.DirName[0] = 0;
+    //g_RxDesc.RootDirLen = 0;
+    //g_RxDesc.iThisIsHeader	= 2;
+    //g_RxDesc.ReturnedLength = 0;
+
+    //for ( int i = 0; i < COLUMN_NUMBER; i++ )
+    //{
+    //    g_ListInfo[i].StartIdx	= 0;
+    //    g_ListInfo[i].Len		= 0;
+    //}
+
+    //return ( hFile );
 }
 
 int ReadDataBlock(HANDLE hArcData)
