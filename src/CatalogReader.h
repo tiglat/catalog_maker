@@ -29,21 +29,21 @@ private:
 
     USHORT		_iReadPos = 0;
     USHORT		_iWritePos = 0;
-    BOOL		_bNeedData = true;
+    bool		_bNeedData = true;
     UCHAR		_IsHeader = 2;
     DWORD		_ReturnedLength = 0;
     TFileInfo<TChar> _CurrentFileInfo;
 
-    using TColumnHandlerPtr = void (CatalogReader::*)(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo);
+    using TColumnHandlerPtr = void (CatalogReader::*)(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo);
     
-    struct TListInfo 
+    struct TColumnInfo 
     {
-        TColumnHandlerPtr	HandleFunc;
         USHORT              StartIdx;
-        USHORT              Len;
+        USHORT              Width;
     };
 
-    TListInfo _ListInfo[LIST_COLUMN_NUMBER] = {0};
+    TColumnInfo _ListInfo[LIST_COLUMN_NUMBER] = {0};
+    TColumnHandlerPtr _ColumnHandlers[LIST_COLUMN_NUMBER] = {nullptr};
 
 public:
     
@@ -77,7 +77,7 @@ public:
                     return(rv);
                 }
 
-                _bNeedData = FALSE;
+                _bNeedData = false;
             }
 
             // get next string from read buffer
@@ -85,9 +85,9 @@ public:
 
             // if there is no data for analyse 
             // then we should read next block
-            if (token == NULL)
+            if (token == nullptr)
             {
-                _bNeedData = TRUE;
+                _bNeedData = true;
                 _iReadPos = 0;
                 _iWritePos = 0;
                 continue;
@@ -108,7 +108,7 @@ public:
                 memcpy(_pBuf, token, len);
                 _iWritePos = len;
                 _iReadPos = 0;
-                _bNeedData = TRUE;
+                _bNeedData = true;
                 continue;
             }
 
@@ -121,15 +121,15 @@ public:
             // Analyse string if it is correct
             if (_IsHeader)
             {
-                if (ParseListHeader(token) == FALSE)
+                if (ParseListHeader(token) == false)
                 {
-                    return (E_BAD_ARCHIVE);
+                    return E_BAD_ARCHIVE;
                 }
                 continue;
             }
             else
             {
-                FileInfoStringParser(token, &FileInfo);
+                ParseListContent(token, FileInfo);
             }
 
             _CurrentFileInfo = FileInfo;
@@ -141,6 +141,20 @@ public:
 
         return SUCCESS;
     }
+
+    /*****************************************************************************
+        Routine:     GetFullFileName
+    ------------------------------------------------------------------------------
+        Description: Make full (beginning from file list root) file name 
+
+        Arguments:
+                FileInfo	 - [in] pointer to structure describing file in the string
+                FullFileName - [out] pointer to string with full file name
+
+        Return Value:
+                None
+
+    *****************************************************************************/
 
     void GetFullFileName(TFileInfo<TChar>& FileInfo, TChar* FullFileName)
     {
@@ -285,7 +299,7 @@ private:
 
     *****************************************************************************/
 
-    BOOL ParseListHeader(TChar* pStr)
+    bool ParseListHeader(TChar* pStr)
     {
         TChar* Offset;
 
@@ -294,13 +308,14 @@ private:
             //======= find and handle column "File name" ============
             Offset = _pStringOperations->StrStr(pStr, _pStringOperations->FILE_NAME_COLUMN);
 
-            if (Offset == NULL || Offset != pStr)
+            if (Offset == nullptr || Offset != pStr)
             {
-                return FALSE;
+                return false;
             }
 
             _ListInfo[COL_NAME].StartIdx = 1;
-            _ListInfo[COL_NAME].HandleFunc = &CatalogReader::FileNameColumnHandler;
+            //_ListInfo[COL_NAME].HandleFunc = &CatalogReader::ParseFileNameColumn;
+            _ColumnHandlers[COL_NAME] = &CatalogReader::ParseFileNameColumn;
 
             //======= find and handle column "Ext" ============
             Offset = _pStringOperations->StrStr(pStr, _pStringOperations->EXT_COLUMN);
@@ -310,8 +325,10 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            _ListInfo[COL_EXT].HandleFunc = &CatalogReader::ExtColumnHandler;
-            _ListInfo[COL_NAME].Len =
+            //_ListInfo[COL_EXT].HandleFunc = &CatalogReader::ParseExtColumn;
+            _ColumnHandlers[COL_EXT] = &CatalogReader::ParseExtColumn;
+
+            _ListInfo[COL_NAME].Width =
                 Offset ?
                 (USHORT)(Offset - pStr) :
                 0;
@@ -324,21 +341,23 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            _ListInfo[COL_SIZE].HandleFunc = &CatalogReader::SizeColumnHandler;
-            _ListInfo[COL_SIZE].Len = 15;
+            //_ListInfo[COL_SIZE].HandleFunc = &CatalogReader::ParseSizeColumn;
+            _ColumnHandlers[COL_SIZE] = &CatalogReader::ParseSizeColumn;
+
+            _ListInfo[COL_SIZE].Width = 15;
 
             // if Size field exist and File name column width 
             // was not calculated yet
-            if (Offset && _ListInfo[COL_NAME].Len == 0)
+            if (Offset && _ListInfo[COL_NAME].Width == 0)
             {
-                _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+                _ListInfo[COL_NAME].Width = (USHORT)(Offset - pStr);
             }
 
             // if Size field exist and Ext column width 
             // was not calculated yet
-            if (Offset && _ListInfo[COL_EXT].Len == 0)
+            if (Offset && _ListInfo[COL_EXT].Width == 0)
             {
-                _ListInfo[COL_EXT].Len =
+                _ListInfo[COL_EXT].Width =
                     (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
             }
 
@@ -350,17 +369,19 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            _ListInfo[COL_DATE].HandleFunc = &CatalogReader::DateColumnHandler;
-            _ListInfo[COL_DATE].Len = 10;
+            //_ListInfo[COL_DATE].HandleFunc = &CatalogReader::ParseDateColumn;
+            _ColumnHandlers[COL_DATE] = &CatalogReader::ParseDateColumn;
 
-            if (Offset && _ListInfo[COL_NAME].Len == 0)
+            _ListInfo[COL_DATE].Width = 10;
+
+            if (Offset && _ListInfo[COL_NAME].Width == 0)
             {
-                _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+                _ListInfo[COL_NAME].Width = (USHORT)(Offset - pStr);
             }
 
-            if (Offset && _ListInfo[COL_EXT].Len == 0)
+            if (Offset && _ListInfo[COL_EXT].Width == 0)
             {
-                _ListInfo[COL_EXT].Len =
+                _ListInfo[COL_EXT].Width =
                     (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
             }
 
@@ -372,17 +393,19 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            _ListInfo[COL_TIME].HandleFunc = &CatalogReader::TimeColumnHandler;
-            _ListInfo[COL_TIME].Len = 8;
+            //_ListInfo[COL_TIME].HandleFunc = &CatalogReader::ParseTimeColumn;
+            _ColumnHandlers[COL_TIME] = &CatalogReader::ParseTimeColumn;
 
-            if (Offset && _ListInfo[COL_NAME].Len == 0)
+            _ListInfo[COL_TIME].Width = 8;
+
+            if (Offset && _ListInfo[COL_NAME].Width == 0)
             {
-                _ListInfo[COL_NAME].Len = (USHORT)(Offset - pStr);
+                _ListInfo[COL_NAME].Width = (USHORT)(Offset - pStr);
             }
 
-            if (Offset && _ListInfo[COL_EXT].Len == 0)
+            if (Offset && _ListInfo[COL_EXT].Width == 0)
             {
-                _ListInfo[COL_EXT].Len =
+                _ListInfo[COL_EXT].Width =
                     (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
             }
 
@@ -394,17 +417,19 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            _ListInfo[COL_ATTR].HandleFunc = &CatalogReader::AttrColumnHandler;
-            _ListInfo[COL_ATTR].Len = 4;
+            // _ListInfo[COL_ATTR].HandleFunc = &CatalogReader::ParseAttrColumn;
+            _ColumnHandlers[COL_ATTR] = &CatalogReader::ParseAttrColumn;
 
-            _ListInfo[COL_NAME].Len =
-                _ListInfo[COL_NAME].Len ?
-                _ListInfo[COL_NAME].Len :
+            _ListInfo[COL_ATTR].Width = 4;
+
+            _ListInfo[COL_NAME].Width =
+                _ListInfo[COL_NAME].Width ?
+                _ListInfo[COL_NAME].Width :
                 (Offset ? (USHORT)(Offset - pStr) : (USHORT)strlen(pStr));
 
-            _ListInfo[COL_EXT].Len =
-                _ListInfo[COL_EXT].Len ?
-                _ListInfo[COL_EXT].Len :
+            _ListInfo[COL_EXT].Width =
+                _ListInfo[COL_EXT].Width ?
+                _ListInfo[COL_EXT].Width :
                 (Offset ?
                 (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1) :
                     (USHORT)strlen(pStr) - _ListInfo[COL_EXT].StartIdx - 1);
@@ -414,43 +439,531 @@ private:
         {
             // wrong file
             if (_ListInfo[COL_NAME].StartIdx == 0)
-                return FALSE;
+                return false;
         }
 
         _IsHeader--;
 
-        return TRUE;
+        return true;
     }
 
-    void FileNameColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    /*****************************************************************************
+        Routine:     ParseListContent
+    ------------------------------------------------------------------------------
+        Description: Analyse one item from list file by using header information
+
+        Arguments:
+                pStr	    -	pointer to string for analyse
+                FileInfo	-	[out] pointer to structure describing file in the string
+
+        Return Value:
+                None
+
+    *****************************************************************************/
+
+    void ParseListContent(TChar* pStr, TFileInfo<TChar>& FileInfo)
     {
+        // we don't know what colomns exist so we have to check all descriptors
+        for (int i = 0; i < LIST_COLUMN_NUMBER; i++)
+        {
+            // if the column is present than run the handler function
+            if (_ListInfo[i].StartIdx /*|| i == COL_NAME*/)
+            {
+                //(this->_ListInfo[i].*HandleFunc)(&pStr[_ListInfo[i].StartIdx - 1], _ListInfo[i].Width, FileInfo);
+                (this->*_ColumnHandlers[i])(&pStr[_ListInfo[i].StartIdx - 1], _ListInfo[i].Width, FileInfo);
+            }
+        }
 
+        return;
     }
 
-    void ExtColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    /*****************************************************************************
+        Routine:     ParseFileNameColumn
+    ------------------------------------------------------------------------------
+        Description:
+                    Extract file name from file list item
+
+        Arguments:
+                    pStr     - pointer to file list item
+                    Width    - column width 
+                    FileInfo - [out] pointer to structure describing file in the string
+                    
+        Return Value:
+
+    *****************************************************************************/
+
+    void ParseFileNameColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
+        if (pStr == nullptr)
+        {
+            return;
+        }
+
+        int len = (int) _pStringOperations->StrLen(pStr);
+
+        // if pStr is wrong or pStr is directory 
+        // then we should correct StrLen
+
+        // we can read wrong file which contains phrase "File name" in the first line and at first position 
+        // In this case StrLen may be wrong
+
+        // if pStr is directory we should correct length because dir name has 
+        // longer length than column width It is correct situation
+
+        if (Width < len && pStr[len - 2] != '\\')
+        {
+            len = Width;
+        }
+
+        DelSpacesAroundStr(FileInfo.Name, pStr, len);
+
+        if (FileInfo.Name[_pStringOperations->StrLen(FileInfo.Name) - 1] == '\\')
+        {
+            FileInfo.Attr |= 0x10;
+        }
 
     }
 
-    void SizeColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    /*****************************************************************************
+        Routine:     ParseExtColumn
+    ------------------------------------------------------------------------------
+        Description:
+                    Extract file extension from file list item
+
+        Arguments:
+                    pStr     - pointer to file list item
+                    Width    - column width 
+                    FileInfo - [out] pointer to structure describing file in the string
+
+        Return Value:
+
+    *****************************************************************************/
+
+    void ParseExtColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
+        TChar pExt[256];
+        TChar DotCh = '.';
 
+        if (pStr == nullptr)
+        {
+            return;
+        }
+
+        int len = (int) _pStringOperations->StrLen(pStr);
+
+        if (Width < len)
+        {
+            len = Width;
+        }
+
+        DelSpacesAroundStr(pExt, pStr, len);
+
+        // if file extension is not empty
+        if (_pStringOperations->StrLen(pExt))
+        {
+            _pStringOperations->StrCat(FileInfo.Name, &DotCh);
+            _pStringOperations->StrCat(FileInfo.Name, pExt);
+        }
     }
 
-    void DateColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    /*****************************************************************************
+        Routine:     ParseSizeColumn
+    ------------------------------------------------------------------------------
+        Description:
+                    Extract file size from file list item
+
+        Arguments:
+                    pStr     - pointer to file list item
+                    Width    - column width
+                    FileInfo - [out] pointer to structure describing file in the string
+
+        Return Value:
+
+    *****************************************************************************/
+
+    void ParseSizeColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
+        TChar seps = ',';
+        TChar* token;
+        TString Result;
+        TChar Source[20];
 
+        if (pStr == nullptr)
+        {
+            return;
+        }
+
+        DelSpacesAroundStr(Source, pStr, Width);
+
+        if (!IsFileSize(Source))
+        {
+            return;
+        }
+
+        token = _pStringOperations->StrTok(Source, &seps);
+
+        while (token != nullptr)
+        {
+            Result += token;
+            token = _pStringOperations->StrTok(NULL, &seps);
+        }
+
+        FileInfo.iSize = _pStringOperations->ConvertStringToInt(Result);
+        return;
     }
 
-    void TimeColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    /*****************************************************************************
+    Routine:     ParseDateColumn
+    ------------------------------------------------------------------------------
+        Description:
+                    Extract file date from file list item
+
+        Arguments:
+                    pStr     - pointer to file list item
+                    Width    - column width
+                    FileInfo - [out] pointer to structure describing file in the string
+
+        Return Value:
+
+    *****************************************************************************/
+    
+    void ParseDateColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
+        TChar seps = '.';
+        TChar* token;
+        TChar Source[20];
 
+        if (pStr == nullptr)
+        {
+            return;
+        }
+
+        memcpy(Source, pStr, Width);
+        Source[Width] = 0;
+
+        if (!IsFileDate(Source))
+        {
+            return;
+        }
+
+        token = _pStringOperations->StrTok(Source, &seps);
+
+        if (token)
+        {
+            FileInfo.Day = (DWORD) _pStringOperations->ConvertStringToInt(token);
+            token = _pStringOperations->StrTok(NULL, &seps);
+        }
+
+        if (token)
+        {
+            FileInfo.Month = (DWORD)_pStringOperations->ConvertStringToInt(token) - 1;
+            token = _pStringOperations->StrTok(NULL, &seps);
+        }
+
+        if (token)
+        {
+            FileInfo.Year = (DWORD)_pStringOperations->ConvertStringToInt(token) - 1900;
+            token = _pStringOperations->StrTok(NULL, &seps);
+        }
+
+        return;
     }
 
-    void AttrColumnHandler(TChar* pStr, USHORT StrLen, TFileInfo<TChar>* pFileInfo)
+    /*****************************************************************************
+    Routine:     ParseTimeColumn
+    ------------------------------------------------------------------------------
+        Description:
+                    Extract file time from file list item
+
+        Arguments:
+                    pStr     - pointer to file list item
+                    Width    - column width
+                    FileInfo - [out] pointer to structure describing file in the string
+
+        Return Value:
+
+    *****************************************************************************/
+    
+    void ParseTimeColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
+        TChar seps[] = ":.";
+        TChar* token;
+        TChar Source[20];
 
+        if (pStr == nullptr)
+            return;
+
+        memcpy(Source, pStr, Width);
+        Source[Width] = 0;
+
+        if (!IsFileTime(Source))
+            return;
+
+        token = _pStringOperations->StrTok(Source, seps);
+
+        if (token)
+        {
+            FileInfo.Hour = (DWORD) _pStringOperations->ConvertStringToInt(token);
+            token = _pStringOperations->StrTok(NULL, seps);
+        }
+
+        if (token)
+        {
+            FileInfo.Minute = (DWORD) _pStringOperations->ConvertStringToInt(token);
+            token = _pStringOperations->StrTok(NULL, seps);
+        }
+
+        if (token)
+        {
+            FileInfo.Second = (DWORD) _pStringOperations->ConvertStringToInt(token);
+        }
+
+        return;
     }
+
+    /*****************************************************************************
+    Routine:     ParseAttrColumn
+    ------------------------------------------------------------------------------
+        Description:
+                    Extract file attributes from file list item
+
+        Arguments:
+                    pStr     - pointer to file list item
+                    Width    - column width
+                    FileInfo - [out] pointer to structure describing file in the string
+
+        Return Value:
+
+    *****************************************************************************/
+    
+    void ParseAttrColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
+    {
+        DWORD Result = 0;
+        TChar Source[20];
+
+        if (pStr == nullptr)
+        {
+            return;
+        }
+
+        // get value of attributes from the string
+        memcpy(Source, pStr, Width);
+        Source[Width] = 0;
+
+        // test if the substring is attributes
+        if (!IsFileAttr(Source))
+        {
+            return;
+        }
+
+        // analyse attr substring
+        for (int i = 0; i < 4; i++)
+        {
+            switch (pStr[i])
+            {
+            case 'a':
+                Result |= 0x20;
+                break;
+
+            case 'h':
+                Result |= 0x02;
+                break;
+
+            case 'r':
+                Result |= 0x01;
+                break;
+
+            case 's':
+                Result |= 0x04;
+                break;
+            }
+        }
+
+        FileInfo.Attr |= Result;
+        return;
+    }
+
+    /*****************************************************************************
+        Routine:     DelSpacesAroundStr
+    ------------------------------------------------------------------------------
+        Description:
+                    Removes spaces in the beginning and end of string
+
+        Arguments:
+                    pStr - pointer to string
+
+        Return Value:
+
+    *****************************************************************************/
+
+    void DelSpacesAroundStr(TChar* pResultStr, TChar* pStr, USHORT Len)
+    {
+        USHORT i = Len;
+        USHORT StrLen = Len;
+
+        // count postfix spaces
+        while ((pStr[i - 1] == 32 || pStr[i - 1] == 0x0D) && i > 0)
+        {
+            i--;
+        }
+
+        StrLen = i;
+        i = 0;
+
+        // count prefix spaces
+        while (pStr[i] == 32 && i < StrLen)
+        {
+            i++;
+        }
+
+        StrLen -= i;
+
+        // get substring between spaces
+        memcpy(pResultStr, &pStr[i], StrLen);
+        pResultStr[StrLen] = 0;
+    }
+
+    /*****************************************************************************
+        Routine:     IsFileDate
+    ------------------------------------------------------------------------------
+        Description:
+                    Determines if pStr is file date
+
+        Arguments:
+                    pStr	- pointer to string
+
+        Return Value:
+
+    *****************************************************************************/
+
+    bool IsFileDate(TChar* pStr)
+    {
+        if (pStr == nullptr)
+        {
+            return false;
+        }
+
+        //if ( !strchr( pStr, '/' ) )	
+        //	Result = FALSE;
+
+        if (!_pStringOperations->IsDigit(pStr[0])
+            || !_pStringOperations->IsDigit(pStr[1])
+            || !_pStringOperations->IsDigit(pStr[3])
+            || !_pStringOperations->IsDigit(pStr[4])
+            || !_pStringOperations->IsDigit(pStr[6])
+            || !_pStringOperations->IsDigit(pStr[7])
+            || !(pStr[2] == '.')
+            || !(pStr[5] == '.'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /*****************************************************************************
+        Routine:     IsFileTime
+    ------------------------------------------------------------------------------
+        Description:
+                    Determines if pStr is file time
+
+        Arguments:
+                    pStr	- pointer to string
+
+        Return Value:
+
+    *****************************************************************************/
+
+    bool IsFileTime(TChar* pStr)
+    {
+        if (pStr == nullptr)
+        {
+            return false;
+        }
+
+        if (_pStringOperations->StrChr(pStr, ':') && !_pStringOperations->StrChr(pStr, '\\'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /*****************************************************************************
+        Routine:     IsFileAttr
+    ------------------------------------------------------------------------------
+        Description:
+                    Determines if pStr is file attributes
+
+        Arguments:
+                    pStr	- pointer to string
+
+        Return Value:
+
+    *****************************************************************************/
+
+    bool IsFileAttr(TChar* pStr)
+    {
+        if (pStr == nullptr)
+        {
+            return false;
+        }
+
+        if (_pStringOperations->StrLen(pStr) == 4)
+        {
+            for (int i = 0; i < 4; i++)
+                if (pStr[i] != 'r' &&
+                    pStr[i] != 'a' &&
+                    pStr[i] != 'h' &&
+                    pStr[i] != 's' &&
+                    pStr[i] != '-'
+                    )
+                {
+                    return false;
+                }
+        }
+        else
+        {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /*****************************************************************************
+        Routine:     IsFileSize
+    ------------------------------------------------------------------------------
+        Description:
+                    Determines if pStr is file size
+
+        Arguments:
+                    pStr	- pointer to string
+
+        Return Value:
+
+    *****************************************************************************/
+
+    bool IsFileSize(TChar *pStr)
+    {
+        UINT Len = (UINT)_pStringOperations->StrLen(pStr);
+        UINT i;
+
+        if (pStr == nullptr)
+        {
+            return false;
+        }
+
+        for (i = 0; i < Len; i++)
+        {
+            if (!(_pStringOperations->IsDigit(pStr[i]) || pStr[i] == ','))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 };
 
 

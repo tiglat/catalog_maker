@@ -155,6 +155,140 @@ void LoadConfigParams()
 }
 
 /*****************************************************************************
+    Routine:     PackFiles
+------------------------------------------------------------------------------
+    Description:
+        PackFiles specifies what should happen when a user creates,
+        or adds files to the archive.
+        This is ANSI API function. It is used by old versions of TotalCommander.
+
+    Arguments:
+
+    Return Value:
+
+*****************************************************************************/
+
+WCX_API int STDCALL
+PackFiles(
+    char *PackedFile,
+    char *SubPath,
+    char *SrcPath,
+    char *AddList,
+    int Flags
+)
+{
+    WIN32_FIND_DATA FileInfo;
+
+    setlocale(LC_ALL, "[lang]");
+
+    LoadConfigParams();
+
+    // ------- check if the file is exist -----------------------
+
+    auto hFindFile = FindFirstFile(PackedFile, &FileInfo);
+
+    // if file is exist
+    if (hFindFile != INVALID_HANDLE_VALUE)
+    {
+        FindClose(hFindFile);
+
+        auto rv = MessageBox(
+            NULL,
+            "The file is already exist. Overwrite it?",
+            "Warning",
+            MB_YESNO || MB_ICONWARNING || MB_SYSTEMMODAL
+        );
+
+        if (rv == IDCANCEL)
+        {
+            return (SUCCESS);
+        }
+    }
+
+    // ------- open file to write file list-----------------------
+
+    auto hCatalogFile = CreateFile(
+        PackedFile,					// file name
+        GENERIC_WRITE,				// access mode
+        0,							// share mode
+        NULL,						// SD
+        CREATE_ALWAYS,				// how to create
+        FILE_ATTRIBUTE_NORMAL,      // file attributes
+        NULL                        // handle to template file
+    );
+
+    if (hCatalogFile == INVALID_HANDLE_VALUE)
+    {
+        return (E_ECREATE);
+    }
+
+    // ------- create file list -----------------------
+
+    SetCurrentDirectory(SrcPath);
+    int result = SUCCESS;
+
+    try
+    {
+        string WildCardPattern(g_ViewParam.sFileTypes);
+        ConvertWildCardToRegexA(WildCardPattern);
+        basic_regex<char> WildCardAsRegex(WildCardPattern, std::regex_constants::icase);
+
+        AnsiStringOperations ops;
+
+        FileList<FileListItem<char>, char, std::string> list(AddList, SrcPath, &ops, WildCardAsRegex);
+
+        DWORD BytesWritten = 0;
+        string s = list.GetHeaderLine();
+        auto rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
+        s = list.GetDividingLine();
+        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
+        for (list.First(); !list.IsEnd(); list.Next())
+        {
+            // tell Windows Comander what file we are proccessing
+            g_ProcessDataProc(list.GetCurrentFileName(), (int)list.GetCurrentFileSize());
+
+            string s = list.GetCurrentFileLine();
+            rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
+            if (rv == NULL)
+            {
+                CloseHandle(hCatalogFile);
+                return E_EWRITE;
+            }
+
+        }
+
+        s = list.GetFooterLine();
+        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
+        if (rv == NULL)
+        {
+            CloseHandle(hCatalogFile);
+            return E_EWRITE;
+        }
+
+    }
+    catch (...)
+    {
+        result = E_EWRITE;
+    }
+
+
+    CloseHandle(hCatalogFile);
+    return (result);
+}
+
+/*****************************************************************************
     Routine:     PackFilesW
 ------------------------------------------------------------------------------
     Description:
@@ -298,140 +432,6 @@ PackFilesW(
 }
 
 
-/*****************************************************************************
-    Routine:     PackFiles
-------------------------------------------------------------------------------
-    Description: 
-        PackFiles specifies what should happen when a user creates, 
-        or adds files to the archive.
-        This is ANSI API function. It is used by old versions of TotalCommander.
-  
-    Arguments:  
-
-    Return Value:
-
-*****************************************************************************/
-
-WCX_API int STDCALL 
-    PackFiles (
-        char *PackedFile, 
-        char *SubPath, 
-        char *SrcPath, 
-        char *AddList, 
-        int Flags
-        )
-{
-    WIN32_FIND_DATA FileInfo;
-
-    setlocale( LC_ALL, "[lang]" );
-
-    LoadConfigParams();
-
-    // ------- check if the file is exist -----------------------
-
-    auto hFindFile = FindFirstFile(PackedFile, &FileInfo);
-
-    // if file is exist
-    if ( hFindFile != INVALID_HANDLE_VALUE  )
-    {
-        FindClose( hFindFile );
-
-        auto rv = MessageBox(
-            NULL,
-            "The file is already exist. Overwrite it?",
-            "Warning",
-            MB_YESNO || MB_ICONWARNING || MB_SYSTEMMODAL
-        );
-
-        if (rv == IDCANCEL)
-        {
-            return (SUCCESS);
-        }
-    }
-
-    // ------- open file to write file list-----------------------
-
-    auto hCatalogFile = CreateFile(
-        PackedFile,					// file name
-        GENERIC_WRITE,				// access mode
-        0,							// share mode
-        NULL,						// SD
-        CREATE_ALWAYS,				// how to create
-        FILE_ATTRIBUTE_NORMAL,      // file attributes
-        NULL                        // handle to template file
-    );
-
-    if ( hCatalogFile == INVALID_HANDLE_VALUE )
-    {
-        return ( E_ECREATE );
-    }
-
-    // ------- create file list -----------------------
-
-    SetCurrentDirectory(SrcPath);
-    int result = SUCCESS;
-
-    try
-    {
-        string WildCardPattern(g_ViewParam.sFileTypes);
-        ConvertWildCardToRegexA(WildCardPattern);
-        basic_regex<char> WildCardAsRegex(WildCardPattern, std::regex_constants::icase);
-
-        AnsiStringOperations ops;
-
-        FileList<FileListItem<char>, char, std::string> list(AddList, SrcPath, &ops, WildCardAsRegex);
-
-        DWORD BytesWritten = 0;
-        string s = list.GetHeaderLine();
-        auto rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
-        if (rv == NULL)
-        {
-            CloseHandle(hCatalogFile);
-            return E_EWRITE;
-        }
-
-        s = list.GetDividingLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
-        if (rv == NULL)
-        {
-            CloseHandle(hCatalogFile);
-            return E_EWRITE;
-        }
-
-        for (list.First(); !list.IsEnd(); list.Next())
-        {
-            // tell Windows Comander what file we are proccessing
-            g_ProcessDataProc(list.GetCurrentFileName(), (int)list.GetCurrentFileSize());
-
-            string s = list.GetCurrentFileLine();
-            rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
-            if (rv == NULL)
-            {
-                CloseHandle(hCatalogFile);
-                return E_EWRITE;
-            }
-
-        }
-
-        s = list.GetFooterLine();
-        rv = WriteFile(hCatalogFile, s.c_str(), (DWORD)s.length(), &BytesWritten, NULL);
-        if (rv == NULL)
-        {
-            CloseHandle(hCatalogFile);
-            return E_EWRITE;
-        }
-
-    }
-    catch (...)
-    {
-        result = E_EWRITE;
-    }
-
-
-    CloseHandle( hCatalogFile );
-    return (result);
-}
-
 FileEncoding IsUnicodeFile(HANDLE CatalogFile)
 {
     DWORD rv;
@@ -457,6 +457,88 @@ FileEncoding IsUnicodeFile(HANDLE CatalogFile)
         return FileEncoding::ANSI;
     }
 
+}
+
+/*****************************************************************************
+    Routine:     OpenArchive
+------------------------------------------------------------------------------
+    Description:
+        ANSI API function. It is used by old versions of TotalCommander.
+        OpenArchive should perform all necessary operations
+        when an archive is to be opened
+
+    Arguments:
+
+    Return Value:
+
+
+*****************************************************************************/
+
+WCX_API HANDLE STDCALL
+OpenArchive(
+    tOpenArchiveData *ArchiveData
+)
+{
+    HANDLE CatalogFile;
+
+    CatalogFile = CreateFile(
+        ArchiveData->ArcName,
+        GENERIC_READ,
+        0,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL
+    );
+
+    if (CatalogFile == INVALID_HANDLE_VALUE)
+    {
+        ArchiveData->OpenResult = E_BAD_ARCHIVE;
+        return 0;
+    }
+
+    static AnsiStringOperations ops;
+    g_CatalogReaderDesc.isUnicode = false;
+    g_CatalogReaderDesc.pReaderW = nullptr;
+    g_CatalogReaderDesc.pReaderA = new CatalogReader<char, string>(CatalogFile, &ops);
+
+    return CatalogFile;
+
+    //HANDLE hFile;
+
+    //hFile = CreateFile(
+    //    ArchiveData->ArcName,
+    //    GENERIC_READ,
+    //    0,
+    //    NULL,
+    //    OPEN_EXISTING,
+    //    FILE_ATTRIBUTE_NORMAL,
+    //    NULL
+    //);
+
+    //if ( hFile == INVALID_HANDLE_VALUE )
+    //{
+    //    hFile = 0;
+    //    ArchiveData->OpenResult = E_BAD_ARCHIVE;
+    //}
+
+    //memset( &g_RxDesc, 0, sizeof(g_RxDesc) );
+
+    //g_RxDesc.iReadPos	= 0;
+    //g_RxDesc.iWritePos	= 0;
+    //g_RxDesc.bNeedData	= TRUE;
+    //g_RxDesc.DirName[0] = 0;
+    //g_RxDesc.RootDirLen = 0;
+    //g_RxDesc.iThisIsHeader	= 2;
+    //g_RxDesc.ReturnedLength = 0;
+
+    //for ( int i = 0; i < COLUMN_NUMBER; i++ )
+    //{
+    //    g_ListInfo[i].StartIdx	= 0;
+    //    g_ListInfo[i].Len		= 0;
+    //}
+
+    //return ( hFile );
 }
 
 /*****************************************************************************
@@ -516,91 +598,6 @@ OpenArchiveW(
     return (hFile);
 }
 
-
-
-
-/*****************************************************************************
-    Routine:     OpenArchive
-------------------------------------------------------------------------------
-    Description: 
-        ANSI API function. It is used by old versions of TotalCommander.
-        OpenArchive should perform all necessary operations 
-        when an archive is to be opened
-
-    Arguments:  
-
-    Return Value:
-
-
-*****************************************************************************/
-
-WCX_API HANDLE STDCALL 
-    OpenArchive (
-        tOpenArchiveData *ArchiveData
-        )
-{
-    HANDLE CatalogFile;
-
-    CatalogFile = CreateFile(
-        ArchiveData->ArcName,
-        GENERIC_READ,
-        0,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL
-    );
-
-    if (CatalogFile == INVALID_HANDLE_VALUE)
-    {
-        ArchiveData->OpenResult = E_BAD_ARCHIVE;
-        return 0;
-    }
-       
-    static AnsiStringOperations ops;
-    g_CatalogReaderDesc.isUnicode = false;
-    g_CatalogReaderDesc.pReaderW  = nullptr;
-    g_CatalogReaderDesc.pReaderA  = new CatalogReader<char, string>(CatalogFile, &ops);
-
-    return CatalogFile;
-
-    //HANDLE hFile;
-
-    //hFile = CreateFile(
-    //    ArchiveData->ArcName,
-    //    GENERIC_READ,
-    //    0,
-    //    NULL,
-    //    OPEN_EXISTING,
-    //    FILE_ATTRIBUTE_NORMAL,
-    //    NULL
-    //);
-
-    //if ( hFile == INVALID_HANDLE_VALUE )
-    //{
-    //    hFile = 0;
-    //    ArchiveData->OpenResult = E_BAD_ARCHIVE;
-    //}
-
-    //memset( &g_RxDesc, 0, sizeof(g_RxDesc) );
-
-    //g_RxDesc.iReadPos	= 0;
-    //g_RxDesc.iWritePos	= 0;
-    //g_RxDesc.bNeedData	= TRUE;
-    //g_RxDesc.DirName[0] = 0;
-    //g_RxDesc.RootDirLen = 0;
-    //g_RxDesc.iThisIsHeader	= 2;
-    //g_RxDesc.ReturnedLength = 0;
-
-    //for ( int i = 0; i < COLUMN_NUMBER; i++ )
-    //{
-    //    g_ListInfo[i].StartIdx	= 0;
-    //    g_ListInfo[i].Len		= 0;
-    //}
-
-    //return ( hFile );
-}
-
 int ReadDataBlock(HANDLE hArcData)
 {
     int rv;
@@ -626,182 +623,25 @@ int ReadDataBlock(HANDLE hArcData)
     return SUCCESS;
 }
 
-
-
-/*****************************************************************************
-    Routine:     ReadHeaderEx
-------------------------------------------------------------------------------
-    Description: 
-                WinCmd calls ReadHeader 
-                to find out what files are in the archive
-                It is used with new version of TotalCmd to support files >2Gb
-    Arguments:  
-
-    Return Value:
-
-
-*****************************************************************************/
-
-WCX_API	int STDCALL 
-    ReadHeaderEx (
-        HANDLE hArcData, 
-        tHeaderDataEx *HeaderDataEx
-        )
-{
-    char seps[] = "\n";
-    char *token, *pstr;
-    TFileInfo<char> FileInfo;
-    DWORD	rv;
-    USHORT len;
-
-    memset( &FileInfo, 0, sizeof(TFileInfo<char>) );
-
-    while ( 1 )
-    {
-        // if we don't have data for analyse
-        // we should read next block
-        if ( g_RxDesc.bNeedData )
-        {
-            rv = ReadDataBlock( hArcData );
-
-            if ( rv != SUCCESS )
-            {
-                return( rv );
-            }
-
-            g_RxDesc.bNeedData = FALSE;
-        }
-
-        // get next string from read buffer
-        token = strtok( &g_RxDesc.pBuf[g_RxDesc.iReadPos], seps );
-
-        // if there is no data for analyse 
-        // then we should read next block
-        if ( token == NULL )
-        {
-            g_RxDesc.bNeedData = TRUE;
-            g_RxDesc.iReadPos = 0;
-            g_RxDesc.iWritePos = 0;
-            continue;
-        }
-
-        // change read position in the buffer
-        len = (USHORT) strlen( token );
-        g_RxDesc.iReadPos += len + 1;
-        
-        // is it the end of read data block?
-        // first condition to find the end of file - every token must have 0x0D at the end 
-        // except last one It is needed to skip "total files and size" string
-        // second condition to find end of current block of data
-        if ( token[len-1] != 0x0D || g_RxDesc.iReadPos > g_RxDesc.ReturnedLength+g_RxDesc.iWritePos )
-        {
-            // if token is not a complete text line,
-            // we should store this token and read the next block
-            memcpy( g_RxDesc.pBuf, token, len );
-            g_RxDesc.iWritePos = len;
-            g_RxDesc.iReadPos = 0;
-            g_RxDesc.bNeedData = TRUE;
-            continue;
-        }
-
-        // skip empty strings
-        if ( len == 1 && token[0] == '\r' )
-            continue;
-
-        // Analyze string if it is correct
-        if ( g_RxDesc.iThisIsHeader )
-        {
-            if ( HeaderInfoStringParser( token ) == FALSE )
-                return ( E_BAD_ARCHIVE );
-            continue;
-        }
-        else
-            FileInfoStringParser( token, &FileInfo );
-
-        // tell WinCom what file we are proccessing now
-        g_RxDesc.CurrentFile = FileInfo;
-        g_ProcessDataProc( FileInfo.Name, (int)FileInfo.iSize );
-
-        // if current file is directory then store its name
-        // to use in future to make full file name
-        if ( FileInfo.Attr & 0x10 )
-        {
-            if ( g_RxDesc.RootDirLen == 0 )
-            {
-                GetShortDirName(&FileInfo);
-            }
-            else
-            {
-                strcpy(g_RxDesc.DirName, &FileInfo.Name[g_RxDesc.RootDirLen]);
-            }
-        }
-
-        break;
-    }
-
-    // fill stucture for WinComander
-    HeaderDataEx->FileAttr     = FileInfo.Attr;
-    HeaderDataEx->PackSize     = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
-    HeaderDataEx->PackSizeHigh = (int)(FileInfo.iSize >> 32);
-    HeaderDataEx->UnpSize      = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
-    HeaderDataEx->UnpSizeHigh  = (int)(FileInfo.iSize >> 32);
-
-    // if file is directory copy its name 
-    if ( FileInfo.Attr & 0x10 )
-    {
-        strcpy( HeaderDataEx->FileName, g_RxDesc.DirName );
-    }
-    // if file is file :)  build full name for that file
-    else
-    {
-        strcpy( HeaderDataEx->FileName, g_RxDesc.DirName );
-        // get short file name
-        pstr = strrchr( FileInfo.Name, '\\' );
-        if ( pstr )
-            strcat( HeaderDataEx->FileName, ++pstr );
-        else
-            strcat( HeaderDataEx->FileName, FileInfo.Name );
-    }
-
-    // make date and time for Win Com
-    if ( FileInfo.Year )
-    {
-            DWORD time = 
-                FileInfo.Hour << 11 | 
-                FileInfo.Minute << 5 | FileInfo.Second / 2;
-
-            DWORD date = 
-                (FileInfo.Year - 80) << 9 | 
-                (FileInfo.Month + 1) << 5 | 
-                FileInfo.Day;
-
-            HeaderDataEx->FileTime = date << 16 | time;
-    }
-    else
-        HeaderDataEx->FileTime = 0;
-
-    return ( SUCCESS );
-}
-
 /*****************************************************************************
     Routine:     ReadHeader
 ------------------------------------------------------------------------------
-    Description: 
-                WinCmd calls ReadHeader 
+    Description:
+                WinCmd calls ReadHeader
                 to find out what files are in the archive
 
-    Arguments:  
+    Arguments:
 
     Return Value:
 
 
 *****************************************************************************/
 
-WCX_API	int STDCALL 
-    ReadHeader (
-        HANDLE hArcData, 
-        tHeaderData *HeaderData
-        )
+WCX_API	int STDCALL
+ReadHeader(
+    HANDLE hArcData,
+    tHeaderData *HeaderData
+)
 {
 
     TFileInfo<char> FileInfo;
@@ -981,6 +821,161 @@ WCX_API	int STDCALL
     //    HeaderData->FileTime = 0;
 
     //return ( SUCCESS );
+}
+
+/*****************************************************************************
+    Routine:     ReadHeaderEx
+------------------------------------------------------------------------------
+    Description: 
+                WinCmd calls ReadHeader 
+                to find out what files are in the archive
+                It is used with new version of TotalCmd to support files >2Gb
+    Arguments:  
+
+    Return Value:
+
+
+*****************************************************************************/
+
+WCX_API	int STDCALL 
+    ReadHeaderEx (
+        HANDLE hArcData, 
+        tHeaderDataEx *HeaderDataEx
+        )
+{
+    char seps[] = "\n";
+    char *token, *pstr;
+    TFileInfo<char> FileInfo;
+    DWORD	rv;
+    USHORT len;
+
+    memset( &FileInfo, 0, sizeof(TFileInfo<char>) );
+
+    while ( 1 )
+    {
+        // if we don't have data for analyse
+        // we should read next block
+        if ( g_RxDesc.bNeedData )
+        {
+            rv = ReadDataBlock( hArcData );
+
+            if ( rv != SUCCESS )
+            {
+                return( rv );
+            }
+
+            g_RxDesc.bNeedData = FALSE;
+        }
+
+        // get next string from read buffer
+        token = strtok( &g_RxDesc.pBuf[g_RxDesc.iReadPos], seps );
+
+        // if there is no data for analyse 
+        // then we should read next block
+        if ( token == NULL )
+        {
+            g_RxDesc.bNeedData = TRUE;
+            g_RxDesc.iReadPos = 0;
+            g_RxDesc.iWritePos = 0;
+            continue;
+        }
+
+        // change read position in the buffer
+        len = (USHORT) strlen( token );
+        g_RxDesc.iReadPos += len + 1;
+        
+        // is it the end of read data block?
+        // first condition to find the end of file - every token must have 0x0D at the end 
+        // except last one It is needed to skip "total files and size" string
+        // second condition to find end of current block of data
+        if ( token[len-1] != 0x0D || g_RxDesc.iReadPos > g_RxDesc.ReturnedLength+g_RxDesc.iWritePos )
+        {
+            // if token is not a complete text line,
+            // we should store this token and read the next block
+            memcpy( g_RxDesc.pBuf, token, len );
+            g_RxDesc.iWritePos = len;
+            g_RxDesc.iReadPos = 0;
+            g_RxDesc.bNeedData = TRUE;
+            continue;
+        }
+
+        // skip empty strings
+        if ( len == 1 && token[0] == '\r' )
+            continue;
+
+        // Analyze string if it is correct
+        if ( g_RxDesc.iThisIsHeader )
+        {
+            if ( HeaderInfoStringParser( token ) == FALSE )
+                return ( E_BAD_ARCHIVE );
+            continue;
+        }
+        else
+            FileInfoStringParser( token, &FileInfo );
+
+        // tell WinCom what file we are proccessing now
+        g_RxDesc.CurrentFile = FileInfo;
+        g_ProcessDataProc( FileInfo.Name, (int)FileInfo.iSize );
+
+        // if current file is directory then store its name
+        // to use in future to make full file name
+        if ( FileInfo.Attr & 0x10 )
+        {
+            if ( g_RxDesc.RootDirLen == 0 )
+            {
+                GetShortDirName(&FileInfo);
+            }
+            else
+            {
+                strcpy(g_RxDesc.DirName, &FileInfo.Name[g_RxDesc.RootDirLen]);
+            }
+        }
+
+        break;
+    }
+
+    // fill stucture for WinComander
+    HeaderDataEx->FileAttr     = FileInfo.Attr;
+    HeaderDataEx->PackSize     = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
+    HeaderDataEx->PackSizeHigh = (int)(FileInfo.iSize >> 32);
+    HeaderDataEx->UnpSize      = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
+    HeaderDataEx->UnpSizeHigh  = (int)(FileInfo.iSize >> 32);
+
+    // if file is directory copy its name 
+    if ( FileInfo.Attr & 0x10 )
+    {
+        strcpy( HeaderDataEx->FileName, g_RxDesc.DirName );
+    }
+    // if file is file :)  build full name for that file
+    else
+    {
+        strcpy( HeaderDataEx->FileName, g_RxDesc.DirName );
+        // get short file name
+        pstr = strrchr( FileInfo.Name, '\\' );
+        if ( pstr )
+            strcat( HeaderDataEx->FileName, ++pstr );
+        else
+            strcat( HeaderDataEx->FileName, FileInfo.Name );
+    }
+
+    // make date and time for Win Com
+    if ( FileInfo.Year )
+    {
+            DWORD time = 
+                FileInfo.Hour << 11 | 
+                FileInfo.Minute << 5 | FileInfo.Second / 2;
+
+            DWORD date = 
+                (FileInfo.Year - 80) << 9 | 
+                (FileInfo.Month + 1) << 5 | 
+                FileInfo.Day;
+
+            HeaderDataEx->FileTime = date << 16 | time;
+    }
+    else
+        HeaderDataEx->FileTime = 0;
+
+    return ( SUCCESS );
 }
 
 

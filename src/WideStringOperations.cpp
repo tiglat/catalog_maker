@@ -131,6 +131,15 @@ wstring WideStringOperations::ConvertIntToString(DWORD num)
     return std::to_wstring(num);
 }
 
+DWORD64 WideStringOperations::ConvertStringToInt(std::wstring& Str)
+{
+    return _wtoi64(Str.c_str());
+}
+
+DWORD64 WideStringOperations::ConvertStringToInt(const WCHAR* Str)
+{
+    return _wtoi64(Str);
+}
 
 wstring WideStringOperations::GetEndLineChars()
 {
@@ -159,3 +168,7 @@ WCHAR* WideStringOperations::StrStr(const WCHAR* destination, const WCHAR* sourc
     return const_cast<WCHAR*> (wcsstr(destination, source));
 }
 
+int WideStringOperations::IsDigit(int ch)
+{
+    return iswdigit(ch);
+}

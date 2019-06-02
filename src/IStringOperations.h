@@ -37,10 +37,7 @@ public:
     *****************************************************************************/
     
     virtual UINT StrNChr(const TChar* pStr, const TChar ch) = 0;
-
-
     virtual INT StrCaseInsensitiveCmp(const TChar* pLhsStr, const TChar* pRhsStr) = 0;
-
     virtual TChar* StrTok(TChar* strToken, const TChar* strDelimit) = 0;
     virtual TChar* StrCpy(TChar* destination, const TChar* source) = 0;
     virtual TChar* StrCat(TChar* destination, const TChar* source) = 0;
@@ -50,8 +47,12 @@ public:
     virtual TString ConvertTimeToString(SYSTEMTIME& DateTime) = 0;
     virtual TString ConvertFileSizeToString(DWORD64 num) = 0;
     virtual TString ConvertIntToString(DWORD num) = 0;
+    virtual DWORD64 ConvertStringToInt(TString& Str) = 0;
+    virtual DWORD64 ConvertStringToInt(const TChar* Str) = 0;
 
     virtual TString GetEndLineChars() = 0;
+
+    virtual int IsDigit(int ch) = 0;
 
 };
 

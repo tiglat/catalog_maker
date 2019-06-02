@@ -21,6 +21,11 @@ public:
     virtual std::wstring ConvertTimeToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertFileSizeToString(DWORD64 num);
     virtual std::wstring ConvertIntToString(DWORD num);
+    virtual DWORD64 ConvertStringToInt(std::wstring& Str);
+    virtual DWORD64 ConvertStringToInt(const WCHAR* Str);
+
     virtual std::wstring GetEndLineChars();
+
+    virtual int IsDigit(int ch);
 };
 

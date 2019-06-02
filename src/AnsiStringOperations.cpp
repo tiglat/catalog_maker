@@ -149,6 +149,16 @@ string AnsiStringOperations::ConvertIntToString(DWORD num)
     return std::to_string(num);
 }
 
+DWORD64 AnsiStringOperations::ConvertStringToInt(std::string& Str)
+{
+    return _atoi64(Str.c_str());
+}
+
+DWORD64 AnsiStringOperations::ConvertStringToInt(const char* Str)
+{
+    return _atoi64(Str);
+}
+
 string AnsiStringOperations::GetEndLineChars()
 {
     return "\r\n";
@@ -172,4 +182,9 @@ char* AnsiStringOperations::StrCat(char* destination, const char* source)
 char* AnsiStringOperations::StrStr(const char* destination, const char* source)
 {
     return const_cast<char*> (strstr(destination, source));
+}
+
+int AnsiStringOperations::IsDigit(int ch)
+{
+    return isdigit(ch);
 }
