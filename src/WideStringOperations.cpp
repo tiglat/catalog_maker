@@ -168,7 +168,7 @@ WCHAR* WideStringOperations::StrStr(const WCHAR* destination, const WCHAR* sourc
     return const_cast<WCHAR*> (wcsstr(destination, source));
 }
 
-int WideStringOperations::IsDigit(int ch)
+int WideStringOperations::IsDigit(WCHAR ch)
 {
     return iswdigit(ch);
 }

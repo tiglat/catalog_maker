@@ -26,6 +26,6 @@ public:
 
     virtual std::wstring GetEndLineChars();
 
-    virtual int IsDigit(int ch);
+    virtual int IsDigit(WCHAR ch);
 };
 
