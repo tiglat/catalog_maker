@@ -560,31 +560,6 @@ OpenArchiveW(
     return (hFile);
 }
 
-int ReadDataBlock(HANDLE hArcData)
-{
-    int rv;
-
-    rv = ReadFile(
-        hArcData,
-        &g_RxDesc.pBuf[g_RxDesc.iWritePos],
-        STRING_LENGTH - g_RxDesc.iWritePos,
-        &g_RxDesc.ReturnedLength,
-        NULL
-    );
-
-    if (rv &&  g_RxDesc.ReturnedLength == 0)
-    {
-        return E_END_ARCHIVE;
-    }
-
-    if (rv == NULL)
-    {
-        return E_EREAD;
-    }
-
-    return SUCCESS;
-}
-
 /*****************************************************************************
     Routine:     ReadHeader
 ------------------------------------------------------------------------------
@@ -650,145 +625,13 @@ ReadHeader(
     }
 
     return SUCCESS;
-
-    //char seps[] = "\n";
-    //char *token, *pstr;
-    //TFileInfo FileInfo;
-    //DWORD	rv;
-    //USHORT  len;
-
-    //memset( &FileInfo, 0, sizeof(TFileInfo) );
-
-    //while ( 1 )
-    //{
-    //    // if we don't have data for analyse
-    //    // we should read next block
-    //    if ( g_RxDesc.bNeedData )
-    //    {
-    //        rv = ReadDataBlock( hArcData );
-
-    //        if ( rv != SUCCESS )
-    //        {
-    //            return( rv );
-    //        }
-
-    //        g_RxDesc.bNeedData = FALSE;
-    //    }
-
-    //    // get next string from read buffer
-    //    token = strtok( &g_RxDesc.pBuf[g_RxDesc.iReadPos], seps );
-
-    //    // if there is no data for analyse 
-    //    // then we should read next block
-    //    if ( token == NULL )
-    //    {
-    //        g_RxDesc.bNeedData = TRUE;
-    //        g_RxDesc.iReadPos = 0;
-    //        g_RxDesc.iWritePos = 0;
-    //        continue;
-    //    }
-
-    //    // change read position in the buffer
-    //    len = (USHORT) strlen( token );
-    //    g_RxDesc.iReadPos += len + 1;
-    //    
-    //    // is it the end of read data block?
-    //    // first condition to find the end of file - every token must have 0x0D at the end 
-    //    // except last one It is needed to skip "total files and size" string
-    //    // second condition to find end of current block of data
-    //    if ( token[len-1] != 0x0D || g_RxDesc.iReadPos > g_RxDesc.ReturnedLength+g_RxDesc.iWritePos )
-    //    {
-    //        // if token is not complete string
-    //        // we should store this token and read next block
-    //        memcpy( g_RxDesc.pBuf, token, len );
-    //        g_RxDesc.iWritePos = len;
-    //        g_RxDesc.iReadPos = 0;
-    //        g_RxDesc.bNeedData = TRUE;
-    //        continue;
-    //    }
-
-    //    // skip empty strings
-    //    if ( len == 1 && token[0] == '\r' )
-    //        continue;
-
-    //    // Analyse string if it is correct
-    //    if ( g_RxDesc.iThisIsHeader )
-    //    {
-    //        if ( HeaderInfoStringParser( token ) == FALSE )
-    //            return ( E_BAD_ARCHIVE );
-    //        continue;
-    //    }
-    //    else
-    //        FileInfoStringParser( token, &FileInfo );
-
-    //    // tell WinCom what file we are processing now
-    //    g_RxDesc.CurrentFile = FileInfo;
-    //    g_ProcessDataProc( FileInfo.Name, (int)FileInfo.iSize );
-
-    //    // if current file is directory than store its short name
-    //    // to use in future to make full file name
-    //    if ( FileInfo.Attr & 0x10 )
-    //    {
-    //        if ( g_RxDesc.RootDirLen == 0 )
-    //        {
-    //            GetShortDirName(&FileInfo);
-    //        }
-    //        else
-    //        {
-    //            strcpy(g_RxDesc.DirName, &FileInfo.Name[g_RxDesc.RootDirLen]);
-    //        }
-    //    }
-
-    //    break;
-    //}
-
-    //// fill structure for WinComander
-    //HeaderData->FileAttr     = FileInfo.Attr;
-    //HeaderData->PackSize     = (int)FileInfo.iSize;
-    //HeaderData->UnpSize      = (int)FileInfo.iSize;
-
-    //// if file is directory copy its name 
-    //if ( FileInfo.Attr & 0x10 )
-    //{
-    //    strcpy( HeaderData->FileName, g_RxDesc.DirName );
-    //}
-    //// if file is file :)  build full name for that file
-    //else
-    //{
-    //    strcpy( HeaderData->FileName, g_RxDesc.DirName );
-    //    // get short file name
-    //    pstr = strrchr( FileInfo.Name, '\\' );
-    //    if ( pstr )
-    //        strcat( HeaderData->FileName, ++pstr );
-    //    else
-    //        strcat( HeaderData->FileName, FileInfo.Name );
-    //}
-
-    //// make date and time for Win Com
-    //if ( FileInfo.Year )
-    //{
-    //        DWORD time = 
-    //            FileInfo.Hour << 11 | 
-    //            FileInfo.Minute << 5 | FileInfo.Second / 2;
-
-    //        DWORD date = 
-    //            (FileInfo.Year - 80) << 9 | 
-    //            (FileInfo.Month + 1) << 5 | 
-    //            FileInfo.Day;
-
-    //        HeaderData->FileTime = date << 16 | time;
-    //}
-    //else
-    //    HeaderData->FileTime = 0;
-
-    //return ( SUCCESS );
 }
 
 /*****************************************************************************
     Routine:     ReadHeaderEx
 ------------------------------------------------------------------------------
     Description: 
-                WinCmd calls ReadHeader 
+                WinCmd calls ReadHeaderEx 
                 to find out what files are in the archive
                 It is used with new version of TotalCmd to support files >2Gb
     Arguments:  
@@ -804,96 +647,23 @@ WCX_API	int STDCALL
         tHeaderDataEx *HeaderDataEx
         )
 {
-    char seps[] = "\n";
-    char *token, *pstr;
     TFileInfo<char> FileInfo;
-    DWORD	rv;
-    USHORT len;
 
-    memset( &FileInfo, 0, sizeof(TFileInfo<char>) );
-
-    while ( 1 )
+    if (!g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderA != nullptr)
     {
-        // if we don't have data for analyse
-        // we should read next block
-        if ( g_RxDesc.bNeedData )
+        int rc = g_CatalogReaderDesc.pReaderA->ReadNext(FileInfo);
+        if (rc != SUCCESS)
         {
-            rv = ReadDataBlock( hArcData );
-
-            if ( rv != SUCCESS )
-            {
-                return( rv );
-            }
-
-            g_RxDesc.bNeedData = FALSE;
+            return rc;
         }
-
-        // get next string from read buffer
-        token = strtok( &g_RxDesc.pBuf[g_RxDesc.iReadPos], seps );
-
-        // if there is no data for analyse 
-        // then we should read next block
-        if ( token == NULL )
-        {
-            g_RxDesc.bNeedData = TRUE;
-            g_RxDesc.iReadPos = 0;
-            g_RxDesc.iWritePos = 0;
-            continue;
-        }
-
-        // change read position in the buffer
-        len = (USHORT) strlen( token );
-        g_RxDesc.iReadPos += len + 1;
-        
-        // is it the end of read data block?
-        // first condition to find the end of file - every token must have 0x0D at the end 
-        // except last one It is needed to skip "total files and size" string
-        // second condition to find end of current block of data
-        if ( token[len-1] != 0x0D || g_RxDesc.iReadPos > g_RxDesc.ReturnedLength+g_RxDesc.iWritePos )
-        {
-            // if token is not a complete text line,
-            // we should store this token and read the next block
-            memcpy( g_RxDesc.pBuf, token, len );
-            g_RxDesc.iWritePos = len;
-            g_RxDesc.iReadPos = 0;
-            g_RxDesc.bNeedData = TRUE;
-            continue;
-        }
-
-        // skip empty strings
-        if ( len == 1 && token[0] == '\r' )
-            continue;
-
-        // Analyze string if it is correct
-        if ( g_RxDesc.iThisIsHeader )
-        {
-            if ( HeaderInfoStringParser( token ) == FALSE )
-                return ( E_BAD_ARCHIVE );
-            continue;
-        }
-        else
-            FileInfoStringParser( token, &FileInfo );
-
-        // tell WinCom what file we are proccessing now
-        g_RxDesc.CurrentFile = FileInfo;
-        g_ProcessDataProc( FileInfo.Name, (int)FileInfo.iSize );
-
-        // if current file is directory then store its name
-        // to use in future to make full file name
-        if ( FileInfo.Attr & 0x10 )
-        {
-            if ( g_RxDesc.RootDirLen == 0 )
-            {
-                GetShortDirName(&FileInfo);
-            }
-            else
-            {
-                strcpy(g_RxDesc.DirName, &FileInfo.Name[g_RxDesc.RootDirLen]);
-            }
-        }
-
-        break;
     }
+    else
+    {
+        return E_UNKNOWN_FORMAT;
+    }
+
+    // tell WinCom what file we are processing now
+    g_ProcessDataProc(FileInfo.Name, (int)FileInfo.iSize);
 
     // fill stucture for WinComander
     HeaderDataEx->FileAttr     = FileInfo.Attr;
@@ -902,43 +672,29 @@ WCX_API	int STDCALL
     HeaderDataEx->UnpSize      = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
     HeaderDataEx->UnpSizeHigh  = (int)(FileInfo.iSize >> 32);
 
-    // if file is directory copy its name 
-    if ( FileInfo.Attr & 0x10 )
-    {
-        strcpy( HeaderDataEx->FileName, g_RxDesc.DirName );
-    }
-    // if file is file :)  build full name for that file
-    else
-    {
-        strcpy( HeaderDataEx->FileName, g_RxDesc.DirName );
-        // get short file name
-        pstr = strrchr( FileInfo.Name, '\\' );
-        if ( pstr )
-            strcat( HeaderDataEx->FileName, ++pstr );
-        else
-            strcat( HeaderDataEx->FileName, FileInfo.Name );
-    }
+    g_CatalogReaderDesc.pReaderA->GetFullFileName(FileInfo, HeaderDataEx->FileName);
 
     // make date and time for Win Com
     if ( FileInfo.Year )
     {
-            DWORD time = 
-                FileInfo.Hour << 11 | 
-                FileInfo.Minute << 5 | FileInfo.Second / 2;
+        DWORD time = 
+            FileInfo.Hour << 11 | 
+            FileInfo.Minute << 5 | FileInfo.Second / 2;
 
-            DWORD date = 
-                (FileInfo.Year - 80) << 9 | 
-                (FileInfo.Month + 1) << 5 | 
-                FileInfo.Day;
+        DWORD date = 
+            (FileInfo.Year - 80) << 9 | 
+            (FileInfo.Month + 1) << 5 | 
+            FileInfo.Day;
 
-            HeaderDataEx->FileTime = date << 16 | time;
+        HeaderDataEx->FileTime = date << 16 | time;
     }
     else
+    {
         HeaderDataEx->FileTime = 0;
+    }
 
-    return ( SUCCESS );
+    return SUCCESS;
 }
-
 
 /*****************************************************************************
     Routine:     ProcessFile

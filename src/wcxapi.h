@@ -34,11 +34,11 @@ WCX_API HANDLE STDCALL
 
 // WinCmd calls ReadHeaderEx to find out what files are in the archive
 // It is called if the supported archive type may contain files >2 GB.
-//WCX_API	int STDCALL 
-//    ReadHeaderEx (
-//        HANDLE hArcData, 
-//        tHeaderDataEx *HeaderDataEx
-//        );
+WCX_API	int STDCALL 
+    ReadHeaderEx (
+        HANDLE hArcData, 
+        tHeaderDataEx *HeaderDataEx
+        );
 
 // WinCmd calls ReadHeader to find out what files are in the archive
 WCX_API	int STDCALL 

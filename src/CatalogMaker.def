@@ -9,7 +9,7 @@ EXPORTS
     PackSetDefaultParams
     ProcessFile
     ReadHeader
-    ;ReadHeaderEx
+    ReadHeaderEx
     SetChangeVolProc
     SetProcessDataProc
     SetProcessDataProcW
