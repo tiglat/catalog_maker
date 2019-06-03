@@ -28,6 +28,5 @@ public:
 
     virtual std::string GetEndLineChars();
 
-    virtual int IsDigit(char ch);
 };
 

@@ -813,7 +813,6 @@ private:
         pFileInfo->Attr = FileDescription.dwFileAttributes;
         pFileInfo->DateTime = FileDescription.ftLastWriteTime;
         pFileInfo->iSize = 0;
-        pFileInfo->Attr = 0;
         pFileInfo->pExt = nullptr;
         pFileInfo->iType = FileType::FTYPE_DIRECTORY;
 

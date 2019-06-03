@@ -117,7 +117,7 @@ BOOL SetupConfigFileName()
 std::wstring GetWildCardAsRegexW()
 {
     WCHAR WildCardPatternWChar[MASK_LIST_LENGTH];
-    memset(WildCardPatternWChar, 0, MASK_LIST_LENGTH);
+    memset(WildCardPatternWChar, 0, sizeof(WildCardPatternWChar));
     MultiByteToWideChar(CP_ACP, 0, g_ViewParam.sFileTypes, -1, WildCardPatternWChar, MASK_LIST_LENGTH);
 
     std::wstring WildCardPattern(WildCardPatternWChar);
@@ -196,7 +196,7 @@ PackFiles(
             NULL,
             "The file is already exist. Overwrite it?",
             "Warning",
-            MB_YESNO || MB_ICONWARNING || MB_SYSTEMMODAL
+            MB_YESNO | MB_ICONWARNING | MB_SYSTEMMODAL
         );
 
         if (rv == IDCANCEL)
@@ -329,9 +329,7 @@ PackFilesW(
             NULL,
             "The file is already exist. Overwrite it?",
             "Warning",
-            MB_YESNO ||
-            MB_ICONWARNING ||
-            MB_SYSTEMMODAL
+            MB_YESNO | MB_ICONWARNING | MB_SYSTEMMODAL
         );
 
         if (rv == IDCANCEL)

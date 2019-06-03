@@ -52,7 +52,5 @@ public:
 
     virtual TString GetEndLineChars() = 0;
 
-    virtual int IsDigit(TChar ch) = 0;
-
 };
 

@@ -184,7 +184,3 @@ char* AnsiStringOperations::StrStr(const char* destination, const char* source)
     return const_cast<char*> (strstr(destination, source));
 }
 
-int AnsiStringOperations::IsDigit(char ch)
-{
-    return iswdigit(ch);
-}

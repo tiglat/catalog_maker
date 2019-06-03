@@ -32,7 +32,7 @@ private:
     bool		_bNeedData = true;
     UCHAR		_IsHeader = 2;
     DWORD		_ReturnedLength = 0;
-    TFileInfo<TChar> _CurrentFileInfo;
+    TFileInfo<TChar> _CurrentFileInfo = { 0 };
 
     using TColumnHandlerPtr = void (CatalogReader::*)(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo);
     
@@ -806,7 +806,7 @@ private:
     void DelSpacesAroundStr(TChar* pResultStr, TChar* pStr, USHORT Len)
     {
         USHORT i = Len;
-        USHORT StrLen = Len;
+        USHORT StrLen;
 
         // count postfix spaces
         while ((pStr[i - 1] == 32 || pStr[i - 1] == 0x0D) && i > 0)
@@ -853,12 +853,12 @@ private:
         //if ( !strchr( pStr, '/' ) )	
         //	Result = FALSE;
 
-        if (!_pStringOperations->IsDigit(pStr[0])
-            || !_pStringOperations->IsDigit(pStr[1])
-            || !_pStringOperations->IsDigit(pStr[3])
-            || !_pStringOperations->IsDigit(pStr[4])
-            || !_pStringOperations->IsDigit(pStr[6])
-            || !_pStringOperations->IsDigit(pStr[7])
+        if (!iswdigit(pStr[0])
+            || !iswdigit(pStr[1])
+            || !iswdigit(pStr[3])
+            || !iswdigit(pStr[4])
+            || !iswdigit(pStr[6])
+            || !iswdigit(pStr[7])
             || !(pStr[2] == '.')
             || !(pStr[5] == '.'))
         {
@@ -962,7 +962,7 @@ private:
 
         for (i = 0; i < Len; i++)
         {
-            if (!(_pStringOperations->IsDigit(pStr[i]) || pStr[i] == ','))
+            if (!(iswdigit(pStr[i]) || pStr[i] == ','))
             {
                 return false;
             }
