@@ -423,14 +423,14 @@ private:
             _ListInfo[COL_NAME].Width =
                 _ListInfo[COL_NAME].Width ?
                 _ListInfo[COL_NAME].Width :
-                (Offset ? (USHORT)(Offset - pStr) : (USHORT)strlen(pStr));
+                (Offset ? (USHORT)(Offset - pStr) : (USHORT)_pStringOperations->StrLen(pStr));
 
             _ListInfo[COL_EXT].Width =
                 _ListInfo[COL_EXT].Width ?
                 _ListInfo[COL_EXT].Width :
                 (Offset ?
                 (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1) :
-                    (USHORT)strlen(pStr) - _ListInfo[COL_EXT].StartIdx - 1);
+                    (USHORT)_pStringOperations->StrLen(pStr) - _ListInfo[COL_EXT].StartIdx - 1);
         }
 
         if (_IsHeader == 1) // second and the last line of the header

@@ -523,9 +523,9 @@ OpenArchiveW(
     tOpenArchiveDataW *ArchiveData
 )
 {
-    HANDLE hFile;
+    HANDLE CatalogFile;
 
-    hFile = CreateFileW(
+    CatalogFile = CreateFileW(
         ArchiveData->ArcName,
         GENERIC_READ,
         0,
@@ -535,29 +535,18 @@ OpenArchiveW(
         NULL
     );
 
-    if (hFile == INVALID_HANDLE_VALUE)
+    if (CatalogFile == INVALID_HANDLE_VALUE)
     {
-        hFile = 0;
         ArchiveData->OpenResult = E_BAD_ARCHIVE;
+        return 0;
     }
 
-    memset(&g_RxDesc, 0, sizeof(g_RxDesc));
+    static WideStringOperations ops;
+    g_CatalogReaderDesc.isUnicode = true;
+    g_CatalogReaderDesc.pReaderA = nullptr;
+    g_CatalogReaderDesc.pReaderW = new CatalogReader<WCHAR, wstring>(CatalogFile, &ops);
 
-    g_RxDesc.iReadPos = 0;
-    g_RxDesc.iWritePos = 0;
-    g_RxDesc.bNeedData = TRUE;
-    g_RxDesc.DirName[0] = 0;
-    g_RxDesc.RootDirLen = 0;
-    g_RxDesc.iThisIsHeader = 2;
-    g_RxDesc.ReturnedLength = 0;
-
-    for (int i = 0; i < COLUMN_NUMBER; i++)
-    {
-        g_ListInfo[i].StartIdx = 0;
-        g_ListInfo[i].Len = 0;
-    }
-
-    return (hFile);
+    return CatalogFile;
 }
 
 /*****************************************************************************
@@ -684,6 +673,75 @@ WCX_API	int STDCALL
         DWORD date = 
             (FileInfo.Year - 80) << 9 | 
             (FileInfo.Month + 1) << 5 | 
+            FileInfo.Day;
+
+        HeaderDataEx->FileTime = date << 16 | time;
+    }
+    else
+    {
+        HeaderDataEx->FileTime = 0;
+    }
+
+    return SUCCESS;
+}
+
+/*****************************************************************************
+    Routine:     ReadHeaderEx
+------------------------------------------------------------------------------
+    Description:
+                WinCmd calls ReadHeaderEx
+                to find out what files are in the archive
+                It is used with new version of TotalCmd to support files >2Gb
+    Arguments:
+
+    Return Value:
+
+
+*****************************************************************************/
+
+WCX_API	int STDCALL
+ReadHeaderExW(
+    HANDLE hArcData,
+    tHeaderDataExW *HeaderDataEx
+)
+{
+    TFileInfo<WCHAR> FileInfo;
+
+    if (g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderW != nullptr)
+    {
+        int rc = g_CatalogReaderDesc.pReaderW->ReadNext(FileInfo);
+        if (rc != SUCCESS)
+        {
+            return rc;
+        }
+    }
+    else
+    {
+        return E_UNKNOWN_FORMAT;
+    }
+
+    // tell WinCom what file we are processing now
+    g_ProcessDataProcW(FileInfo.Name, (int)FileInfo.iSize);
+
+    // fill stucture for WinComander
+    HeaderDataEx->FileAttr = FileInfo.Attr;
+    HeaderDataEx->PackSize = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
+    HeaderDataEx->PackSizeHigh = (int)(FileInfo.iSize >> 32);
+    HeaderDataEx->UnpSize = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
+    HeaderDataEx->UnpSizeHigh = (int)(FileInfo.iSize >> 32);
+
+    g_CatalogReaderDesc.pReaderW->GetFullFileName(FileInfo, HeaderDataEx->FileName);
+
+    // make date and time for Win Com
+    if (FileInfo.Year)
+    {
+        DWORD time =
+            FileInfo.Hour << 11 |
+            FileInfo.Minute << 5 | FileInfo.Second / 2;
+
+        DWORD date =
+            (FileInfo.Year - 80) << 9 |
+            (FileInfo.Month + 1) << 5 |
             FileInfo.Day;
 
         HeaderDataEx->FileTime = date << 16 | time;

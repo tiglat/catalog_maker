@@ -4,12 +4,14 @@ EXPORTS
     ;DeleteFiles
     GetPackerCaps
     OpenArchive
+    OpenArchiveW
     PackFiles
     PackFilesW
     PackSetDefaultParams
     ProcessFile
     ReadHeader
     ReadHeaderEx
+    ReadHeaderExW
     SetChangeVolProc
     SetProcessDataProc
     SetProcessDataProcW
