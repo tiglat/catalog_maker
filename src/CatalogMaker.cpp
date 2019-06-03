@@ -503,42 +503,6 @@ OpenArchive(
     g_CatalogReaderDesc.pReaderA = new CatalogReader<char, string>(CatalogFile, &ops);
 
     return CatalogFile;
-
-    //HANDLE hFile;
-
-    //hFile = CreateFile(
-    //    ArchiveData->ArcName,
-    //    GENERIC_READ,
-    //    0,
-    //    NULL,
-    //    OPEN_EXISTING,
-    //    FILE_ATTRIBUTE_NORMAL,
-    //    NULL
-    //);
-
-    //if ( hFile == INVALID_HANDLE_VALUE )
-    //{
-    //    hFile = 0;
-    //    ArchiveData->OpenResult = E_BAD_ARCHIVE;
-    //}
-
-    //memset( &g_RxDesc, 0, sizeof(g_RxDesc) );
-
-    //g_RxDesc.iReadPos	= 0;
-    //g_RxDesc.iWritePos	= 0;
-    //g_RxDesc.bNeedData	= TRUE;
-    //g_RxDesc.DirName[0] = 0;
-    //g_RxDesc.RootDirLen = 0;
-    //g_RxDesc.iThisIsHeader	= 2;
-    //g_RxDesc.ReturnedLength = 0;
-
-    //for ( int i = 0; i < COLUMN_NUMBER; i++ )
-    //{
-    //    g_ListInfo[i].StartIdx	= 0;
-    //    g_ListInfo[i].Len		= 0;
-    //}
-
-    //return ( hFile );
 }
 
 /*****************************************************************************
@@ -643,7 +607,6 @@ ReadHeader(
     tHeaderData *HeaderData
 )
 {
-
     TFileInfo<char> FileInfo;
 
     if (!g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderA != nullptr)
@@ -1079,10 +1042,22 @@ WCX_API int STDCALL
 
     rv = CloseHandle( hArcData );
 
-    if ( rv == S_OK )
+    if (rv == S_OK)
+    {
         Ret = SUCCESS;
+    }
 
-    return ( Ret );
+    if (g_CatalogReaderDesc.pReaderW != nullptr)
+    {
+        delete g_CatalogReaderDesc.pReaderW;
+    }
+    
+    if (g_CatalogReaderDesc.pReaderA != nullptr)
+    {
+        delete g_CatalogReaderDesc.pReaderA;
+    }
+
+    return Ret;
 }
 
 /*****************************************************************************

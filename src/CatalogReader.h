@@ -57,12 +57,13 @@ public:
 
     int ReadNext(TFileInfo<TChar>& FileInfo)
     {
-        const TChar seps = 0x0A;
+        TString delimiters;
         TChar* token;
         int	rv;
         USHORT  len;
 
         memset(&FileInfo, 0, sizeof(FileInfo));
+        delimiters += '\n';
 
         while (1)
         {
@@ -81,7 +82,7 @@ public:
             }
 
             // get next string from read buffer
-            token = _pStringOperations->StrTok(&_pBuf[_iReadPos], &seps);
+            token = _pStringOperations->StrTok(&_pBuf[_iReadPos], delimiters.c_str());
 
             // if there is no data for analyse 
             // then we should read next block
@@ -134,7 +135,10 @@ public:
 
             _CurrentFileInfo = FileInfo;
 
-            GetShortDirName(FileInfo);
+            if (FileInfo.Attr & 0x10)
+            {
+                GetShortDirName(FileInfo);
+            }
 
             break;
         }
@@ -314,7 +318,6 @@ private:
             }
 
             _ListInfo[COL_NAME].StartIdx = 1;
-            //_ListInfo[COL_NAME].HandleFunc = &CatalogReader::ParseFileNameColumn;
             _ColumnHandlers[COL_NAME] = &CatalogReader::ParseFileNameColumn;
 
             //======= find and handle column "Ext" ============
@@ -325,7 +328,6 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            //_ListInfo[COL_EXT].HandleFunc = &CatalogReader::ParseExtColumn;
             _ColumnHandlers[COL_EXT] = &CatalogReader::ParseExtColumn;
 
             _ListInfo[COL_NAME].Width =
@@ -341,7 +343,6 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            //_ListInfo[COL_SIZE].HandleFunc = &CatalogReader::ParseSizeColumn;
             _ColumnHandlers[COL_SIZE] = &CatalogReader::ParseSizeColumn;
 
             _ListInfo[COL_SIZE].Width = 15;
@@ -369,7 +370,6 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            //_ListInfo[COL_DATE].HandleFunc = &CatalogReader::ParseDateColumn;
             _ColumnHandlers[COL_DATE] = &CatalogReader::ParseDateColumn;
 
             _ListInfo[COL_DATE].Width = 10;
@@ -393,7 +393,6 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            //_ListInfo[COL_TIME].HandleFunc = &CatalogReader::ParseTimeColumn;
             _ColumnHandlers[COL_TIME] = &CatalogReader::ParseTimeColumn;
 
             _ListInfo[COL_TIME].Width = 8;
@@ -417,7 +416,6 @@ private:
                 (USHORT)(Offset - pStr + 1) :
                 0;
 
-            // _ListInfo[COL_ATTR].HandleFunc = &CatalogReader::ParseAttrColumn;
             _ColumnHandlers[COL_ATTR] = &CatalogReader::ParseAttrColumn;
 
             _ListInfo[COL_ATTR].Width = 4;
@@ -542,7 +540,9 @@ private:
     void ParseExtColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
         TChar pExt[256];
-        TChar DotCh = '.';
+        TString delimiters;
+
+        delimiters += '.';
 
         if (pStr == nullptr)
         {
@@ -561,7 +561,7 @@ private:
         // if file extension is not empty
         if (_pStringOperations->StrLen(pExt))
         {
-            _pStringOperations->StrCat(FileInfo.Name, &DotCh);
+            _pStringOperations->StrCat(FileInfo.Name, delimiters.c_str());
             _pStringOperations->StrCat(FileInfo.Name, pExt);
         }
     }
@@ -583,10 +583,12 @@ private:
 
     void ParseSizeColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
-        TChar seps = ',';
         TChar* token;
         TString Result;
         TChar Source[20];
+        TString delimiters;
+
+        delimiters += ',';
 
         if (pStr == nullptr)
         {
@@ -600,12 +602,12 @@ private:
             return;
         }
 
-        token = _pStringOperations->StrTok(Source, &seps);
+        token = _pStringOperations->StrTok(Source, delimiters.c_str());
 
         while (token != nullptr)
         {
             Result += token;
-            token = _pStringOperations->StrTok(NULL, &seps);
+            token = _pStringOperations->StrTok(NULL, delimiters.c_str());
         }
 
         FileInfo.iSize = _pStringOperations->ConvertStringToInt(Result);
@@ -629,9 +631,11 @@ private:
     
     void ParseDateColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
-        TChar seps = '.';
         TChar* token;
         TChar Source[20];
+        TString delimiters;
+
+        delimiters += '.';
 
         if (pStr == nullptr)
         {
@@ -646,24 +650,24 @@ private:
             return;
         }
 
-        token = _pStringOperations->StrTok(Source, &seps);
+        token = _pStringOperations->StrTok(Source, delimiters.c_str());
 
         if (token)
         {
             FileInfo.Day = (DWORD) _pStringOperations->ConvertStringToInt(token);
-            token = _pStringOperations->StrTok(NULL, &seps);
+            token = _pStringOperations->StrTok(NULL, delimiters.c_str());
         }
 
         if (token)
         {
             FileInfo.Month = (DWORD)_pStringOperations->ConvertStringToInt(token) - 1;
-            token = _pStringOperations->StrTok(NULL, &seps);
+            token = _pStringOperations->StrTok(NULL, delimiters.c_str());
         }
 
         if (token)
         {
             FileInfo.Year = (DWORD)_pStringOperations->ConvertStringToInt(token) - 1900;
-            token = _pStringOperations->StrTok(NULL, &seps);
+            token = _pStringOperations->StrTok(NULL, delimiters.c_str());
         }
 
         return;
@@ -686,9 +690,12 @@ private:
     
     void ParseTimeColumn(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo)
     {
-        TChar seps[] = ":.";
         TChar* token;
         TChar Source[20];
+        TString delimiters;
+
+        delimiters += ':';
+        delimiters += '.';
 
         if (pStr == nullptr)
             return;
@@ -699,18 +706,18 @@ private:
         if (!IsFileTime(Source))
             return;
 
-        token = _pStringOperations->StrTok(Source, seps);
+        token = _pStringOperations->StrTok(Source, delimiters.c_str());
 
         if (token)
         {
             FileInfo.Hour = (DWORD) _pStringOperations->ConvertStringToInt(token);
-            token = _pStringOperations->StrTok(NULL, seps);
+            token = _pStringOperations->StrTok(NULL, delimiters.c_str());
         }
 
         if (token)
         {
             FileInfo.Minute = (DWORD) _pStringOperations->ConvertStringToInt(token);
-            token = _pStringOperations->StrTok(NULL, seps);
+            token = _pStringOperations->StrTok(NULL, delimiters.c_str());
         }
 
         if (token)
