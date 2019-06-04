@@ -200,7 +200,7 @@ private:
 
     int ReadDataBlock()
     {
-        int rv;
+        BOOL rv;
 
         rv = ReadFile(
             _CatalogFile,
@@ -215,7 +215,7 @@ private:
             return E_END_ARCHIVE;
         }
 
-        if (rv == NULL)
+        if (rv == FALSE)
         {
             return E_EREAD;
         }

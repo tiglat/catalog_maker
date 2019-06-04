@@ -432,9 +432,9 @@ PackFilesW(
 
 FileEncoding IsUnicodeFile(HANDLE CatalogFile)
 {
-    DWORD rv;
+    BOOL rv;
     DWORD BytesRead = 0;
-    USHORT ByteOrderMark = 0xFFFE;
+    USHORT ByteOrderMark = 0xFEFF;
     USHORT ValueFromFile = 0;
 
     rv = ReadFile(CatalogFile, &ValueFromFile, sizeof(ValueFromFile), &BytesRead, NULL);
@@ -541,10 +541,21 @@ OpenArchiveW(
         return 0;
     }
 
-    static WideStringOperations ops;
-    g_CatalogReaderDesc.isUnicode = true;
-    g_CatalogReaderDesc.pReaderA = nullptr;
-    g_CatalogReaderDesc.pReaderW = new CatalogReader<WCHAR, wstring>(CatalogFile, &ops);
+    static WideStringOperations opsW;
+    static AnsiStringOperations opsA;
+
+    if (IsUnicodeFile(CatalogFile))
+    {
+        g_CatalogReaderDesc.isUnicode = true;
+        g_CatalogReaderDesc.pReaderA = nullptr;
+        g_CatalogReaderDesc.pReaderW = new CatalogReader<WCHAR, wstring>(CatalogFile, &opsW);
+    }
+    else
+    {
+        g_CatalogReaderDesc.isUnicode = false;
+        g_CatalogReaderDesc.pReaderW = nullptr;
+        g_CatalogReaderDesc.pReaderA = new CatalogReader<char, string>(CatalogFile, &opsA);
+    }
 
     return CatalogFile;
 }
@@ -686,12 +697,14 @@ WCX_API	int STDCALL
 }
 
 /*****************************************************************************
-    Routine:     ReadHeaderEx
+    Routine:     ReadHeaderExW
 ------------------------------------------------------------------------------
     Description:
-                WinCmd calls ReadHeaderEx
-                to find out what files are in the archive
-                It is used with new version of TotalCmd to support files >2Gb
+                WinCmd always calls ReadHeaderExW to find out 
+                what files are in the archive. It is called for both ANSI and Unicode files.
+                That is why in the beginnig we should decide what kind of file we are processing.
+                Other functions ReadHeader and ReadHeaderEx are used by old TotalCmd versions
+
     Arguments:
 
     Return Value:
@@ -710,48 +723,65 @@ ReadHeaderExW(
     if (g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderW != nullptr)
     {
         int rc = g_CatalogReaderDesc.pReaderW->ReadNext(FileInfo);
-        if (rc != SUCCESS)
+        
+        if (rc == SUCCESS)
         {
-            return rc;
+            // tell WinCom what file we are processing now
+            g_ProcessDataProcW(FileInfo.Name, (int)FileInfo.iSize);
+
+            // fill stucture for WinComander
+            HeaderDataEx->FileAttr = FileInfo.Attr;
+            HeaderDataEx->PackSize = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
+            HeaderDataEx->PackSizeHigh = (int)(FileInfo.iSize >> 32);
+            HeaderDataEx->UnpSize = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
+            HeaderDataEx->UnpSizeHigh = (int)(FileInfo.iSize >> 32);
+
+            g_CatalogReaderDesc.pReaderW->GetFullFileName(FileInfo, HeaderDataEx->FileName);
+
+            // make date and time for Win Com
+            if (FileInfo.Year)
+            {
+                DWORD time =
+                    FileInfo.Hour << 11 |
+                    FileInfo.Minute << 5 | FileInfo.Second / 2;
+
+                DWORD date =
+                    (FileInfo.Year - 80) << 9 |
+                    (FileInfo.Month + 1) << 5 |
+                    FileInfo.Day;
+
+                HeaderDataEx->FileTime = date << 16 | time;
+            }
+            else
+            {
+                HeaderDataEx->FileTime = 0;
+            }
         }
+
+        return rc;
+    }
+    else if (!g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderA != nullptr)
+    {
+        tHeaderDataEx HeaderData;
+        auto rc = ReadHeaderEx(hArcData, &HeaderData);
+
+        if (rc == SUCCESS)
+        {
+            HeaderDataEx->FileAttr = HeaderData.FileAttr;
+            HeaderDataEx->PackSize = HeaderData.PackSize;
+            HeaderDataEx->PackSizeHigh = HeaderData.PackSizeHigh;
+            HeaderDataEx->UnpSize = HeaderData.UnpSize;
+            HeaderDataEx->UnpSizeHigh = HeaderData.UnpSizeHigh;
+            HeaderDataEx->FileTime = HeaderData.FileTime;
+            MultiByteToWideChar(CP_ACP, 0, HeaderData.FileName, -1, HeaderDataEx->FileName, sizeof(HeaderDataEx->FileName));
+        }
+
+        return rc;
     }
     else
     {
         return E_UNKNOWN_FORMAT;
     }
-
-    // tell WinCom what file we are processing now
-    g_ProcessDataProcW(FileInfo.Name, (int)FileInfo.iSize);
-
-    // fill stucture for WinComander
-    HeaderDataEx->FileAttr = FileInfo.Attr;
-    HeaderDataEx->PackSize = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
-    HeaderDataEx->PackSizeHigh = (int)(FileInfo.iSize >> 32);
-    HeaderDataEx->UnpSize = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
-    HeaderDataEx->UnpSizeHigh = (int)(FileInfo.iSize >> 32);
-
-    g_CatalogReaderDesc.pReaderW->GetFullFileName(FileInfo, HeaderDataEx->FileName);
-
-    // make date and time for Win Com
-    if (FileInfo.Year)
-    {
-        DWORD time =
-            FileInfo.Hour << 11 |
-            FileInfo.Minute << 5 | FileInfo.Second / 2;
-
-        DWORD date =
-            (FileInfo.Year - 80) << 9 |
-            (FileInfo.Month + 1) << 5 |
-            FileInfo.Day;
-
-        HeaderDataEx->FileTime = date << 16 | time;
-    }
-    else
-    {
-        HeaderDataEx->FileTime = 0;
-    }
-
-    return SUCCESS;
 }
 
 /*****************************************************************************
