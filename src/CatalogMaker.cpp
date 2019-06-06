@@ -544,17 +544,24 @@ OpenArchiveW(
     static WideStringOperations opsW;
     static AnsiStringOperations opsA;
 
-    if (IsUnicodeFile(CatalogFile))
+    auto FileType = IsUnicodeFile(CatalogFile);
+
+    if (FileType == FileEncoding::UNICODE)
     {
         g_CatalogReaderDesc.isUnicode = true;
         g_CatalogReaderDesc.pReaderA = nullptr;
         g_CatalogReaderDesc.pReaderW = new CatalogReader<WCHAR, wstring>(CatalogFile, &opsW);
     }
-    else
+    else if (FileType == FileEncoding::ANSI)
     {
         g_CatalogReaderDesc.isUnicode = false;
         g_CatalogReaderDesc.pReaderW = nullptr;
         g_CatalogReaderDesc.pReaderA = new CatalogReader<char, string>(CatalogFile, &opsA);
+    }
+    else
+    {
+        ArchiveData->OpenResult = E_BAD_ARCHIVE;
+        return 0;
     }
 
     return CatalogFile;

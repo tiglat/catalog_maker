@@ -106,7 +106,7 @@ public:
             {
                 // if token is not complete string
                 // we should store this token and read next block
-                memcpy(_pBuf, token, len);
+                memcpy(_pBuf, token, len * sizeof(TChar));
                 _iWritePos = len;
                 _iReadPos = 0;
                 _bNeedData = true;
@@ -642,7 +642,7 @@ private:
             return;
         }
 
-        memcpy(Source, pStr, Width);
+        memcpy(Source, pStr, Width * sizeof(TChar));
         Source[Width] = 0;
 
         if (!IsFileDate(Source))
@@ -700,7 +700,7 @@ private:
         if (pStr == nullptr)
             return;
 
-        memcpy(Source, pStr, Width);
+        memcpy(Source, pStr, Width * sizeof(TChar));
         Source[Width] = 0;
 
         if (!IsFileTime(Source))
@@ -754,7 +754,7 @@ private:
         }
 
         // get value of attributes from the string
-        memcpy(Source, pStr, Width);
+        memcpy(Source, pStr, Width * sizeof(TChar));
         Source[Width] = 0;
 
         // test if the substring is attributes
@@ -826,7 +826,7 @@ private:
         StrLen -= i;
 
         // get substring between spaces
-        memcpy(pResultStr, &pStr[i], StrLen);
+        memcpy(pResultStr, &pStr[i], StrLen * sizeof(TChar));
         pResultStr[StrLen] = 0;
     }
 
