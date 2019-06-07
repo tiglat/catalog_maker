@@ -205,7 +205,7 @@ private:
         rv = ReadFile(
             _CatalogFile,
             &_pBuf[_iWritePos],
-            TEXT_LINE_LENGTH - _iWritePos,
+            (TEXT_LINE_LENGTH - _iWritePos) * sizeof(TChar),
             &_ReturnedLength,
             NULL
         );
@@ -667,7 +667,6 @@ private:
         if (token)
         {
             FileInfo.Year = (DWORD)_pStringOperations->ConvertStringToInt(token) - 1900;
-            token = _pStringOperations->StrTok(NULL, delimiters.c_str());
         }
 
         return;
