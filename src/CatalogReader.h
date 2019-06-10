@@ -11,10 +11,17 @@ template <typename TChar, typename TString>
 class CatalogReader
 {
 private: 
+    // Buffer size in characters
     static const USHORT TEXT_LINE_LENGTH = 1000;
+
+    // Max number of data columns in a file list
     static const USHORT LIST_COLUMN_NUMBER = 6;
 
+    // Descriptor of catalog file
     HANDLE _CatalogFile;
+
+    // Pointer to proxy class with functions for string manipulation.
+    // It could be object of AnsiStringOperations or WideStringOperations class.
     IStringOperations<TChar, TString> *_pStringOperations;
 
     TChar		_pBuf[TEXT_LINE_LENGTH + 1] = { 0 };
@@ -27,22 +34,38 @@ private:
     // c:\somedir1\somedir2 is a root directory for this list; somedir3 - short dir name
     USHORT		_ShortDirNamePos = 0xFFFF;
 
+    // Position (in chars) in buffer that we have to read from (for parsing)
     USHORT		_iReadPos = 0;
+
+    // Position (in chars) in buffer that we have to write to (from disk)
     USHORT		_iWritePos = 0;
+
+    // Shows if we need to read from file more data
     bool		_bNeedData = true;
+
+    // Shows if we read header lines or content
     UCHAR		_IsHeader = 2;
+
+    // Number of read chars from catalog file
     DWORD		_ReturnedLength = 0;
     TFileInfo<TChar> _CurrentFileInfo = { 0 };
 
     using TColumnHandlerPtr = void (CatalogReader::*)(TChar* pStr, USHORT Width, TFileInfo<TChar>& FileInfo);
     
+    // Describes layout of a column in a list
     struct TColumnInfo 
     {
+        // start position of a column inside row
         USHORT              StartIdx;
+
+        // width of a column (how many chars we should read from StartIdx)
         USHORT              Width;
     };
 
+    // Contains layout of all columns in a list
     TColumnInfo _ListInfo[LIST_COLUMN_NUMBER] = {0};
+
+    // Contains parsing functions for each column
     TColumnHandlerPtr _ColumnHandlers[LIST_COLUMN_NUMBER] = {nullptr};
 
 public:
@@ -218,6 +241,11 @@ private:
         if (rv == FALSE)
         {
             return E_EREAD;
+        }
+
+        if (sizeof(TChar) == sizeof(WCHAR))
+        {
+            _ReturnedLength = _ReturnedLength >> 1;
         }
 
         return SUCCESS;
