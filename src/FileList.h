@@ -57,7 +57,6 @@ private:
     DWORD _TotalFiles = 0;
 
     USHORT _DirIndent = 0;
-    USHORT _FileIndent = 0;
 
 
 public:
@@ -483,15 +482,12 @@ private:
     {
         if (g_ViewParam.bDirName)
         {
-            if (g_FormatParam.bIndentFiles)
-                _FileIndent = g_FormatParam.Width;
-
             if (g_FormatParam.bIndentAll)
             {
                 // I removed last slash when created the item so I need to add 1 now.
                 // DirIndent cannot be zero.
-                _DirIndent = _pStringOperations->StrNChr(pFileInfo->pPath, '\\') + 1; 
-                _DirIndent = (_DirIndent)* g_FormatParam.Width;
+                _DirIndent = _pStringOperations->StrNChr(pFileInfo->pPath, '\\'); 
+                _DirIndent = (_DirIndent) * g_FormatParam.Width;
             }
 
             InsertIndent(str, _DirIndent);
@@ -539,12 +535,13 @@ private:
 
     void GetFileLine(TString &str, TFilePtr &pFileInfo)
     {
+        size_t len = 0;
 
         if (g_ViewParam.bFileName)
         {
             if (g_FormatParam.bIndentAll || g_FormatParam.bIndentFiles)
             {
-                InsertIndent(str, _DirIndent + _FileIndent);
+                InsertIndent(str, _DirIndent + g_FormatParam.Width);
             }
 
             // print file path
@@ -577,18 +574,19 @@ private:
             if (g_ViewParam.bExt && pFileInfo->pExt && g_FormatParam.bExtSeparately)
             {
                 str += pFileInfo->pExt;
+                len = _pStringOperations->StrLen(pFileInfo->pExt);
             }
 
             if (g_ViewParam.bExt && g_FormatParam.bExtSeparately)
             {
-                InsertIndent(str, _FileExtColWidth);
+                InsertIndent(str, _FileExtColWidth + 3 - len);
             }
 
             // print file size
             if (g_ViewParam.bSize)
             {
                 auto intStr = _pStringOperations->ConvertFileSizeToString(pFileInfo->iSize);
-                auto len = intStr.length();
+                len = intStr.length();
                 InsertIndent(str, 15 - len);
                 str += intStr;
                 InsertIndent(str, 3);
