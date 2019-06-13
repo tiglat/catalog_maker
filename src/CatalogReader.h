@@ -207,6 +207,29 @@ public:
         }
     }
 
+    /*****************************************************************************
+        Routine:     GetCurrentFileName
+    ------------------------------------------------------------------------------
+        Description: 
+            Returns full file name which was read from list last time.
+
+        Arguments:
+
+        Return Value:
+                Full file name of the last read item.
+
+    *****************************************************************************/
+
+    TString GetCurrentFileName()
+    {
+        TChar CurrentFileNameCStyle[TEXT_LINE_LENGTH] = { 0 };
+        TString result;
+
+        GetFullFileName(_CurrentFileInfo, CurrentFileNameCStyle);
+        result += CurrentFileNameCStyle;
+        return result;
+    }
+
 private:
 
     /*****************************************************************************

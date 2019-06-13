@@ -106,14 +106,14 @@ PackFiles (
     int Flags
 );
 
-//WCX_API int STDCALL
-//PackFilesW(
-//    WCHAR *PackedFile,
-//    WCHAR *SubPath,
-//    WCHAR *SrcPath,
-//    WCHAR *AddList,
-//    int Flags
-//);
+WCX_API int STDCALL
+PackFilesW(
+    WCHAR *PackedFile,
+    WCHAR *SubPath,
+    WCHAR *SrcPath,
+    WCHAR *AddList,
+    int Flags
+);
 
 // ConfigurePacker gets called when the user clicks the Configure button 
 // from within "Pack files..." dialog box in WinCmd

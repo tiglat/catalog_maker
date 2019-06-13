@@ -429,6 +429,21 @@ PackFilesW(
     return (result);
 }
 
+/*****************************************************************************
+    Routine:     IsUnicodeFile
+------------------------------------------------------------------------------
+    Description:
+        Determines if a file is in unicode format. 
+        CatalogMaker creates list files in unicode with byte order mark in the
+        beginning. So to find out file format we need to check BOM.
+
+    Arguments:
+        CatalogFile - descriptor of file to check
+
+    Return Value:
+        Type of file format
+
+*****************************************************************************/
 
 FileEncoding IsUnicodeFile(HANDLE CatalogFile)
 {
@@ -811,62 +826,89 @@ WCX_API int STDCALL
         char *DestName
         )
 {
-    char Dest[MAX_PATH];
-    char buffer[512];
-    int numread, numwritten;
-    FILE *file_source, *file_dest;
+    string DestinationFileName;
+    string SourceFileName;
+    //char buffer[512];
+    //int numread, numwritten;
+    //FILE *file_source, *file_dest;
     
     if ( Operation == PK_EXTRACT )
     {
-        memset( Dest, 0, sizeof( Dest ) );
-
-        if ( DestPath ) strcat( Dest, DestPath );
-        if ( DestName ) strcat( Dest, DestName );
-
-        //rc = CopyFile( g_RxDesc.CurrentFile.Name, Dest, FALSE );
-        file_source = fopen( g_RxDesc.CurrentFile.Name, "rb" );
-        if ( file_source == NULL ) 
-            return( E_NO_FILES );
-
-        file_dest = fopen( Dest, "wb" );
-        if ( file_dest == NULL )
+        if (DestPath)
         {
-            fclose( file_source );
-            return( E_ECREATE );
-        }
-
-        while( !feof( file_source ) )
-        {
-            numread = (int)fread( buffer, sizeof( char ), 512, file_source );
-            if( ferror( file_source ) )
-            {
-                fclose( file_source );
-                fclose( file_dest );
-                return( E_EREAD );
-            }
-            
-            numwritten = (int)fwrite( buffer, sizeof( char ), numread, file_dest );
-            if( ferror( file_dest ) ) 
-            {
-                fclose( file_source );
-                fclose( file_dest );
-                return( E_EWRITE );
-            }
-
-            g_ProcessDataProc( g_RxDesc.CurrentFile.Name, numwritten );
+            DestinationFileName += DestPath;
         }
         
-        fclose( file_source );
-        fclose( file_dest );
+        if (DestName)
+        {
+            DestinationFileName += DestName;
+        }
 
-        return( SUCCESS );
+        if (!g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderA != nullptr)
+        {
+            SourceFileName = g_CatalogReaderDesc.pReaderA->GetCurrentFileName();
+        }
+
+        auto ProgressFunc = [](
+            LARGE_INTEGER TotalFileSize,
+            LARGE_INTEGER TotalBytesTransferred,
+            LARGE_INTEGER StreamSize,
+            LARGE_INTEGER StreamBytesTransferred,
+            DWORD dwStreamNumber,
+            DWORD dwCallbackReason,
+            HANDLE hSourceFile,
+            HANDLE hDestinationFile,
+            LPVOID lpData)
+        {
+            //g_ProcessDataProc((char*)lpData, -(TotalBytesTransferred/TotalFileSize)*100);
+        };
+
+        BOOL rc = CopyFileEx(SourceFileName.c_str(), DestinationFileName.c_str(), nullptr, (LPVOID)SourceFileName.c_str(), NULL, 0);
+
+        if (rc == FALSE)
+        {
+            return E_EWRITE;
+        }
+
+        //file_source = fopen( g_RxDesc.CurrentFile.Name, "rb" );
+        //if (file_source == NULL)
+        //{
+        //    return(E_NO_FILES);
+        //}
+
+        //file_dest = fopen( Dest, "wb" );
+        //if ( file_dest == NULL )
+        //{
+        //    fclose( file_source );
+        //    return( E_ECREATE );
+        //}
+
+        //while( !feof( file_source ) )
+        //{
+        //    numread = (int)fread( buffer, sizeof( char ), 512, file_source );
+        //    if( ferror( file_source ) )
+        //    {
+        //        fclose( file_source );
+        //        fclose( file_dest );
+                //return( E_EREAD );
+        //    }
+        //    
+        //    numwritten = (int)fwrite( buffer, sizeof( char ), numread, file_dest );
+        //    if( ferror( file_dest ) ) 
+        //    {
+        //        fclose( file_source );
+        //        fclose( file_dest );
+        //        return( E_EWRITE );
+        //    }
+
+        //    g_ProcessDataProc( g_RxDesc.CurrentFile.Name, numwritten );
+        //}
+        //
+        //fclose( file_source );
+        //fclose( file_dest );
     }
-    else if ( Operation == PK_TEST )
-    {
-        return ( SUCCESS );
-    }
-    else
-        return ( SUCCESS );
+
+    return SUCCESS;
 }
 
 /*****************************************************************************
