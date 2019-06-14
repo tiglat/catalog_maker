@@ -789,6 +789,9 @@ ReadHeaderExW(
 
         if (rc == SUCCESS)
         {
+            // tell WinCom what file we are processing now
+            g_ProcessDataProc(HeaderData.FileName, -100);
+
             HeaderDataEx->FileAttr = HeaderData.FileAttr;
             HeaderDataEx->PackSize = HeaderData.PackSize;
             HeaderDataEx->PackSizeHigh = HeaderData.PackSizeHigh;
@@ -806,10 +809,49 @@ ReadHeaderExW(
     }
 }
 
+DWORD UpdateProgress(
+    LARGE_INTEGER TotalFileSize,
+    LARGE_INTEGER TotalBytesTransferred,
+    LARGE_INTEGER StreamSize,
+    LARGE_INTEGER StreamBytesTransferred,
+    DWORD dwStreamNumber,
+    DWORD dwCallbackReason,
+    HANDLE hSourceFile,
+    HANDLE hDestinationFile,
+    LPVOID lpData
+)
+{
+    int Percentage = (TotalBytesTransferred.QuadPart * 100) / TotalFileSize.QuadPart;
+    g_ProcessDataProc((char*)lpData, -Percentage);
+    return PROGRESS_CONTINUE;
+}
+
+
+DWORD UpdateProgressW(
+    LARGE_INTEGER TotalFileSize,
+    LARGE_INTEGER TotalBytesTransferred,
+    LARGE_INTEGER StreamSize,
+    LARGE_INTEGER StreamBytesTransferred,
+    DWORD dwStreamNumber,
+    DWORD dwCallbackReason,
+    HANDLE hSourceFile,
+    HANDLE hDestinationFile,
+    LPVOID lpData
+)
+{
+    int Percentage = (TotalBytesTransferred.QuadPart * 100) / TotalFileSize.QuadPart;
+    g_ProcessDataProcW((WCHAR*)lpData, -Percentage);
+    return PROGRESS_CONTINUE;
+}
+
+
 /*****************************************************************************
     Routine:     ProcessFile
 ------------------------------------------------------------------------------
     Description: 
+        TotalCmd API function. 
+        ProcessFile should unpack the specified file or 
+        test the integrity of the archive.
   
     Arguments:  
 
@@ -827,10 +869,7 @@ WCX_API int STDCALL
         )
 {
     string DestinationFileName;
-    string SourceFileName;
-    //char buffer[512];
-    //int numread, numwritten;
-    //FILE *file_source, *file_dest;
+    char* SourceFileName;
     
     if ( Operation == PK_EXTRACT )
     {
@@ -848,64 +887,87 @@ WCX_API int STDCALL
         {
             SourceFileName = g_CatalogReaderDesc.pReaderA->GetCurrentFileName();
         }
-
-        auto ProgressFunc = [](
-            LARGE_INTEGER TotalFileSize,
-            LARGE_INTEGER TotalBytesTransferred,
-            LARGE_INTEGER StreamSize,
-            LARGE_INTEGER StreamBytesTransferred,
-            DWORD dwStreamNumber,
-            DWORD dwCallbackReason,
-            HANDLE hSourceFile,
-            HANDLE hDestinationFile,
-            LPVOID lpData)
+        else
         {
-            //g_ProcessDataProc((char*)lpData, -(TotalBytesTransferred/TotalFileSize)*100);
-        };
+            return E_UNKNOWN_FORMAT;
+        }
 
-        BOOL rc = CopyFileEx(SourceFileName.c_str(), DestinationFileName.c_str(), nullptr, (LPVOID)SourceFileName.c_str(), NULL, 0);
+        BOOL rc = CopyFileEx(SourceFileName, DestinationFileName.c_str(), UpdateProgress, SourceFileName, NULL, 0);
 
         if (rc == FALSE)
         {
             return E_EWRITE;
         }
 
-        //file_source = fopen( g_RxDesc.CurrentFile.Name, "rb" );
-        //if (file_source == NULL)
-        //{
-        //    return(E_NO_FILES);
-        //}
+    }
 
-        //file_dest = fopen( Dest, "wb" );
-        //if ( file_dest == NULL )
-        //{
-        //    fclose( file_source );
-        //    return( E_ECREATE );
-        //}
+    return SUCCESS;
+}
 
-        //while( !feof( file_source ) )
-        //{
-        //    numread = (int)fread( buffer, sizeof( char ), 512, file_source );
-        //    if( ferror( file_source ) )
-        //    {
-        //        fclose( file_source );
-        //        fclose( file_dest );
-                //return( E_EREAD );
-        //    }
-        //    
-        //    numwritten = (int)fwrite( buffer, sizeof( char ), numread, file_dest );
-        //    if( ferror( file_dest ) ) 
-        //    {
-        //        fclose( file_source );
-        //        fclose( file_dest );
-        //        return( E_EWRITE );
-        //    }
+/*****************************************************************************
+    Routine:     ProcessFileW
+------------------------------------------------------------------------------
+    Description:
+        TotalCmd API function. Unicode version.
+        ProcessFile should unpack the specified file or
+        test the integrity of the archive.
 
-        //    g_ProcessDataProc( g_RxDesc.CurrentFile.Name, numwritten );
-        //}
-        //
-        //fclose( file_source );
-        //fclose( file_dest );
+    Arguments:
+
+    Return Value:
+
+
+*****************************************************************************/
+
+WCX_API int STDCALL
+ProcessFileW(
+    HANDLE  hArcData,
+    int     Operation,
+    WCHAR*  DestPath,
+    WCHAR*  DestName
+)
+{
+    wstring DestinationFileName;
+
+    if (Operation == PK_EXTRACT)
+    {
+        if (DestPath)
+        {
+            DestinationFileName += DestPath;
+        }
+
+        if (DestName)
+        {
+            DestinationFileName += DestName;
+        }
+
+        BOOL rc;
+
+        if (g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderW != nullptr)
+        {
+            WCHAR* SourceFileName;
+            SourceFileName = g_CatalogReaderDesc.pReaderW->GetCurrentFileName();
+            rc = CopyFileExW(SourceFileName, DestinationFileName.c_str(), UpdateProgressW, SourceFileName, NULL, 0);
+        }
+        else if (!g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderA != nullptr)
+        {
+            char* SourceFileName;
+            WCHAR SourceFileNameW[PATH_LENGTH * 2] = {0};
+            SourceFileName = g_CatalogReaderDesc.pReaderA->GetCurrentFileName();
+            mbstowcs(SourceFileNameW, SourceFileName, strlen(SourceFileName));
+            rc = CopyFileExW(SourceFileNameW, DestinationFileName.c_str(), UpdateProgressW, SourceFileNameW, NULL, 0);
+        }
+        else
+        {
+            return E_UNKNOWN_FORMAT;
+        }
+
+
+        if (rc == FALSE)
+        {
+            return E_EWRITE;
+        }
+
     }
 
     return SUCCESS;
@@ -915,7 +977,9 @@ WCX_API int STDCALL
     Routine:     CloseArchive
 ------------------------------------------------------------------------------
     Description: 
-  
+        TotalCmd API function.
+        It should perform all necessary operations when an archive is about to be closed.
+          
     Arguments:  
 
     Return Value:

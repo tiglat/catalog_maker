@@ -68,6 +68,16 @@ ProcessFile (
     char *DestName
 );
 
+// ProcessFile should unpack the specified file 
+// or test the integrity of the archive
+WCX_API int STDCALL
+ProcessFileW(
+    HANDLE hArcData,
+    int Operation,
+    WCHAR* DestPath,
+    WCHAR* DestName
+);
+
 // CloseArchive should perform all necessary operations 
 // when an archive is about to be closed.
 WCX_API int STDCALL 

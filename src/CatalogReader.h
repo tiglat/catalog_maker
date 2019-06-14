@@ -220,14 +220,9 @@ public:
 
     *****************************************************************************/
 
-    TString GetCurrentFileName()
+    TChar* GetCurrentFileName()
     {
-        TChar CurrentFileNameCStyle[TEXT_LINE_LENGTH] = { 0 };
-        TString result;
-
-        GetFullFileName(_CurrentFileInfo, CurrentFileNameCStyle);
-        result += CurrentFileNameCStyle;
-        return result;
+        return _CurrentFileInfo.Name;
     }
 
 private:

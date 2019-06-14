@@ -9,6 +9,7 @@ EXPORTS
     PackFilesW
     PackSetDefaultParams
     ProcessFile
+    ProcessFileW
     ReadHeader
     ReadHeaderEx
     ReadHeaderExW
