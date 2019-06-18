@@ -7,7 +7,7 @@
 #define IDD_SORTDLG                     103
 #define IDD_FORMATDLG                   104
 #define IDD_ABOUTDLG                    105
-#define IDI_ICON2                       110
+#define IDB_BITMAP1                     133
 #define IDC_TAB1                        1002
 #define IDC_CHECK1                      1003
 #define IDC_CHK_FORMAT_FILES            1004
@@ -33,15 +33,17 @@
 #define IDC_BUTTON1                     1024
 #define IDC_BUT_SAVE_OPT                1025
 #define IDC_RB_SORT_UNSORTED            1026
+#define IDC_MFCLINK1                    1029
+#define IDC_SYSLINK1                    1030
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        126
+#define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1028
+#define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -15,6 +15,7 @@
 #include "resource.h" 
 #include "stdio.h" 
 
+
 /*****************************************************************************
     Routine:     CheckButton
 ------------------------------------------------------------------------------
@@ -342,6 +343,13 @@ void OnInitOptionDialog( HWND hDlg )
                     ChildDialogProc
                     );
     }
+
+    INITCOMMONCONTROLSEX icex;
+
+    // Ensure that the common control DLL is loaded. 
+    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    icex.dwICC = ICC_LINK_CLASS;
+    InitCommonControlsEx(&icex);
 
     // setup default parameters
 

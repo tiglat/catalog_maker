@@ -1,10 +1,17 @@
+About
+=====
+This is a plugin for Total Commander software.
+It creates catalogs (lists) of the selected files/directories, with user-defined list format.
+
+
 Automatic installation
-==================
+======================
 Double click on the plugin archive in Total Commander,
 then follow the instructions
 
+
 Manual installation
-================
+===================
 1. Unzip the WCX or WCX64 to the Total Commander directory
 2. In Total Commander, choose Configuration - Options
 3. Open the 'Packer' page
@@ -15,98 +22,109 @@ Manual installation
 
 
 How to use this plugin
-=======================
+======================
 1. You can create file list 
-	- select files and directories
-	- press Alt+F5
-	- select "->" in Packer area and take lst from the drop-down list.
-	- press Configure for setup plugin
+ - select files and directories
+ - press Alt+F5
+ - select "->" in Packer area and take lst from the drop-down list.
+ - press Configure for setup plugin
 2. You can enter to list file by pressing Enter on file name
+
+
+Source code
+===========
+https://github.com/tiglat/catalog_maker
+
+
+Donation
+========
+If you enjoy using this plugin, you can support my work with a donation. 
+Payment will be done via PayPal system ($2.99)
 
 
 Best reagrds,
 Polyakov Konstantin
 piligrim_pk@mail.ru
 
+
 Change history
 ==============
 
 ver.1.6
-	- it was corrected file and date display inside file list
-
+ - it was corrected file and date display inside file list
 
 ver.1.7
-	- it was corrected some errors;
-	- size and date display was changed
+ - it was corrected some errors;
+ - size and date display was changed
 
 ver.1.8
-	- it was corrected some errors
+    - it was corrected some errors
 
 ver.1.9
-	- seconds display was added and directories comparing was enable
+    - seconds display was added and directories comparing was enable
 
 ver. 2.0
-	- it was changed format of list file, because old one didn't provide
-          correct work. There were file names which could not be recognize correctly
-          It was added list header and all column were aligned
+    - it was changed format of list file, because old one didn't provide
+      correct work. There were file names which could not be recognize correctly
+      It was added list header and all column were aligned
 
-	- it was added new option - "Print extension separately"
+    - it was added new option - "Print extension separately"
 
-	- it was changed sort algorithm. Now the files with same extensions, date, time ...
-          will be sorted by file name
+    - it was changed sort algorithm. Now the files with same extensions, date, time ...
+      will be sorted by file name
 
-	- it was correct GUI. 
+    - it was correct GUI. 
 
 ver. 2.1
-	- it was corrected directory list creating bug. List of directories (without file names) 
-	  had incorrect header
+    - it was corrected directory list creating bug. List of directories (without file names) 
+      had incorrect header
 
-	- the plugin checks if file with same name is already exist And if it is exist then
-          the plugin will ask you about rewriting
+    - the plugin checks if file with same name is already exist And if it is exist then
+      the plugin will ask you about rewriting
 
-        - plugin saves options on hard disk in CatalogMaker.ini file. When user press OK the options
-          will be saved on hard disk. When user open options windows these options will be restored
-          from configuration file
+    - plugin saves options on hard disk in CatalogMaker.ini file. When user press OK the options
+      will be saved on hard disk. When user open options windows these options will be restored
+      from configuration file
 
-        - it was improved algorithm file list reading.
+    - it was improved algorithm file list reading.
 
 ver. 2.2
-	- it was corrected a bug which was in procedure reading a list file. 
-	- it was improved the algorithm of reading of list files
+    - it was corrected a bug which was in procedure reading a list file. 
+    - it was improved the algorithm of reading of list files
 
 ver. 2.3
-	- it was corrected bug which took place during creation an empty list 
-	- it was corrected wrong work of the text boxes in the options window under Windows xp
+    - it was corrected bug which took place during creation an empty list 
+    - it was corrected wrong work of the text boxes in the options window under Windows xp
 
 ver. 2.4
-	- new feature was added - new option "Unsorted" in Sort Tab
-	  this option disables sorting function and file names are printed in same order as they 
-		are received from TotalCommander
+    - new feature was added - new option "Unsorted" in Sort Tab
+      this option disables sorting function and file names are printed in same order as they 
+      are received from TotalCommander
 
 ver. 3.0.0
-	- date and time of directories creation and their attributes are now stored by the plugin
-	- it is possible to store full path name for directories
+    - date and time of directories creation and their attributes are now stored by the plugin
+    - it is possible to store full path name for directories
 
 ver. 3.0.1 
-	- empty File Types string on View page is understood as any file type "*.*". This value will be 
-	  added instead file type value automatically if it is empty
-	  
+    - empty File Types string on View page is understood as any file type "*.*". This value will be 
+      added instead file type value automatically if it is empty
+   
 ver. 3.1.2
-	- now plugin can open file from file list if file is present on disks and 
-	  file list contains full file name. In other words if plugin can find the file
-	  on disks it will open the file. Plugin emulates extraction of the file from
-	  archive by copying this file to temporary dir which was provided by Total Commander.
-	  After that plugin stops its work. The Total Commander opens the file and checks its
-	  status. When this file will be closed Total Commander will delete it from the temp
-	  directory.
-	- it was corrected bug - wrong dir`s date and attributes format in case
-	  option "print extensions separately" is set
-	  
+    - now plugin can open file from file list if file is present on disks and 
+      file list contains full file name. In other words if plugin can find the file
+      on disks it will open the file. Plugin emulates extraction of the file from
+      archive by copying this file to temporary dir which was provided by Total Commander.
+      After that plugin stops its work. The Total Commander opens the file and checks its
+      status. When this file will be closed Total Commander will delete it from the temp
+      directory.
+    - it was corrected bug - wrong dir`s date and attributes format in case
+      option "print extensions separately" is set
+   
 ver. 3.1.4
-	- fixed - reading problem of list files which contains full file names
-	  and short directories names
-	- fixed - reading problem of list files which has small size < 1000 bytes
-	
+    - fixed - reading problem of list files which contains full file names
+      and short directories names
+    - fixed - reading problem of list files which has small size < 1000 bytes
+ 
 ver. 3.1.5
     - fixed - crash if path to plugin is longer than 100 chars 
     
@@ -114,15 +132,21 @@ ver. 3.1.6
     - fixed - incorrect work with file sizes >2GB
     
 ver. 3.1.7
-	- fixed - plugin didn't read configuration before file list creation.
-              config window sould be opened on order to load settings from ini file
+    - fixed - plugin didn't read configuration before file list creation.
+      config window sould be opened on order to load settings from ini file
 
 ver. 3.1.8
-	- added - the x64 inofficial port by Thomas Beutlich
+    - added - the x64 inofficial port by Thomas Beutlich
       (http://wincmd.ru/user/1093026.html). Thank you very much, Thomas!
-	- fixed - problem when user settings were not saved to hdd because of access denied, 
-		      incorrect folder (current plugin dir) was used for that.
+    - fixed - problem when user settings were not saved to hdd because of access denied, 
+      incorrect folder (current plugin dir) was used for that.
 
 ver. 3.1.9
-	- fixed - problem when ini file each time during the same TotalCmd session was written
-	  one directory higher than previous time begining from working directory of TotalCmd.
+    - fixed - problem when ini file each time during the same TotalCmd session was written
+      one directory higher than previous time begining from working directory of TotalCmd.
+
+версия 4.0.0 - 17/06/2019
+    - new - introduced Unicode characters support. Now file lists are written in UTF-16 LE BOM.
+      New file lists will not be read by the old version of plugin. 
+      New plugin supports old file lists created before. New plugin can also work with old versions of TotalCommander, 
+      since it keeps old API.

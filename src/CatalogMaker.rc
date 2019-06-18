@@ -12,6 +12,24 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Russian (Russia) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP                  "icon48x48.bmp"
+
+#endif    // Russian (Russia) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
@@ -101,12 +119,14 @@ IDD_ABOUTDLG DIALOGEX 0, 0, 136, 87
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Catalog Maker plugin",IDC_STATIC,45,10,84,8
-    LTEXT           "Copyright (C) 2002-2016",IDC_STATIC,45,20,84,8
-    LTEXT           "version 3.1.9",IDC_STATIC,45,30,84,8
-    ICON            IDI_ICON2,IDC_STATIC,10,10,20,20,SS_REALSIZEIMAGE
-    LTEXT           "by Konstantin Polyakov",IDC_STATIC,45,40,84,8
-    LTEXT           "piligrim_pk@mail.ru",IDC_STATIC,47,55,75,8
+    LTEXT           "Catalog Maker plugin",IDC_STATIC,42,6,73,8
+    LTEXT           "Copyright (C) 2002-2019",IDC_STATIC,42,18,84,8
+    LTEXT           "version 4.0.0",IDC_STATIC,42,30,84,8
+    LTEXT           "by Konstantin Polyakov",IDC_STATIC,42,42,84,8
+    LTEXT           "piligrim_pk@mail.ru",IDC_STATIC,42,54,75,8
+    CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,6,6,32,30
+    CONTROL         "If you enjoy it, you can help ($2.99)",IDC_MFCLINK1,
+                    "MfcLink",WS_TABSTOP,7,66,119,14
 END
 
 
@@ -153,7 +173,7 @@ BEGIN
     IDD_ABOUTDLG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 129
+        RIGHTMARGIN, 126
         TOPMARGIN, 7
         BOTTOMMARGIN, 80
     END
@@ -163,21 +183,12 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_ICON2               ICON                    "FLGRUS.ICO"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,9,0
- PRODUCTVERSION 3,1,9,0
+ FILEVERSION 4,0,0,0
+ PRODUCTVERSION 4,0,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -193,18 +204,55 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Catalog Maker plugin for Total Commander"
-            VALUE "FileVersion", "3.1.9.0"
+            VALUE "FileVersion", "4.0.0.0"
             VALUE "InternalName", "CatalogMaker"
-            VALUE "LegalCopyright", "Copyright (C) 2002-2016 by Konstantin Polyakov"
+            VALUE "LegalCopyright", "Copyright (C) 2002-2019 by Konstantin Polyakov"
             VALUE "OriginalFilename", "CatalogMaker.wcx"
             VALUE "ProductName", "CatalogMaker"
-            VALUE "ProductVersion", "3.1.9.0"
+            VALUE "ProductVersion", "4.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
         VALUE "Translation", 0x409, 1200
     END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTDLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_ABOUTDLG DLGINIT
+BEGIN
+    IDC_MFCLINK1, 0x37c, 251, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x7370, 
+0x2f3a, 0x642f, 0x636f, 0x2e73, 0x696d, 0x7263, 0x736f, 0x666f, 0x2e74, 
+0x6f63, 0x2f6d, 0x6e65, 0x752d, 0x2f73, 0x6977, 0x646e, 0x776f, 0x2f73, 
+0x6564, 0x6b73, 0x6f74, 0x2f70, 0x7061, 0x2f69, 0x6f63, 0x6d6d, 0x7463, 
+0x6c72, 0x6e2f, 0x2d66, 0x6f63, 0x6d6d, 0x7463, 0x6c72, 0x692d, 0x696e, 
+0x6374, 0x6d6f, 0x6f6d, 0x636e, 0x6e6f, 0x7274, 0x6c6f, 0x6573, 0x3c78, 
+0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x3c3e, 0x464d, 0x4c43, 
+0x6e69, 0x5f6b, 0x7255, 0x506c, 0x6572, 0x6966, 0x3e78, 0x2f3c, 0x464d, 
+0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x506c, 0x6572, 0x6966, 0x3e78, 0x4d3c, 
+0x4346, 0x694c, 0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x4d2f, 
+0x4346, 0x694c, 0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x464d, 
+0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 
+0x6974, 0x3e70, 0x4146, 0x534c, 0x3c45, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 
+0x465f, 0x6c75, 0x546c, 0x7865, 0x5474, 0x6f6f, 0x746c, 0x7069, "\076" 
+    0
 END
 
 #endif    // English (United States) resources
