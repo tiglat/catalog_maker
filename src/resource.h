@@ -34,7 +34,7 @@
 #define IDC_BUT_SAVE_OPT                1025
 #define IDC_RB_SORT_UNSORTED            1026
 #define IDC_MFCLINK1                    1029
-#define IDC_SYSLINK1                    1030
+#define IDC_SYSLINK2                    1031
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -43,7 +43,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

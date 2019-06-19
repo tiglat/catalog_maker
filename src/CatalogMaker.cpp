@@ -992,15 +992,8 @@ WCX_API int STDCALL
         HANDLE hArcData
         )
 {
-    HRESULT rv;
-    UCHAR	Ret = E_ECLOSE;
-
+    BOOL rv;
     rv = CloseHandle( hArcData );
-
-    if (rv == S_OK)
-    {
-        Ret = SUCCESS;
-    }
 
     if (g_CatalogReaderDesc.pReaderW != nullptr)
     {
@@ -1012,7 +1005,7 @@ WCX_API int STDCALL
         delete g_CatalogReaderDesc.pReaderA;
     }
 
-    return Ret;
+    return rv == TRUE ? SUCCESS : E_ECLOSE;
 }
 
 /*****************************************************************************

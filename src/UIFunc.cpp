@@ -136,117 +136,143 @@ INT_PTR CALLBACK ChildDialogProc(
     switch ( message )
     {
         case WM_INITDIALOG:
-
+        {
             RECT rcTab, rc;
 
-            GetWindowRect( g_DlgDesc.hTabCtrl, &rcTab );
-            TabCtrl_AdjustRect( g_DlgDesc.hTabCtrl, FALSE, &rcTab );
-            CopyRect( &rc, &rcTab );
-            OffsetRect( &rc, -rc.left, -rc.top );
+            GetWindowRect(g_DlgDesc.hTabCtrl, &rcTab);
+            TabCtrl_AdjustRect(g_DlgDesc.hTabCtrl, FALSE, &rcTab);
+            CopyRect(&rc, &rcTab);
+            OffsetRect(&rc, -rc.left, -rc.top);
 
             SetWindowPos(
-                hChildDlg, 
-                HWND_TOP, 
-                rcTab.left, 
-                rcTab.top, 
-                rc.right, 
-                rc.bottom, 
+                hChildDlg,
+                HWND_TOP,
+                rcTab.left,
+                rcTab.top,
+                rc.right,
+                rc.bottom,
                 0
-                ); 
-            
-            return TRUE;
+            );
 
+            return TRUE;
+        }
 
         case WM_COMMAND:
-
+        {
             LRESULT	rv, rv2;
             HWND	hItem, hItem2;
 
-            switch  ( wParam )
+            switch (wParam)
             {
-                case IDC_CHK_DIRECTORIES:
+            case IDC_CHK_DIRECTORIES:
 
-                    hItem = GetDlgItem( hChildDlg, IDC_CHK_DIRECTORIES );
-                    rv = SendMessage( hItem, BM_GETCHECK, 0, 0 );
+                hItem = GetDlgItem(hChildDlg, IDC_CHK_DIRECTORIES);
+                rv = SendMessage(hItem, BM_GETCHECK, 0, 0);
 
-                    hItem2 = GetDlgItem( hChildDlg, IDC_CHK_APPLY_TO_DIRS );
-                    rv2 = SendMessage( hItem2, BM_GETCHECK, 0, 0 );
+                hItem2 = GetDlgItem(hChildDlg, IDC_CHK_APPLY_TO_DIRS);
+                rv2 = SendMessage(hItem2, BM_GETCHECK, 0, 0);
 
-                    if ( rv == BST_UNCHECKED )
+                if (rv == BST_UNCHECKED)
+                {
+                    CheckButton(
+                        g_DlgDesc.hChildDlg[0],
+                        IDC_CHK_FILE_NAME
+                    );
+                }
+
+            case IDC_CHK_APPLY_TO_DIRS:
+
+                hItem = GetDlgItem(hChildDlg, IDC_CHK_FILE_NAME);
+                rv = SendMessage(hItem, BM_GETCHECK, 0, 0);
+
+                hItem2 = GetDlgItem(hChildDlg, IDC_CHK_APPLY_TO_DIRS);
+                rv2 = SendMessage(hItem2, BM_GETCHECK, 0, 0);
+
+                if (rv == BST_UNCHECKED && rv2 == BST_UNCHECKED)
+                {
+                    DisableControl(hChildDlg, IDC_CHK_FULL_NAME);
+                    DisableControl(hChildDlg, IDC_CHK_SIZE);
+                    DisableControl(hChildDlg, IDC_CHK_DATE);
+                    DisableControl(hChildDlg, IDC_CHK_TIME);
+                    DisableControl(hChildDlg, IDC_CHK_EXT);
+                    DisableControl(hChildDlg, IDC_CHK_ATTR);
+                    DisableControl(hChildDlg, IDC_ED_FILE_TYPES);
+                }
+                else if (rv2 == BST_CHECKED)
+                {
+                    EnableControl(hChildDlg, IDC_CHK_FULL_NAME);
+                    EnableControl(hChildDlg, IDC_CHK_DATE);
+                    EnableControl(hChildDlg, IDC_CHK_TIME);
+                    EnableControl(hChildDlg, IDC_CHK_ATTR);
+                }
+
+            case IDC_CHK_FILE_NAME:
+
+                hItem = GetDlgItem(hChildDlg, IDC_CHK_FILE_NAME);
+                rv = SendMessage(hItem, BM_GETCHECK, 0, 0);
+
+                hItem2 = GetDlgItem(hChildDlg, IDC_CHK_APPLY_TO_DIRS);
+                rv2 = SendMessage(hItem2, BM_GETCHECK, 0, 0);
+
+                if (rv == BST_UNCHECKED)
+                {
+                    DisableControl(hChildDlg, IDC_ED_FILE_TYPES);
+                    DisableControl(hChildDlg, IDC_CHK_SIZE);
+                    DisableControl(hChildDlg, IDC_CHK_EXT);
+
+                    if (rv2 == BST_UNCHECKED)
                     {
-                        CheckButton(
-                            g_DlgDesc.hChildDlg[0], 
-                            IDC_CHK_FILE_NAME
-                            );
+                        DisableControl(hChildDlg, IDC_CHK_FULL_NAME);
+                        DisableControl(hChildDlg, IDC_CHK_DATE);
+                        DisableControl(hChildDlg, IDC_CHK_TIME);
+                        DisableControl(hChildDlg, IDC_CHK_ATTR);
                     }
 
-                case IDC_CHK_APPLY_TO_DIRS:
-
-                    hItem = GetDlgItem( hChildDlg, IDC_CHK_FILE_NAME );
-                    rv = SendMessage( hItem, BM_GETCHECK, 0, 0 );
-
-                    hItem2 = GetDlgItem( hChildDlg, IDC_CHK_APPLY_TO_DIRS );
-                    rv2 = SendMessage( hItem2, BM_GETCHECK, 0, 0 );
-
-                    if ( rv == BST_UNCHECKED && rv2 == BST_UNCHECKED )
-                    {
-                        DisableControl( hChildDlg, IDC_CHK_FULL_NAME );
-                        DisableControl( hChildDlg, IDC_CHK_SIZE );
-                        DisableControl( hChildDlg, IDC_CHK_DATE );
-                        DisableControl( hChildDlg, IDC_CHK_TIME );
-                        DisableControl( hChildDlg, IDC_CHK_EXT );
-                        DisableControl( hChildDlg, IDC_CHK_ATTR );
-                        DisableControl( hChildDlg, IDC_ED_FILE_TYPES );
-                    }
-                    else if ( rv2 == BST_CHECKED )
-                    {
-                        EnableControl( hChildDlg, IDC_CHK_FULL_NAME );
-                        EnableControl( hChildDlg, IDC_CHK_DATE );
-                        EnableControl( hChildDlg, IDC_CHK_TIME );
-                        EnableControl( hChildDlg, IDC_CHK_ATTR );
-                    }
-
-                case IDC_CHK_FILE_NAME:
-
-                    hItem = GetDlgItem( hChildDlg, IDC_CHK_FILE_NAME );
-                    rv = SendMessage( hItem, BM_GETCHECK, 0, 0 );
-
-                    hItem2 = GetDlgItem( hChildDlg, IDC_CHK_APPLY_TO_DIRS );
-                    rv2 = SendMessage( hItem2, BM_GETCHECK, 0, 0 );
-
-                    if ( rv == BST_UNCHECKED )
-                    {
-                        DisableControl( hChildDlg, IDC_ED_FILE_TYPES );
-                        DisableControl( hChildDlg, IDC_CHK_SIZE );
-                        DisableControl( hChildDlg, IDC_CHK_EXT );
-
-                        if  ( rv2 == BST_UNCHECKED )
-                        {
-                            DisableControl( hChildDlg, IDC_CHK_FULL_NAME );
-                            DisableControl( hChildDlg, IDC_CHK_DATE );
-                            DisableControl( hChildDlg, IDC_CHK_TIME );
-                            DisableControl( hChildDlg, IDC_CHK_ATTR );
-                        }
-
-                        CheckButton(
-                            g_DlgDesc.hChildDlg[0], 
-                            IDC_CHK_DIRECTORIES
-                            );
-                    }
-                    else if ( rv == BST_CHECKED )
-                    {
-                        EnableControl( hChildDlg, IDC_CHK_FULL_NAME );
-                        EnableControl( hChildDlg, IDC_CHK_SIZE );
-                        EnableControl( hChildDlg, IDC_CHK_DATE );
-                        EnableControl( hChildDlg, IDC_CHK_TIME );
-                        EnableControl( hChildDlg, IDC_CHK_EXT );
-                        EnableControl( hChildDlg, IDC_CHK_ATTR );
-                        EnableControl( hChildDlg, IDC_ED_FILE_TYPES );
-                    }
-                    break;
+                    CheckButton(
+                        g_DlgDesc.hChildDlg[0],
+                        IDC_CHK_DIRECTORIES
+                    );
+                }
+                else if (rv == BST_CHECKED)
+                {
+                    EnableControl(hChildDlg, IDC_CHK_FULL_NAME);
+                    EnableControl(hChildDlg, IDC_CHK_SIZE);
+                    EnableControl(hChildDlg, IDC_CHK_DATE);
+                    EnableControl(hChildDlg, IDC_CHK_TIME);
+                    EnableControl(hChildDlg, IDC_CHK_EXT);
+                    EnableControl(hChildDlg, IDC_CHK_ATTR);
+                    EnableControl(hChildDlg, IDC_ED_FILE_TYPES);
+                }
+                break;
 
             }
             return TRUE;
+        }
+
+        case WM_NOTIFY:
+        {
+            switch (((LPNMHDR)lParam)->code)
+            {
+
+                case NM_CLICK:          // Fall through to the next case.
+
+                case NM_RETURN:
+                {
+                    PNMLINK pNMLink = (PNMLINK)lParam;
+                    LITEM   item = pNMLink->item;
+                    HWND hItem = GetDlgItem(hChildDlg, IDC_SYSLINK2);
+
+                    if ((((LPNMHDR)lParam)->hwndFrom == hItem) && (item.iLink == 0))
+                    {
+                        ShellExecuteW(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
+                    }
+
+                    break;
+                }
+            }
+
+            return TRUE;
+        }
     }
 
     return FALSE;
@@ -343,13 +369,6 @@ void OnInitOptionDialog( HWND hDlg )
                     ChildDialogProc
                     );
     }
-
-    INITCOMMONCONTROLSEX icex;
-
-    // Ensure that the common control DLL is loaded. 
-    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-    icex.dwICC = ICC_LINK_CLASS;
-    InitCommonControlsEx(&icex);
 
     // setup default parameters
 
