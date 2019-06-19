@@ -104,7 +104,7 @@ wstring WideStringOperations::ConvertFileSizeToString(DWORD64 num)
     wstring result;
     int j = 0;
 
-    for (auto i = 0; i < source.length(); i++)
+    for (size_t i = 0; i < source.length(); i++)
     {
         result.push_back(source[i]);
         j++;
