@@ -821,7 +821,7 @@ DWORD UpdateProgress(
     LPVOID lpData
 )
 {
-    int Percentage = (TotalBytesTransferred.QuadPart * 100) / TotalFileSize.QuadPart;
+    int Percentage = (int)((TotalBytesTransferred.QuadPart * 100) / TotalFileSize.QuadPart);
     g_ProcessDataProc((char*)lpData, -Percentage);
     return PROGRESS_CONTINUE;
 }
@@ -839,7 +839,7 @@ DWORD UpdateProgressW(
     LPVOID lpData
 )
 {
-    int Percentage = (TotalBytesTransferred.QuadPart * 100) / TotalFileSize.QuadPart;
+    int Percentage = (int)((TotalBytesTransferred.QuadPart * 100) / TotalFileSize.QuadPart);
     g_ProcessDataProcW((WCHAR*)lpData, -Percentage);
     return PROGRESS_CONTINUE;
 }
@@ -892,7 +892,7 @@ WCX_API int STDCALL
             return E_UNKNOWN_FORMAT;
         }
 
-        BOOL rc = CopyFileEx(SourceFileName, DestinationFileName.c_str(), UpdateProgress, SourceFileName, NULL, 0);
+        BOOL rc = CopyFileEx(SourceFileName, DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgress, SourceFileName, NULL, 0);
 
         if (rc == FALSE)
         {
@@ -947,7 +947,7 @@ ProcessFileW(
         {
             WCHAR* SourceFileName;
             SourceFileName = g_CatalogReaderDesc.pReaderW->GetCurrentFileName();
-            rc = CopyFileExW(SourceFileName, DestinationFileName.c_str(), UpdateProgressW, SourceFileName, NULL, 0);
+            rc = CopyFileExW(SourceFileName, DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileName, NULL, 0);
         }
         else if (!g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderA != nullptr)
         {
@@ -955,7 +955,7 @@ ProcessFileW(
             WCHAR SourceFileNameW[PATH_LENGTH * 2] = {0};
             SourceFileName = g_CatalogReaderDesc.pReaderA->GetCurrentFileName();
             mbstowcs(SourceFileNameW, SourceFileName, strlen(SourceFileName));
-            rc = CopyFileExW(SourceFileNameW, DestinationFileName.c_str(), UpdateProgressW, SourceFileNameW, NULL, 0);
+            rc = CopyFileExW(SourceFileNameW, DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileNameW, NULL, 0);
         }
         else
         {
@@ -992,8 +992,7 @@ WCX_API int STDCALL
         HANDLE hArcData
         )
 {
-    BOOL rv;
-    rv = CloseHandle( hArcData );
+    BOOL rv = CloseHandle( hArcData );
 
     if (g_CatalogReaderDesc.pReaderW != nullptr)
     {
@@ -1005,7 +1004,7 @@ WCX_API int STDCALL
         delete g_CatalogReaderDesc.pReaderA;
     }
 
-    return rv == TRUE ? SUCCESS : E_ECLOSE;
+    return rv != FALSE ? SUCCESS : E_ECLOSE;
 }
 
 /*****************************************************************************
