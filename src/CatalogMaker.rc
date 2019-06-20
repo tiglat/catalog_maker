@@ -125,8 +125,8 @@ BEGIN
     LTEXT           "by Konstantin Polyakov",IDC_STATIC,42,42,84,8
     LTEXT           "piligrim_pk@mail.ru",IDC_STATIC,42,54,75,8
     CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,6,6,32,30
-    CONTROL         "<a HREF=""https://www.paypal.me/catalogmaker"">If you enjoy it you can help ($3)</a>",IDC_SYSLINK2,
-                    "SysLink",WS_TABSTOP,14,66,106,14
+    CONTROL         "You can help ($3) <a HREF=""https://www.paypal.me/catalogmaker"">PayPal</a> or <a HREF=""https://money.yandex.ru/to/41001851918213"">Yandex</a>",IDC_SYSLINK2,
+                    "SysLink",WS_TABSTOP,7,66,119,14
 END
 
 
