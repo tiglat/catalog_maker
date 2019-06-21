@@ -30,17 +30,8 @@
 
 void CheckButton( HWND hDlg, UINT ItemCode )
 {
-    HWND hItem =  GetDlgItem( 
-                hDlg, 
-                ItemCode
-                );
-
-    SendMessage(  
-        hItem, 
-        BM_SETCHECK,
-        BST_CHECKED, 
-        0
-        );
+    HWND hItem =  GetDlgItem(hDlg, ItemCode);
+    SendMessage(hItem, BM_SETCHECK, BST_CHECKED, 0);
 }
 
 /*****************************************************************************
@@ -57,17 +48,8 @@ void CheckButton( HWND hDlg, UINT ItemCode )
 
 void UncheckButton( HWND hDlg, UINT ItemCode )
 {
-    HWND hItem =  GetDlgItem( 
-                hDlg, 
-                ItemCode
-                );
-
-    SendMessage(  
-        hItem, 
-        BM_SETCHECK,
-        BST_UNCHECKED, 
-        0
-        );
+    HWND hItem =  GetDlgItem(hDlg, ItemCode);
+    SendMessage(hItem, BM_SETCHECK, BST_UNCHECKED, 0);
 }
 
 /*****************************************************************************
@@ -84,11 +66,7 @@ void UncheckButton( HWND hDlg, UINT ItemCode )
 
 void EnableControl( HWND hDlg, UINT ItemCode )
 {
-    HWND hItem =  GetDlgItem( 
-                hDlg, 
-                ItemCode
-                );
-
+    HWND hItem =  GetDlgItem(hDlg, ItemCode);
     EnableWindow( hItem, TRUE );
 }
 
@@ -106,11 +84,7 @@ void EnableControl( HWND hDlg, UINT ItemCode )
 
 void DisableControl( HWND hDlg, UINT ItemCode )
 {
-    HWND hItem =  GetDlgItem( 
-                hDlg, 
-                ItemCode
-                );
-
+    HWND hItem =  GetDlgItem(hDlg, ItemCode);
     EnableWindow( hItem, FALSE );
 }
 
@@ -294,8 +268,10 @@ VOID OnSelChanged( HWND hDlg )
 { 
     UINT CurPageIndex = TabCtrl_GetCurSel( g_DlgDesc.hTabCtrl ); 
 
-    if ( g_DlgDesc.hCurDlg != NULL ) 
-        ShowWindow( g_DlgDesc.hCurDlg, SW_HIDE ); 
+    if (g_DlgDesc.hCurDlg != NULL)
+    {
+        ShowWindow(g_DlgDesc.hCurDlg, SW_HIDE);
+    }
  
     // Create the new child dialog box. 
     g_DlgDesc.hCurDlg = g_DlgDesc.hChildDlg[CurPageIndex];
