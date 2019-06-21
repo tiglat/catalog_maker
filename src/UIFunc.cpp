@@ -262,7 +262,7 @@ INT_PTR CALLBACK ChildDialogProc(
                     LITEM   item = pNMLink->item;
                     HWND hItem = GetDlgItem(hChildDlg, IDC_SYSLINK2);
 
-                    if ((((LPNMHDR)lParam)->hwndFrom == hItem) && (item.iLink == 0))
+                    if ((((LPNMHDR)lParam)->hwndFrom == hItem) && (item.iLink == 0 || item.iLink == 1))
                     {
                         ShellExecuteW(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
                     }
