@@ -151,3 +151,8 @@ ver. 4.0.0 - 09/07/2019
       New file lists will not be read by the old version of plugin. 
       New plugin supports old file lists created before. New plugin can also work with old versions of TotalCommander, 
       since it keeps old API.
+	  
+ver. 4.1.0 - 26/04/2020
+    - new - directory size can be calculated now, new parameter is introduced on View page in Configuration window.
+	  Warning: including directory size will decrease performance of the plugin, especially if files are not included into a list.
+	  So if you do not need directory size, keep this option unchecked.

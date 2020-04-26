@@ -26,6 +26,7 @@ struct FileListItem
 
     // File name extension
     TChar *pExt;
+
 };
 
 
@@ -87,7 +88,7 @@ public:
             }
             else
             {
-                if (g_ViewParam.bFileName)
+                if (g_ViewParam.bFileName || g_ViewParam.bDirSize)
                 {
                     auto pShortFileName = GetShortFileName(pFileName);
 
@@ -111,14 +112,27 @@ public:
 
         _List->sort(LessFileComparer(_pStringOperations));
 
+        // if list should contain directories and dir size is selected
+        if (g_ViewParam.bDirName && g_ViewParam.bDirSize)
+        {
+            First();
+            CalcDirectorySize(nullptr);
+
+            // we need to remove files from list because they were added to calculate dir size only 
+            if (!g_ViewParam.bFileName)
+            {
+                _List->remove_if([](const TFilePtr& value) {return value->iType == FileType::FTYPE_FILE; });
+            }
+        }
+
         First();
     }
-
 
     void First()
     {
         _Cursor = _List->begin();
     }
+
 
     void Next()
     {
@@ -200,6 +214,12 @@ public:
         }
         else if (g_ViewParam.bDirName && g_ViewParam.bApplyToDirs)
         {
+            if (g_ViewParam.bDirSize)
+            {
+                result += _pStringOperations->SIZE_COLUMN;
+                InsertIndent(result, 14);
+            }
+
             if (g_ViewParam.bDate)
             {
                 result += _pStringOperations->DATE_COLUMN;
@@ -264,6 +284,12 @@ public:
         }
         else if ( g_ViewParam.bDirName && g_ViewParam.bApplyToDirs )
         {
+            if (g_ViewParam.bDirSize)
+            {
+                InsertChar(result, '-', 15);
+                InsertIndent(result, 3);
+            }
+
             if (g_ViewParam.bDate)
             {
                 InsertChar(result, '-', 10);
@@ -473,6 +499,53 @@ private:
     };
 
 
+    DWORD64 CalcDirectorySize(TFilePtr dir)
+    {
+        TFilePtr dirInfo = dir;
+        DWORD64 dirSize = 0;
+
+        // for first element we don't need to move next since it could be directory
+        // otherwise we lost size for 1st level directories
+        if (dirInfo != nullptr)
+        {
+            Next();
+        }
+
+        while (!IsEnd())
+        {
+            auto pItem = *_Cursor;
+
+            if (pItem->iType == FileType::FTYPE_FILE)
+            {
+                dirSize += pItem->iSize;
+                Next();
+            }
+            else if (dirInfo == nullptr || IsSubDir(dirInfo->pPath, pItem->pPath))
+            {
+                dirSize += CalcDirectorySize(pItem);
+                continue;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (dirInfo != nullptr)
+        {
+            dirInfo->iSize = dirSize;
+        }
+        
+        return dirSize;
+    }
+
+    bool IsSubDir(TChar *pParent, TChar *pChild)
+    {
+        TChar *pFoundPosition = _pStringOperations->StrStr(pChild, pParent);
+
+        return pFoundPosition != nullptr;
+    }
+
     bool IsDirectory(TChar *pFileName)
     {
         return pFileName[_pStringOperations->StrLen(pFileName) - 1] == '\\';
@@ -512,9 +585,19 @@ private:
                 }
 
                 // make empty indent, don't print size
-                if (g_ViewParam.bFileName && g_ViewParam.bSize)
+                if (g_ViewParam.bFileName && g_ViewParam.bSize && !g_ViewParam.bDirSize)
                 {
                     InsertIndent(str, 18);
+                }
+
+                // print dir size
+                if (g_ViewParam.bDirSize)
+                {
+                    auto intStr = _pStringOperations->ConvertFileSizeToString(pFileInfo->iSize);
+                    size_t len = intStr.length();
+                    InsertIndent(str, 15 - len);
+                    str += intStr;
+                    InsertIndent(str, 3);
                 }
 
                 // print file date and time

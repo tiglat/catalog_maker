@@ -101,8 +101,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
       <Message />
-      <Command>copy /Y x64\Debug\CatalogMaker.wcx64 "c:\Program Files\totalcmd\plugins\wcx\CatalogMaker\CatalogMaker.wcx64</Command>
-      <Outputs>CatalogMaker.wcx64</Outputs>
+      <Command>copy /Y Debug\CatalogMaker.wcx "c:\Program Files\totalcmd\plugins\wcx\CatalogMaker\CatalogMaker.wcx</Command>
+      <Outputs>CatalogMaker.wcx</Outputs>
       <TreatOutputAsContent>true</TreatOutputAsContent>
     </CustomBuildStep>
     <ClCompile>
@@ -171,6 +171,8 @@
       <DataExecutionPrevention />
       <ImportLibrary>$(OutDir)CatalogMaker.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
+      <Version>
+      </Version>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -274,8 +276,6 @@
     <ResourceCompile Include="CatalogMaker.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.ENG" />
-    <None Include="README.RUS" />
     <None Include="CatalogMaker.def" />
   </ItemGroup>
   <ItemGroup>

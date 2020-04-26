@@ -152,6 +152,24 @@ INT_PTR CALLBACK ChildDialogProc(
                         g_DlgDesc.hChildDlg[0],
                         IDC_CHK_FILE_NAME
                     );
+
+                    DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
+
+                    UncheckButton(
+                        g_DlgDesc.hChildDlg[0],
+                        IDC_CHECK_DIR_SIZE
+                    );
+
+                    DisableControl(hChildDlg, IDC_CHK_APPLY_TO_DIRS);
+
+                    UncheckButton(
+                        g_DlgDesc.hChildDlg[0],
+                        IDC_CHK_APPLY_TO_DIRS
+                    );
+                }
+                else
+                {
+                    EnableControl(hChildDlg, IDC_CHK_APPLY_TO_DIRS);
                 }
 
             case IDC_CHK_APPLY_TO_DIRS:
@@ -171,6 +189,7 @@ INT_PTR CALLBACK ChildDialogProc(
                     DisableControl(hChildDlg, IDC_CHK_EXT);
                     DisableControl(hChildDlg, IDC_CHK_ATTR);
                     DisableControl(hChildDlg, IDC_ED_FILE_TYPES);
+                    DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
                 }
                 else if (rv2 == BST_CHECKED)
                 {
@@ -178,6 +197,12 @@ INT_PTR CALLBACK ChildDialogProc(
                     EnableControl(hChildDlg, IDC_CHK_DATE);
                     EnableControl(hChildDlg, IDC_CHK_TIME);
                     EnableControl(hChildDlg, IDC_CHK_ATTR);
+                    EnableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
+                }
+
+                if (rv2 == BST_UNCHECKED)
+                { 
+                    DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
                 }
 
             case IDC_CHK_FILE_NAME:
@@ -200,12 +225,15 @@ INT_PTR CALLBACK ChildDialogProc(
                         DisableControl(hChildDlg, IDC_CHK_DATE);
                         DisableControl(hChildDlg, IDC_CHK_TIME);
                         DisableControl(hChildDlg, IDC_CHK_ATTR);
+                        DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
                     }
 
                     CheckButton(
                         g_DlgDesc.hChildDlg[0],
                         IDC_CHK_DIRECTORIES
                     );
+
+                    EnableControl(hChildDlg, IDC_CHK_APPLY_TO_DIRS);
                 }
                 else if (rv == BST_CHECKED)
                 {
@@ -350,8 +378,15 @@ void OnInitOptionDialog( HWND hDlg )
 
     // --------- for VIEW dialog --------------
     
-    if ( g_ViewParam.bDirName )
-        CheckButton( g_DlgDesc.hChildDlg[0], IDC_CHK_DIRECTORIES );
+    if (g_ViewParam.bDirName)
+    {
+        CheckButton(g_DlgDesc.hChildDlg[0], IDC_CHK_DIRECTORIES);
+    }
+    else
+    {
+        HWND hChildDlg = g_DlgDesc.hChildDlg[0];
+        DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
+    }
 
     if ( g_ViewParam.bApplyToDirs )
         CheckButton( g_DlgDesc.hChildDlg[0], IDC_CHK_APPLY_TO_DIRS );
@@ -393,7 +428,10 @@ void OnInitOptionDialog( HWND hDlg )
     if ( g_ViewParam.bAttr )
         CheckButton( g_DlgDesc.hChildDlg[0], IDC_CHK_ATTR );
 
-    HWND hItem =  GetDlgItem( 
+    if (g_ViewParam.bDirSize)
+        CheckButton(g_DlgDesc.hChildDlg[0], IDC_CHECK_DIR_SIZE);
+
+    HWND hItem =  GetDlgItem(
                 g_DlgDesc.hChildDlg[0], 
                 IDC_ED_FILE_TYPES
                 );
@@ -498,10 +536,21 @@ void GetOptionsFromWindow()
                 IDC_CHK_FILE_NAME
                 );
 
-    rv = 
-        SendMessage( hItem, BM_GETCHECK, 0,	0 );
+    rv = SendMessage( hItem, BM_GETCHECK, 0,	0 );
 
     g_ViewParam.bFileName = 
+        rv == BST_CHECKED ? TRUE : FALSE;
+
+    ///////////////////////////////////////
+
+    hItem = GetDlgItem(
+        g_DlgDesc.hChildDlg[0],
+        IDC_CHECK_DIR_SIZE
+    );
+
+    rv = SendMessage(hItem, BM_GETCHECK, 0, 0);
+
+    g_ViewParam.bDirSize =
         rv == BST_CHECKED ? TRUE : FALSE;
 
     ///////////////////////////////////////

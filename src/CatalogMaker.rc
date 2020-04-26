@@ -79,17 +79,18 @@ IDD_VIEWDLG DIALOGEX 0, 0, 137, 83
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "File size",IDC_CHK_SIZE,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,46,39,10
-    CONTROL         "Date",IDC_CHK_DATE,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,32,31,10
-    CONTROL         "Time",IDC_CHK_TIME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,43,31,10
-    CONTROL         "Attributes",IDC_CHK_ATTR,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,54,47,10
-    CONTROL         "Full names",IDC_CHK_FULL_NAME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,20,46,10
-    CONTROL         "File ext",IDC_CHK_EXT,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,34,39,10
-    CONTROL         "Files",IDC_CHK_FILE_NAME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,5,17,29,10
-    LTEXT           "File types (*.doc;*.txt)",IDC_STATIC,5,69,74,8
-    EDITTEXT        IDC_ED_FILE_TYPES,42,65,89,12,ES_AUTOHSCROLL
-    CONTROL         "Directories",IDC_CHK_DIRECTORIES,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,5,5,49,10
+    CONTROL         "File size",IDC_CHK_SIZE,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,37,39,10
+    CONTROL         "Date",IDC_CHK_DATE,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,28,31,10
+    CONTROL         "Time",IDC_CHK_TIME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,39,31,10
+    CONTROL         "Attributes",IDC_CHK_ATTR,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,50,47,10
+    CONTROL         "Full names",IDC_CHK_FULL_NAME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,18,46,10
+    CONTROL         "File extension",IDC_CHK_EXT,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,27,60,10
+    CONTROL         "Files",IDC_CHK_FILE_NAME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,15,29,10
+    LTEXT           "File types mask Ex.: *.doc;*.txt",IDC_STATIC,6,49,62,16
+    EDITTEXT        IDC_ED_FILE_TYPES,6,65,65,12,ES_AUTOHSCROLL
+    CONTROL         "Directories",IDC_CHK_DIRECTORIES,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,5,49,10
     CONTROL         "Apply to dirs:",IDC_CHK_APPLY_TO_DIRS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,76,4,59,10
+    CONTROL         "Dir size",IDC_CHECK_DIR_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,76,64,39,10
 END
 
 IDD_SORTDLG DIALOGEX 0, 0, 136, 83
@@ -120,8 +121,8 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Catalog Maker plugin",IDC_STATIC,42,6,73,8
-    LTEXT           "Copyright (C) 2002-2019",IDC_STATIC,42,18,84,8
-    LTEXT           "version 4.0.0",IDC_STATIC,42,30,84,8
+    LTEXT           "Copyright (C) 2002-2020",IDC_STATIC,42,18,84,8
+    LTEXT           "version 4.1.0",IDC_STATIC,42,30,84,8
     LTEXT           "by Konstantin Polyakov",IDC_STATIC,42,42,84,8
     LTEXT           "piligrim_pk@mail.ru",IDC_STATIC,42,54,75,8
     CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,6,6,32,30
@@ -204,12 +205,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Catalog Maker plugin for Total Commander"
-            VALUE "FileVersion", "4.0.0.0"
+            VALUE "FileVersion", "4.1.0"
             VALUE "InternalName", "CatalogMaker"
-            VALUE "LegalCopyright", "Copyright (C) 2002-2019 by Konstantin Polyakov"
+            VALUE "LegalCopyright", "Copyright (C) 2002-2020 by Konstantin Polyakov"
             VALUE "OriginalFilename", "CatalogMaker.wcx"
             VALUE "ProductName", "CatalogMaker"
-            VALUE "ProductVersion", "4.0.0.0"
+            VALUE "ProductVersion", "4.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -230,6 +231,11 @@ BEGIN
 END
 
 IDD_OPTIONSDLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_VIEWDLG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

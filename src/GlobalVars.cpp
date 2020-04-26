@@ -12,7 +12,20 @@
 
 // 
 TViewParam		g_ViewParam = 
-		{ TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, "*.*" };
+{ 
+    TRUE,   // bDirName
+    TRUE,   // bApplyToDirs
+    TRUE,   // bFileName
+    FALSE,  // bFullName
+    TRUE,   // bExt
+    TRUE,   // bSize
+    FALSE,  // bDirSize;
+    FALSE,  // bDate;
+    FALSE,  // bTime;
+    FALSE,  // bAttr;
+    "*.*"   // sFileTypes
+};
+
 TSortParam		g_SortParam = 
 		{ TRUE, FALSE, FALSE, FALSE, FALSE, FALSE };
 TFormatParam	g_FormatParam = 

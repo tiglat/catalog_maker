@@ -48,6 +48,7 @@ typedef struct _TViewParam{
     BOOL	bFullName;
     BOOL	bExt;
     BOOL	bSize;
+    BOOL	bDirSize;
     BOOL	bDate;
     BOOL	bTime;
     BOOL	bAttr;
