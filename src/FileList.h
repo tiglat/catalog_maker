@@ -3,6 +3,10 @@
 #include <string>
 #include <list>
 #include <regex>
+//#include <filesystem>
+//#include <chrono> 
+#include <iostream> 
+#include <fstream>
 
 #include "windows.h"
 
@@ -59,6 +63,7 @@ private:
 
     USHORT _DirIndent = 0;
 
+    std::ofstream _logFile;
 
 public:
     FileList(TChar *pAddList, TChar *pSourceFolder, IStringOperations<TChar, TString> *pOps, std::basic_regex<TChar> &WildCardAsRegex) 
@@ -68,6 +73,10 @@ public:
         {
             throw std::invalid_argument("Null pointer is passed.");
         }
+
+        _logFile.open("catalogmaker.log", std::ofstream::out | std::ofstream::app);
+
+        _logFile << "Started to create file list" << std::endl;
 
         // take pointer to the first file in the AddList
         TChar *pFileName = pAddList;
@@ -104,13 +113,13 @@ public:
             pFileName += Len;
         }
 
+        _logFile << "Finished file list creation" << std::endl;
+
         // increase MaxLen if we will include full file name
         if (g_ViewParam.bFullName)
         {
             _FileNameColWidth += (USHORT) _pStringOperations->StrLen(pSourceFolder);
         }
-
-        _List->sort(LessFileComparer(_pStringOperations));
 
         // if list should contain directories and dir size is selected
         if (g_ViewParam.bDirName && g_ViewParam.bDirSize)
@@ -125,6 +134,18 @@ public:
             }
         }
 
+        _logFile << "Directory size calculation done" << std::endl;
+
+        //auto start = std::chrono::high_resolution_clock::now();
+        if (!g_SortParam.bUnsorted)
+        {
+            _List->sort(LessFileComparer(_pStringOperations));
+        }
+        //auto stop = std::chrono::high_resolution_clock::now();
+        //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+        _logFile << "Sorting done" << std::endl;
+        _logFile.close();
         First();
     }
 
@@ -339,6 +360,8 @@ public:
 
 private:
 
+
+
     /*****************************************************************************
         Routine:     operator()
     ------------------------------------------------------------------------------
@@ -360,6 +383,110 @@ private:
     {
     private:
         IStringOperations<TChar, TString>* _pStringOperations;
+
+        int CompareFilePaths(TChar *lhs, TChar *rhs)
+        {
+            if (lhs == nullptr && rhs != nullptr)
+            {
+                return -1;
+            }
+
+            if (lhs != nullptr && rhs == nullptr)
+            {
+                return 1;
+            }
+
+            if (lhs == nullptr && rhs == nullptr)
+            {
+                return 0;
+            }
+
+            TChar *lhsCh = lhs;
+            TChar *rhsCh = rhs;
+            TChar *lhsSubDir = lhs;
+            TChar *rhsSubDir = rhs;
+            int result = 0;
+
+            TChar lhsCachedChar = 0;
+            TChar rhsCachedChar = 0;
+
+            size_t lhsLen = _pStringOperations->StrLen(lhs);
+            size_t rhsLen = _pStringOperations->StrLen(rhs);
+
+            // In the beginning to avoid redundant copy operation I split full file name on two strings, path and file name, 
+            // by inserting zero instead slash.
+            // Now we want to paths have slash at the end.
+            // So we need to replace terminating zero in path with slash and next symbol (first char of file name) with zero.
+            if (lhs[lhsLen - 1] != '\\')
+            {
+                lhsCachedChar = lhs[lhsLen + 1];
+                lhs[lhsLen] = '\\';
+                lhs[lhsLen + 1] = 0;
+            }
+
+            if (rhs[rhsLen - 1] != '\\')
+            {
+                rhsCachedChar = rhs[rhsLen + 1];
+                rhs[rhsLen] = '\\';
+                rhs[rhsLen + 1] = 0;
+            }
+
+            // make comparision until subdirs are equal and it is not the end of path
+            while (result == 0 && *lhsCh != 0 && *rhsCh != 0)
+            {
+                // find end of subdir
+                while (*lhsCh != '\\' && *lhsCh != 0)
+                {
+                    ++lhsCh;
+                };
+
+                while (*rhsCh != '\\' && *rhsCh != 0)
+                {
+                    ++rhsCh;
+                };
+
+                // replace slash with terminating zero to make comparision of one level subdirs only
+                *lhsCh = 0;
+                *rhsCh = 0;
+
+                result = _pStringOperations->StrCaseInsensitiveCmp(lhsSubDir, rhsSubDir);
+
+                // restore slashes
+                *lhsCh = '\\';
+                *rhsCh = '\\';
+
+                // go to next subdir
+                lhsSubDir = ++lhsCh;
+                rhsSubDir = ++rhsCh;
+            }
+
+            // check why we exited from cycle above
+            if (*lhsCh == 0 && *rhsCh != 0 && result == 0)
+            {
+                result = -1;
+            }
+
+            if (*lhsCh != 0 && *rhsCh == 0 && result == 0)
+            {
+                result = 1;
+            }
+
+            // Restore file name 
+            if (lhsCachedChar != 0)
+            {
+                lhs[lhsLen + 1] = lhsCachedChar;
+                lhs[lhsLen] = 0;
+            }
+
+            if (rhsCachedChar != 0)
+            {
+                rhs[rhsLen + 1] = rhsCachedChar;
+                rhs[rhsLen] = 0;
+            }
+
+            return result;
+        }
+
     public:
         LessFileComparer(IStringOperations<TChar, TString>* ops) : _pStringOperations(ops) {}
 
@@ -371,16 +498,28 @@ private:
             // depending on settings
             if (lhs->pPath && rhs->pPath)
             {
-                auto result = _pStringOperations->StrCaseInsensitiveCmp(lhs->pPath, rhs->pPath);
+                // commented code works 7 times slower than CompareFilePaths method
 
-                if (result < 0)
-                {
-                    return true;
-                }
+                //std::filesystem::path lhsPath = lhs->pPath;
+                //std::filesystem::path rhsPath = rhs->pPath;
 
-                if (result > 0)
+                //if (lhs->iType == FileType::FTYPE_FILE)
+                //{
+                //    lhsPath += "\\";
+                //}
+
+                //if (rhs->iType == FileType::FTYPE_FILE)
+                //{
+                //    rhsPath += "\\";
+                //}
+
+                //int rc = lhsPath.compare(rhsPath);
+
+                int rc = CompareFilePaths(lhs->pPath, rhs->pPath);
+
+                if (rc != 0)
                 {
-                    return false;
+                    return rc < 0;
                 }
             }
             else
@@ -557,9 +696,7 @@ private:
         {
             if (g_FormatParam.bIndentAll)
             {
-                // I removed last slash when created the item so I need to add 1 now.
-                // DirIndent cannot be zero.
-                _DirIndent = _pStringOperations->StrNChr(pFileInfo->pPath, '\\'); 
+                _DirIndent = _pStringOperations->StrNChr(pFileInfo->pPath, '\\') - 1; 
                 _DirIndent = (_DirIndent) * g_FormatParam.Width;
             }
 
@@ -572,7 +709,6 @@ private:
             }
 
             str += pFileInfo->pPath;
-            str += '\\';
 
             if (g_ViewParam.bApplyToDirs)
             {
@@ -624,7 +760,10 @@ private:
         {
             if (g_FormatParam.bIndentAll || g_FormatParam.bIndentFiles)
             {
-                InsertIndent(str, _DirIndent + g_FormatParam.Width);
+                if (pFileInfo->pPath != nullptr)
+                {
+                    InsertIndent(str, _DirIndent + g_FormatParam.Width);
+                }
             }
 
             // print file path
@@ -841,6 +980,23 @@ private:
     }
 
 
+    /*****************************************************************************
+        Routine:     SplitFileName
+    ------------------------------------------------------------------------------
+        Description:
+                    To avoid redundant coping of path and file name, 
+                    I just insert zero between them instead last slash.
+                    That leads to some overhead during sorting 
+                    when I need to compare directories and files
+
+        Arguments:
+                    pFullName	- pointer to full file name
+
+        Return Value:
+                    Pointer to first short name character in the
+                    full file name
+
+    *****************************************************************************/
     decltype(auto) SplitFileName(TChar* pFullName, TChar** pPathName)
     {
 
@@ -903,9 +1059,6 @@ private:
         {
             _FileNameColWidth = (USHORT)length;
         }
-
-        auto ptr = pFileInfo->pPath + PathLen - 1;
-        *ptr = 0;
 
         return pFileInfo;
     }

@@ -154,5 +154,9 @@ ver. 4.0.0 - 09/07/2019
 	  
 ver. 4.1.0 - 26/04/2020
     - new - directory size can be calculated now, new parameter is introduced on View page in Configuration window.
-	  Warning: including directory size will decrease performance of the plugin, especially if files are not included into a list.
-	  So if you do not need directory size, keep this option unchecked.
+      Warning: including directory size could decrease performance of the plugin.
+      So if you do not need directory size, keep this option unchecked.
+    - fixed - sorting issue in some rare cases, when some directory has name, 
+      which equals to begining of name of another directory, that followed by space. 
+      For example "Algorithms\Coursera" was greater than "Algorithms - CRC\"
+    - fixed - files in the root directory had wrong indent
