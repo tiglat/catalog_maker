@@ -5,8 +5,6 @@
 #include <regex>
 //#include <filesystem>
 //#include <chrono> 
-#include <iostream> 
-#include <fstream>
 
 #include "windows.h"
 
@@ -63,8 +61,6 @@ private:
 
     USHORT _DirIndent = 0;
 
-    std::ofstream _logFile;
-
 public:
     FileList(TChar *pAddList, TChar *pSourceFolder, IStringOperations<TChar, TString> *pOps, std::basic_regex<TChar> &WildCardAsRegex) 
         : _pStringOperations(pOps), _pSourceFolder(pSourceFolder)
@@ -73,10 +69,6 @@ public:
         {
             throw std::invalid_argument("Null pointer is passed.");
         }
-
-        _logFile.open("catalogmaker.log", std::ofstream::out | std::ofstream::app);
-
-        _logFile << "Started to create file list" << std::endl;
 
         // take pointer to the first file in the AddList
         TChar *pFileName = pAddList;
@@ -113,8 +105,6 @@ public:
             pFileName += Len;
         }
 
-        _logFile << "Finished file list creation" << std::endl;
-
         // increase MaxLen if we will include full file name
         if (g_ViewParam.bFullName)
         {
@@ -134,8 +124,6 @@ public:
             }
         }
 
-        _logFile << "Directory size calculation done" << std::endl;
-
         //auto start = std::chrono::high_resolution_clock::now();
         if (!g_SortParam.bUnsorted)
         {
@@ -144,8 +132,6 @@ public:
         //auto stop = std::chrono::high_resolution_clock::now();
         //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
-        _logFile << "Sorting done" << std::endl;
-        _logFile.close();
         First();
     }
 
