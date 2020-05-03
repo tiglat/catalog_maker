@@ -188,8 +188,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,0,0
- PRODUCTVERSION 4,0,0,0
+ FILEVERSION 4,1,0,0
+ PRODUCTVERSION 4,1,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -205,12 +205,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Catalog Maker plugin for Total Commander"
-            VALUE "FileVersion", "4.1.0"
+            VALUE "FileVersion", "4.1.0.0"
             VALUE "InternalName", "CatalogMaker"
             VALUE "LegalCopyright", "Copyright (C) 2002-2020 by Konstantin Polyakov"
             VALUE "OriginalFilename", "CatalogMaker.wcx"
             VALUE "ProductName", "CatalogMaker"
-            VALUE "ProductVersion", "4.1.0"
+            VALUE "ProductVersion", "4.1.0.0"
         END
     END
     BLOCK "VarFileInfo"
