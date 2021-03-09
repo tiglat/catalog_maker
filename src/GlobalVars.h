@@ -99,7 +99,7 @@ typedef struct _TFileList{
 
 template <typename TChar> 
 struct TFileInfo{
-    TChar		Name[MAX_PATH];
+    TChar		Name[PATH_LENGTH];
     DWORD64		iSize;
     DWORD		Attr;
     DWORD		Year;
@@ -151,8 +151,8 @@ extern HINSTANCE		 g_hinst;		// handle to dll instance
 extern tProcessDataProc  g_ProcessDataProc;
 extern tProcessDataProcW g_ProcessDataProcW;
 extern HWND				 g_MainWin;
-extern char				 g_pWorkingDir[MAX_PATH];
-extern char				 g_pCfgFileName[MAX_PATH];
+extern char				 g_pWorkingDir[PATH_LENGTH];
+extern char				 g_pCfgFileName[PATH_LENGTH];
 
 
 #endif

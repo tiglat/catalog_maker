@@ -162,6 +162,15 @@ WCHAR* WideStringOperations::StrCat(WCHAR* destination, const WCHAR* source)
     return wcscat(destination, source);
 }
 
+WCHAR* WideStringOperations::StrNCpy(WCHAR* destination, const WCHAR* source, UINT len)
+{
+    return wcsncpy(destination, source, len);
+}
+
+WCHAR* WideStringOperations::StrNCat(WCHAR* destination, const WCHAR* source, UINT len)
+{
+    return wcsncat(destination, source, len);
+}
 
 WCHAR* WideStringOperations::StrStr(const WCHAR* destination, const WCHAR* source)
 {

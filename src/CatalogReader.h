@@ -183,7 +183,7 @@ public:
 
     *****************************************************************************/
 
-    void GetFullFileName(TFileInfo<TChar>& FileInfo, TChar* FullFileName)
+    void GetFullFileName(TFileInfo<TChar>& FileInfo, TChar* FullFileName, USHORT MaxFileNameLen = MAX_PATH)
     {
         // if file is directory copy its name 
         if (FileInfo.Attr & 0x10)
@@ -194,15 +194,17 @@ public:
         {
             // if file is file :)  build full name for that file
             _pStringOperations->StrCpy(FullFileName, _DirectoryShortName);
+            USHORT len = static_cast<USHORT>(_pStringOperations->StrLen(FullFileName));
+
             // get short file name
             TChar* pstr = _pStringOperations->StrRChr(FileInfo.Name, '\\');
             if (pstr)
             {
-                _pStringOperations->StrCat(FullFileName, ++pstr);
+                _pStringOperations->StrNCat(FullFileName, ++pstr, MaxFileNameLen-len);
             }
             else
             {
-                _pStringOperations->StrCat(FullFileName, FileInfo.Name);
+                _pStringOperations->StrNCat(FullFileName, FileInfo.Name, MaxFileNameLen-len);
             }
         }
     }
@@ -557,6 +559,11 @@ private:
         if (Width < len && pStr[len - 2] != '\\')
         {
             len = Width;
+        }
+
+        if (len > PATH_LENGTH)
+        {
+            len = PATH_LENGTH;
         }
 
         DelSpacesAroundStr(FileInfo.Name, pStr, len);

@@ -694,7 +694,7 @@ WCX_API	int STDCALL
     HeaderDataEx->UnpSize      = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
     HeaderDataEx->UnpSizeHigh  = (int)(FileInfo.iSize >> 32);
 
-    g_CatalogReaderDesc.pReaderA->GetFullFileName(FileInfo, HeaderDataEx->FileName);
+    g_CatalogReaderDesc.pReaderA->GetFullFileName(FileInfo, HeaderDataEx->FileName, PATH_LENGTH);
 
     // make date and time for Win Com
     if ( FileInfo.Year )
@@ -758,7 +758,7 @@ ReadHeaderExW(
             HeaderDataEx->UnpSize = (int)(FileInfo.iSize & 0x00000000FFFFFFFF);
             HeaderDataEx->UnpSizeHigh = (int)(FileInfo.iSize >> 32);
 
-            g_CatalogReaderDesc.pReaderW->GetFullFileName(FileInfo, HeaderDataEx->FileName);
+            g_CatalogReaderDesc.pReaderW->GetFullFileName(FileInfo, HeaderDataEx->FileName, PATH_LENGTH);
 
             // make date and time for Win Com
             if (FileInfo.Year)

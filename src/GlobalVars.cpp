@@ -39,5 +39,5 @@ HINSTANCE		g_hinst = NULL;		// handle to dll instance
 tProcessDataProc g_ProcessDataProc;
 tProcessDataProcW g_ProcessDataProcW;
 HWND			g_MainWin;
-char			g_pWorkingDir[MAX_PATH]="";
-char			g_pCfgFileName[MAX_PATH]="CatalogMaker.ini";
+char			g_pWorkingDir[PATH_LENGTH]="";
+char			g_pCfgFileName[PATH_LENGTH]="CatalogMaker.ini";

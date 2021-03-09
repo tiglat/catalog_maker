@@ -121,8 +121,8 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Catalog Maker plugin",IDC_STATIC,42,6,73,8
-    LTEXT           "Copyright (C) 2002-2020",IDC_STATIC,42,18,84,8
-    LTEXT           "version 4.1.0",IDC_STATIC,42,30,84,8
+    LTEXT           "Copyright (C) 2002-2021",IDC_STATIC,42,18,84,8
+    LTEXT           "version 4.1.1",IDC_STATIC,42,30,84,8
     LTEXT           "by Konstantin Polyakov",IDC_STATIC,42,42,84,8
     LTEXT           "piligrim_pk@mail.ru",IDC_STATIC,42,54,75,8
     CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,6,6,32,30

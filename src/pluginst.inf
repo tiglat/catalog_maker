@@ -1,5 +1,5 @@
 [plugininstall]
-description=Catalog Maker plugin v 4.1.0 (32+64bit)
+description=Catalog Maker plugin v 4.1.1 (32+64bit)
 type=wcx
 file=CatalogMaker.wcx
 defaultdir=CatalogMaker

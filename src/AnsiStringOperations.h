@@ -19,6 +19,9 @@ public:
     virtual char* StrCat(char* destination, const char* source);
     virtual char* StrStr(const char* destination, const char* source);
 
+    virtual char* StrNCpy(char* destination, const char* source, UINT len);
+    virtual char* StrNCat(char* destination, const char* source, UINT len);
+
     virtual std::string ConvertDateToString(SYSTEMTIME& DateTime);
     virtual std::string ConvertTimeToString(SYSTEMTIME& DateTime);
     virtual std::string ConvertFileSizeToString(DWORD64 num);

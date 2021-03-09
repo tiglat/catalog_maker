@@ -174,9 +174,20 @@ char* AnsiStringOperations::StrCpy(char* destination, const char* source)
     return strcpy(destination, source);
 }
 
+char* AnsiStringOperations::StrNCpy(char* destination, const char* source, UINT len)
+{
+    return strncpy(destination, source, len);
+}
+
+
 char* AnsiStringOperations::StrCat(char* destination, const char* source)
 {
     return strcat(destination, source);
+}
+
+char* AnsiStringOperations::StrNCat(char* destination, const char* source, UINT len)
+{
+    return strncat(destination, source, len);
 }
 
 char* AnsiStringOperations::StrStr(const char* destination, const char* source)

@@ -17,6 +17,10 @@ public:
     virtual WCHAR* StrCpy(WCHAR* destination, const WCHAR* source);
     virtual WCHAR* StrCat(WCHAR* destination, const WCHAR* source);
     virtual WCHAR* StrStr(const WCHAR* destination, const WCHAR* source);
+
+    virtual WCHAR* StrNCpy(WCHAR* destination, const WCHAR* source, UINT len);
+    virtual WCHAR* StrNCat(WCHAR* destination, const WCHAR* source, UINT len);
+
     virtual std::wstring ConvertDateToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertTimeToString(SYSTEMTIME& DateTime);
     virtual std::wstring ConvertFileSizeToString(DWORD64 num);

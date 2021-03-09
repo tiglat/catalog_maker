@@ -43,6 +43,9 @@ public:
     virtual TChar* StrCat(TChar* destination, const TChar* source) = 0;
     virtual TChar* StrStr(const TChar* destination, const TChar* source) = 0;
 
+    virtual TChar* StrNCpy(TChar* destination, const TChar* source, UINT len) = 0;
+    virtual TChar* StrNCat(TChar* destination, const TChar* source, UINT len) = 0;
+
     virtual TString ConvertDateToString(SYSTEMTIME& DateTime) = 0;
     virtual TString ConvertTimeToString(SYSTEMTIME& DateTime) = 0;
     virtual TString ConvertFileSizeToString(DWORD64 num) = 0;
