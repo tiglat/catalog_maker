@@ -1023,7 +1023,7 @@ private:
     decltype(auto) CreateDirInfo(TChar *pFileName)
     {
         WIN32_FILE_ATTRIBUTE_DATA FileDescription = {0};
-        auto pFileInfo = std::unique_ptr<TFile>(new TFile());
+        auto pFileInfo = std::make_unique<TFile>();
 
         pFileInfo->pPath = pFileName;
         pFileInfo->pName = nullptr;
@@ -1069,7 +1069,7 @@ private:
     {
         WIN32_FILE_ATTRIBUTE_DATA FileDescription = {0};
 
-        auto pFileInfo = std::unique_ptr<TFile>(new TFile());
+        auto pFileInfo = std::make_unique<TFile>();
 
         bool rc = false;
 
