@@ -927,19 +927,18 @@ ProcessFileW(
     WCHAR*  DestName
 )
 {
+    static const wstring LongNamePrefix = L"\\\\?\\";
     wstring DestinationFileName;
 
     if (Operation == PK_EXTRACT)
     {
-        if (DestPath)
-        {
-            DestinationFileName += DestPath;
-        }
+        size_t len = 0;
 
-        if (DestName)
-        {
-            DestinationFileName += DestName;
-        }
+        if (DestPath) { len = wcslen(DestPath); }
+        if (DestName) { len += wcslen(DestName); }
+        if (len > MAX_PATH) { DestinationFileName += LongNamePrefix; }
+        if (DestPath) { DestinationFileName += DestPath; }
+        if (DestName) { DestinationFileName += DestName; }
 
         BOOL rc;
 
@@ -947,7 +946,16 @@ ProcessFileW(
         {
             WCHAR* SourceFileName;
             SourceFileName = g_CatalogReaderDesc.pReaderW->GetCurrentFileName();
-            rc = CopyFileExW(SourceFileName, DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileName, NULL, 0);
+
+            if (wcslen(SourceFileName) > MAX_PATH)
+            {
+                wstring FixedSourceFileName = LongNamePrefix + SourceFileName;
+                rc = CopyFileExW(FixedSourceFileName.data(), DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileName, NULL, 0);
+            }
+            else
+            {
+                rc = CopyFileExW(SourceFileName, DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileName, NULL, 0);
+            }
         }
         else if (!g_CatalogReaderDesc.isUnicode && g_CatalogReaderDesc.pReaderA != nullptr)
         {
@@ -955,7 +963,16 @@ ProcessFileW(
             WCHAR SourceFileNameW[PATH_LENGTH * 2] = {0};
             SourceFileName = g_CatalogReaderDesc.pReaderA->GetCurrentFileName();
             mbstowcs(SourceFileNameW, SourceFileName, strlen(SourceFileName));
-            rc = CopyFileExW(SourceFileNameW, DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileNameW, NULL, 0);
+
+            if (wcslen(SourceFileNameW) > MAX_PATH)
+            {
+                wstring FixedSourceFileName = LongNamePrefix + SourceFileNameW;
+                rc = CopyFileExW(FixedSourceFileName.data(), DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileNameW, NULL, 0);
+            }
+            else
+            {
+                rc = CopyFileExW(SourceFileNameW, DestinationFileName.c_str(), (LPPROGRESS_ROUTINE)UpdateProgressW, SourceFileNameW, NULL, 0);
+            }
         }
         else
         {

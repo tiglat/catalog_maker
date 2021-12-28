@@ -378,11 +378,6 @@ private:
 
             _ColumnHandlers[COL_EXT] = &CatalogReader::ParseExtColumn;
 
-            _ListInfo[COL_NAME].Width =
-                Offset ?
-                (USHORT)(Offset - pStr) :
-                0;
-
             //======= find and handle column "Size" ============
             Offset = _pStringOperations->StrStr(pStr, _pStringOperations->SIZE_COLUMN);
 
@@ -392,23 +387,6 @@ private:
                 0;
 
             _ColumnHandlers[COL_SIZE] = &CatalogReader::ParseSizeColumn;
-
-            _ListInfo[COL_SIZE].Width = 15;
-
-            // if Size field exist and File name column width 
-            // was not calculated yet
-            if (Offset && _ListInfo[COL_NAME].Width == 0)
-            {
-                _ListInfo[COL_NAME].Width = (USHORT)(Offset - pStr);
-            }
-
-            // if Size field exist and Ext column width 
-            // was not calculated yet
-            if (Offset && _ListInfo[COL_EXT].Width == 0)
-            {
-                _ListInfo[COL_EXT].Width =
-                    (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
-            }
 
             //======= find and handle column "Date" ============
             Offset = _pStringOperations->StrStr(pStr, _pStringOperations->DATE_COLUMN);
@@ -420,19 +398,6 @@ private:
 
             _ColumnHandlers[COL_DATE] = &CatalogReader::ParseDateColumn;
 
-            _ListInfo[COL_DATE].Width = 10;
-
-            if (Offset && _ListInfo[COL_NAME].Width == 0)
-            {
-                _ListInfo[COL_NAME].Width = (USHORT)(Offset - pStr);
-            }
-
-            if (Offset && _ListInfo[COL_EXT].Width == 0)
-            {
-                _ListInfo[COL_EXT].Width =
-                    (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
-            }
-
             //======= find and handle column "Time" ============
             Offset = _pStringOperations->StrStr(pStr, _pStringOperations->TIME_COLUMN);
 
@@ -443,19 +408,6 @@ private:
 
             _ColumnHandlers[COL_TIME] = &CatalogReader::ParseTimeColumn;
 
-            _ListInfo[COL_TIME].Width = 8;
-
-            if (Offset && _ListInfo[COL_NAME].Width == 0)
-            {
-                _ListInfo[COL_NAME].Width = (USHORT)(Offset - pStr);
-            }
-
-            if (Offset && _ListInfo[COL_EXT].Width == 0)
-            {
-                _ListInfo[COL_EXT].Width =
-                    (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1);
-            }
-
             //======= find and handle column "Attr" ============
             Offset = _pStringOperations->StrStr(pStr, _pStringOperations->ATTR_COLUMN);
 
@@ -465,20 +417,6 @@ private:
                 0;
 
             _ColumnHandlers[COL_ATTR] = &CatalogReader::ParseAttrColumn;
-
-            _ListInfo[COL_ATTR].Width = 4;
-
-            _ListInfo[COL_NAME].Width =
-                _ListInfo[COL_NAME].Width ?
-                _ListInfo[COL_NAME].Width :
-                (Offset ? (USHORT)(Offset - pStr) : (USHORT)_pStringOperations->StrLen(pStr));
-
-            _ListInfo[COL_EXT].Width =
-                _ListInfo[COL_EXT].Width ?
-                _ListInfo[COL_EXT].Width :
-                (Offset ?
-                (USHORT)(Offset - pStr - _ListInfo[COL_EXT].StartIdx - 1) :
-                    (USHORT)_pStringOperations->StrLen(pStr) - _ListInfo[COL_EXT].StartIdx - 1);
         }
 
         if (_IsHeader == 1) // second and the last line of the header
@@ -486,6 +424,20 @@ private:
             // wrong file
             if (_ListInfo[COL_NAME].StartIdx == 0)
                 return false;
+
+            TChar* pColEnd = nullptr;
+
+            // Skip last column Attr, because its width always constant
+            for (uint8_t col = 0; col < 5; ++col)
+            {
+                if (_ListInfo[col].StartIdx)
+                {
+                    pColEnd = _pStringOperations->StrChr(&pStr[_ListInfo[col].StartIdx - 1], ' ');
+                    _ListInfo[col].Width = static_cast<USHORT>(pColEnd - &pStr[_ListInfo[col].StartIdx - 1]);
+                }
+            }
+
+            _ListInfo[COL_ATTR].Width = 4;
         }
 
         _IsHeader--;

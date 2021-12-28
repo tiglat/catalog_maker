@@ -32,17 +32,19 @@ struct FileListItem
 };
 
 
-template <typename TFile, typename TChar, typename TString> 
+template <typename TFile, typename TChar, typename TString>
 class FileList
 {
 private:
+
+    using TFilePtr = std::shared_ptr<TFile>;
+    using TList    = std::list<TFilePtr>;
+    using TListPtr = std::shared_ptr<TList>;
+    //using TStringView = std::conditional<std::is_same<TChar, char>::value, std::string_view, std::wstring_view>;
+
     // Proxy class for string operations
     IStringOperations<TChar, TString> *_pStringOperations;
     TString _pSourceFolder;
-
-    typedef std::shared_ptr<TFile> TFilePtr;
-    typedef std::list<TFilePtr> TList;
-    typedef std::shared_ptr<TList> TListPtr;
 
     TListPtr _List;
     typename std::list<TFilePtr>::iterator  _Cursor;
@@ -60,6 +62,11 @@ private:
     DWORD _TotalFiles = 0;
 
     USHORT _DirIndent = 0;
+
+    // Maximum size of file or dir found in the list. Used to calc width of size field
+    DWORD64 _MaxSize = 0;
+
+    USHORT _SizeColWidth = 0;
 
 public:
     FileList(TChar *pAddList, TChar *pSourceFolder, IStringOperations<TChar, TString> *pOps, std::basic_regex<TChar> &WildCardAsRegex) 
@@ -123,6 +130,8 @@ public:
                 _List->remove_if([](const TFilePtr& value) {return value->iType == FileType::FTYPE_FILE; });
             }
         }
+
+        _SizeColWidth = static_cast<USHORT>(_pStringOperations->ConvertFileSizeToString(_MaxSize).length());
 
         //auto start = std::chrono::high_resolution_clock::now();
         if (!g_SortParam.bUnsorted)
@@ -199,7 +208,8 @@ public:
             if (g_ViewParam.bSize)
             {
                 result += _pStringOperations->SIZE_COLUMN;
-                InsertIndent(result, 14);
+                // Column name has length 4, distance between columns 3 
+                InsertIndent(result, _SizeColWidth - 4 + 3);
             }
 
             if (g_ViewParam.bDate)
@@ -224,7 +234,7 @@ public:
             if (g_ViewParam.bDirSize)
             {
                 result += _pStringOperations->SIZE_COLUMN;
-                InsertIndent(result, 14);
+                InsertIndent(result, _SizeColWidth - 4 + 3);
             }
 
             if (g_ViewParam.bDate)
@@ -267,7 +277,7 @@ public:
 
             if (g_ViewParam.bSize)
             {
-                InsertChar(result, '-', 15);
+                InsertChar(result, '-', _SizeColWidth);
                 InsertIndent(result, 3);
             }
 
@@ -293,7 +303,7 @@ public:
         {
             if (g_ViewParam.bDirSize)
             {
-                InsertChar(result, '-', 15);
+                InsertChar(result, '-', _SizeColWidth);
                 InsertIndent(result, 3);
             }
 
@@ -659,6 +669,7 @@ private:
         if (dirInfo != nullptr)
         {
             dirInfo->iSize = dirSize;
+            if (dirSize > _MaxSize) { _MaxSize = dirSize; }
         }
         
         return dirSize;
@@ -709,7 +720,7 @@ private:
                 // make empty indent, don't print size
                 if (g_ViewParam.bFileName && g_ViewParam.bSize && !g_ViewParam.bDirSize)
                 {
-                    InsertIndent(str, 18);
+                    InsertIndent(str, _SizeColWidth + 3);
                 }
 
                 // print dir size
@@ -717,7 +728,7 @@ private:
                 {
                     auto intStr = _pStringOperations->ConvertFileSizeToString(pFileInfo->iSize);
                     size_t len = intStr.length();
-                    InsertIndent(str, 15 - len);
+                    InsertIndent(str, _SizeColWidth - len);
                     str += intStr;
                     InsertIndent(str, 3);
                 }
@@ -795,7 +806,7 @@ private:
             {
                 auto intStr = _pStringOperations->ConvertFileSizeToString(pFileInfo->iSize);
                 len = intStr.length();
-                InsertIndent(str, 15 - len);
+                InsertIndent(str, _SizeColWidth - len);
                 str += intStr;
                 InsertIndent(str, 3);
             }
@@ -1002,8 +1013,36 @@ private:
         return pShortName;
     }
 
-    bool GetFileAttr(TChar *pFileName, LPVOID FileDescriptor);
+    bool GetFileAttr(TChar const *pFileName, LPVOID FileDescriptor);
 
+
+    /*****************************************************************************
+        Routine:     GetFileAttrProxy
+    ------------------------------------------------------------------------------
+        Description:
+                    Appends special prefix before file name if it is longer MAX_PATH.
+                    This prefix skip file name normalization, 
+                    so file name shoul be full.
+
+        Arguments:
+                    pFileName - pointer to file or dir name
+                    FileDescriptor - pointer to structure that will store file attr
+
+        Return Value:
+                    Success or not
+
+
+    *****************************************************************************/
+    bool GetFileAttrProxy(TChar* pFileName, LPVOID FileDescriptor)
+    {
+        if (_pStringOperations->StrLen(pFileName) > MAX_PATH)
+        {
+            TString pFixedFileName = _pStringOperations->GetLongNamePrefix() + _pSourceFolder + pFileName;
+            return GetFileAttr(pFixedFileName.data(), FileDescriptor);
+        }
+
+        return GetFileAttr(pFileName, FileDescriptor);
+    }
 
     /*****************************************************************************
         Routine:     CreateDirInfo
@@ -1030,7 +1069,7 @@ private:
 
         if ((g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr) && g_ViewParam.bApplyToDirs)
         {
-            GetFileAttr(pFileName, &FileDescription);
+            GetFileAttrProxy(pFileName, &FileDescription);
         }
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
@@ -1075,7 +1114,7 @@ private:
 
         if (g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr || g_ViewParam.bSize)
         {
-            rc = GetFileAttr(pFileName, &FileDescription);
+            rc = GetFileAttrProxy(pFileName, &FileDescription);
         }
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
@@ -1094,6 +1133,7 @@ private:
 
         _TotalSize += pFileInfo->iSize;
         _TotalFiles++;
+        if (pFileInfo->iSize > _MaxSize) { _MaxSize = pFileInfo->iSize; }
 
         auto Length = (USHORT)_pStringOperations->StrLen(pFileName) + CalculateIndent(pFileName);
 
@@ -1139,7 +1179,7 @@ private:
 
 
 template <>
-bool FileList<FileListItem<char>, char, std::string>::GetFileAttr(char *pFileName, LPVOID FileDescriptor)
+bool FileList<FileListItem<char>, char, std::string>::GetFileAttr(char const *pFileName, LPVOID FileDescriptor)
 {
     return GetFileAttributesExA(
         pFileName,
@@ -1150,7 +1190,7 @@ bool FileList<FileListItem<char>, char, std::string>::GetFileAttr(char *pFileNam
 
 
 template <>
-bool FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFileAttr(WCHAR *pFileName, LPVOID FileDescriptor)
+bool FileList<FileListItem<WCHAR>, WCHAR, std::wstring>::GetFileAttr(WCHAR const *pFileName, LPVOID FileDescriptor)
 {
     return GetFileAttributesExW(
         pFileName,

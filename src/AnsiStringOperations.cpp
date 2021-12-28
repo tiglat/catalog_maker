@@ -2,15 +2,15 @@
 
 using namespace std;
 
-const char* IStringOperations<char, string>::FILE_NAME_COLUMN   = "File name";
-const char* IStringOperations<char, string>::EXT_COLUMN         = "Ext";
-const char* IStringOperations<char, string>::SIZE_COLUMN        = "Size";
-const char* IStringOperations<char, string>::DATE_COLUMN        = "Date";
-const char* IStringOperations<char, string>::TIME_COLUMN        = "Time";
-const char* IStringOperations<char, string>::ATTR_COLUMN        = "Attr";
+const char* IStringOperations<char, std::string>::FILE_NAME_COLUMN   = "File name";
+const char* IStringOperations<char, std::string>::EXT_COLUMN         = "Ext";
+const char* IStringOperations<char, std::string>::SIZE_COLUMN        = "Size";
+const char* IStringOperations<char, std::string>::DATE_COLUMN        = "Date";
+const char* IStringOperations<char, std::string>::TIME_COLUMN        = "Time";
+const char* IStringOperations<char, std::string>::ATTR_COLUMN        = "Attr";
 
-const char* IStringOperations<char, string>::FOOTER_TOTAL_FILES = "\r\ntotal files ";
-const char* IStringOperations<char, string>::FOOTER_TOTAL_SIZE  = "    total size ";
+const char* IStringOperations<char, std::string>::FOOTER_TOTAL_FILES = "\r\ntotal files ";
+const char* IStringOperations<char, std::string>::FOOTER_TOTAL_SIZE  = "    total size ";
 
 
 bool AnsiStringOperations::IsNotNullOrEmpty(const char* pStr)
@@ -69,7 +69,7 @@ INT AnsiStringOperations::StrCaseInsensitiveCmp(const char* pLhsStr, const char*
 }
 
 
-string AnsiStringOperations::ConvertDateToString(SYSTEMTIME& DateTime)
+std::string AnsiStringOperations::ConvertDateToString(SYSTEMTIME& DateTime)
 {
     const USHORT BufLen = 13;
     char buf[BufLen];
@@ -81,7 +81,7 @@ string AnsiStringOperations::ConvertDateToString(SYSTEMTIME& DateTime)
 }
 
 
-string AnsiStringOperations::ConvertTimeToString(SYSTEMTIME& DateTime)
+std::string AnsiStringOperations::ConvertTimeToString(SYSTEMTIME& DateTime)
 {
     const USHORT BufLen = 11;
     char buf[BufLen];
@@ -108,7 +108,7 @@ string AnsiStringOperations::ConvertTimeToString(SYSTEMTIME& DateTime)
 
 *****************************************************************************/
 
-string AnsiStringOperations::ConvertFileSizeToString(DWORD64 num)
+std::string AnsiStringOperations::ConvertFileSizeToString(DWORD64 num)
 {
     string source = to_string(num);
 
@@ -144,7 +144,7 @@ string AnsiStringOperations::ConvertFileSizeToString(DWORD64 num)
     return result;
 }
 
-string AnsiStringOperations::ConvertIntToString(DWORD num)
+std::string AnsiStringOperations::ConvertIntToString(DWORD num)
 {
     return std::to_string(num);
 }
@@ -159,9 +159,15 @@ DWORD64 AnsiStringOperations::ConvertStringToInt(const char* Str)
     return _atoi64(Str);
 }
 
-string AnsiStringOperations::GetEndLineChars()
+std::string AnsiStringOperations::GetEndLineChars()
 {
     return "\r\n";
+}
+
+std::string const& AnsiStringOperations::GetLongNamePrefix()
+{
+    static const string prefix = "\\\\\?\\";
+    return prefix;
 }
 
 char* AnsiStringOperations::StrTok(char* strToken, const char* strDelimit)

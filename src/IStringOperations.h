@@ -5,7 +5,6 @@
 template <typename TChar, typename TString> class IStringOperations
 {
 public:
-
     static const TChar* FILE_NAME_COLUMN;
     static const TChar* EXT_COLUMN;
     static const TChar* SIZE_COLUMN;
@@ -54,6 +53,7 @@ public:
     virtual DWORD64 ConvertStringToInt(const TChar* Str) = 0;
 
     virtual TString GetEndLineChars() = 0;
+    virtual TString const& GetLongNamePrefix() = 0;
 
 };
 

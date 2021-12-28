@@ -56,7 +56,7 @@ INT WideStringOperations::StrCaseInsensitiveCmp(const WCHAR* pLhsStr, const WCHA
 
 std::wstring WideStringOperations::ConvertDateToString(SYSTEMTIME& DateTime)
 {
-    const USHORT BufLen = 13;
+    constexpr USHORT BufLen = 13;
     char buf[BufLen];
 
     snprintf(buf, BufLen, "%02d.%02d.%4d  ", DateTime.wDay, DateTime.wMonth, DateTime.wYear);
@@ -90,7 +90,7 @@ std::wstring WideStringOperations::ConvertTimeToString(SYSTEMTIME& DateTime)
 }
 
 
-wstring WideStringOperations::ConvertFileSizeToString(DWORD64 num)
+std::wstring WideStringOperations::ConvertFileSizeToString(DWORD64 num)
 {
     wstring source = to_wstring(num);
 
@@ -126,7 +126,7 @@ wstring WideStringOperations::ConvertFileSizeToString(DWORD64 num)
     return result;
 }
 
-wstring WideStringOperations::ConvertIntToString(DWORD num)
+std::wstring WideStringOperations::ConvertIntToString(DWORD num)
 {
     return std::to_wstring(num);
 }
@@ -141,11 +141,16 @@ DWORD64 WideStringOperations::ConvertStringToInt(const WCHAR* Str)
     return _wtoi64(Str);
 }
 
-wstring WideStringOperations::GetEndLineChars()
+std::wstring WideStringOperations::GetEndLineChars()
 {
     return L"\r\n";
 }
 
+std::wstring const& WideStringOperations::GetLongNamePrefix()
+{
+    static const wstring prefix = L"\\\\?\\";
+    return prefix;
+}
 
 WCHAR* WideStringOperations::StrTok(WCHAR* strToken, const WCHAR* strDelimit)
 {

@@ -29,7 +29,8 @@ public:
     virtual DWORD64 ConvertStringToInt(std::string& Str);
     virtual DWORD64 ConvertStringToInt(const char* Str);
 
-    virtual std::string GetEndLineChars();
+    virtual std::string  GetEndLineChars();
+    virtual std::string const& GetLongNamePrefix();
 
 };
 

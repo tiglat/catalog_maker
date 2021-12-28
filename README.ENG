@@ -163,3 +163,8 @@ ver. 4.1.0 - 26/04/2020
     
 ver. 4.1.1 - 08/03/2021
     - fixed - possible crash when full file name length is longer than 259 characters
+
+ver. 4.1.3 - 28/12/2021
+    - fixed - wrong file info (size, attributes, date) if full file name is longer than 259 characters
+              Fixed unpack and execute function for such files.
+    - fixed - wrong size if file or directory bigger than 1Tb
