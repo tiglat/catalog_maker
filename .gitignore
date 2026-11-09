@@ -1,0 +1,5 @@
+/src/.vs/*
+/src/x64/*
+/src/CatalogMaker.aps
+/src/CatalogMaker.vcxproj.filters
+/src/CatalogMaker.vcxproj.user

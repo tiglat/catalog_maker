@@ -348,13 +348,13 @@ void OnInitOptionDialog( HWND hDlg )
 
     Attributes.mask = TCIF_TEXT | TCIF_IMAGE;
     Attributes.iImage = -1; 
-    Attributes.pszText = "View";
+    Attributes.pszText = (LPSTR)"View";
     TabCtrl_InsertItem( g_DlgDesc.hTabCtrl, 0, &Attributes ); 
-    Attributes.pszText = "Sort"; 
+    Attributes.pszText = (LPSTR)"Sort";
     TabCtrl_InsertItem( g_DlgDesc.hTabCtrl, 1, &Attributes ); 
-    Attributes.pszText = "Format"; 
+    Attributes.pszText = (LPSTR)"Format";
     TabCtrl_InsertItem( g_DlgDesc.hTabCtrl, 2, &Attributes ); 
-    Attributes.pszText = "About"; 
+    Attributes.pszText = (LPSTR)"About";
     TabCtrl_InsertItem( g_DlgDesc.hTabCtrl, 3, &Attributes ); 
 
     // load and create dialogs

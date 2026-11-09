@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CatalogMaker.vcxproj" Id="802bfc5c-2ee5-4351-a251-37d1aaa42292" />
+</Solution>
