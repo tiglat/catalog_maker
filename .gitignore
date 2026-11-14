@@ -3,3 +3,4 @@
 /src/CatalogMaker.aps
 /src/CatalogMaker.vcxproj.filters
 /src/CatalogMaker.vcxproj.user
+/src/build/*
