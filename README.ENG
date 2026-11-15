@@ -51,35 +51,86 @@ piligrim_pk@mail.ru
 Change history
 ==============
 
-ver.1.6
- - it was corrected file and date display inside file list
+ver. 4.1.3 - 28/12/2021
+    - fixed - wrong file info (size, attributes, date) if full file name is longer than 259 characters
+              Fixed unpack and execute function for such files.
+    - fixed - wrong size if file or directory bigger than 1Tb
+    
+ver. 4.1.1 - 08/03/2021
+    - fixed - possible crash when full file name length is longer than 259 characters
+    
+ver. 4.1.0 - 26/04/2020
+    - new - directory size can be calculated now, new parameter is introduced on View page in Configuration window.
+      Warning: including directory size could decrease performance of the plugin.
+      So if you do not need directory size, keep this option unchecked.
+    - fixed - sorting issue in some rare cases, when some directory has name,
+      which equals to begining of name of another directory, that followed by space.
+      For example "Algorithms\Coursera" was greater than "Algorithms - CRC"
+    - fixed - files in the root directory had wrong indent
+    
+ver. 4.0.0 - 09/07/2019
+    - new - introduced Unicode characters support. Now file lists are written in UTF-16 LE BOM.
+      New file lists will not be read by the old version of plugin.
+      New plugin supports old file lists created before. New plugin can also work with old versions of TotalCommander,
+      since it keeps old API.
 
-ver.1.7
- - it was corrected some errors;
- - size and date display was changed
+ver. 3.1.9
+    - fixed - problem when ini file each time during the same TotalCmd session was written
+      one directory higher than previous time begining from working directory of TotalCmd.
+      
+ver. 3.1.8
+    - added - the x64 inofficial port by Thomas Beutlich (http://wincmd.ru/user/1093026.html). Thank you very much, Thomas!
+    - fixed - problem when user settings were not saved to hdd because of access denied,
+      incorrect folder (current plugin dir) was used for that.
 
-ver.1.8
-    - it was corrected some errors
+ver. 3.1.7
+    - fixed - plugin didn't read configuration before file list creation.
+      config window sould be opened on order to load settings from ini file
+        
+ver. 3.1.6
+    - fixed - incorrect work with file sizes >2GB
 
-ver.1.9
-    - seconds display was added and directories comparing was enable
+ver. 3.1.5
+    - fixed - crash if path to plugin is longer than 100 chars
+    
+ver. 3.1.4
+    - fixed - reading problem of list files which contains full file names and short directories names
+    - fixed - reading problem of list files which has small size < 1000 bytes
+    
+ver. 3.1.2
+    - now plugin can open file from file list if file is present on disks and
+      file list contains full file name. In other words if plugin can find the file
+      on disks it will open the file. Plugin emulates extraction of the file from
+      archive by copying this file to temporary dir which was provided by Total Commander.
+      After that plugin stops its work. The Total Commander opens the file and checks its
+      status. When this file will be closed Total Commander will delete it from the temp
+      directory.
+    - it was corrected bug - wrong dir`s date and attributes format in case option "print extensions separately" is set
+    
+ver. 3.0.1
+    - empty File Types string on View page is understood as any file type ".". This value will be
+      added instead file type value automatically if it is empty
+        
+ver. 3.0.0
+    - date and time of directories creation and their attributes are now stored by the plugin
+    - it is possible to store full path name for directories
+    
+ver. 2.4
+    - new feature was added - new option "Unsorted" in Sort Tab
+      this option disables sorting function and file names are printed in same order as they
+      are received from TotalCommander
+      
+ver. 2.3
+    - it was corrected bug which took place during creation an empty list
+    - it was corrected wrong work of the text boxes in the options window under Windows xp
 
-ver. 2.0
-    - it was changed format of list file, because old one didn't provide
-      correct work. There were file names which could not be recognize correctly
-      It was added list header and all column were aligned
-
-    - it was added new option - "Print extension separately"
-
-    - it was changed sort algorithm. Now the files with same extensions, date, time ...
-      will be sorted by file name
-
-    - it was correct GUI. 
+ver. 2.2
+    - it was corrected a bug which was in procedure reading a list file.
+    - it was improved the algorithm of reading of list files
 
 ver. 2.1
-    - it was corrected directory list creating bug. List of directories (without file names) 
-      had incorrect header
-
+    - it was corrected directory list creating bug. List of directories (without file names) had incorrect header
+    
     - the plugin checks if file with same name is already exist And if it is exist then
       the plugin will ask you about rewriting
 
@@ -87,84 +138,29 @@ ver. 2.1
       will be saved on hard disk. When user open options windows these options will be restored
       from configuration file
 
-    - it was improved algorithm file list reading.
+    - it was improved algorithm file list reading.    
 
-ver. 2.2
-    - it was corrected a bug which was in procedure reading a list file. 
-    - it was improved the algorithm of reading of list files
-
-ver. 2.3
-    - it was corrected bug which took place during creation an empty list 
-    - it was corrected wrong work of the text boxes in the options window under Windows xp
-
-ver. 2.4
-    - new feature was added - new option "Unsorted" in Sort Tab
-      this option disables sorting function and file names are printed in same order as they 
-      are received from TotalCommander
-
-ver. 3.0.0
-    - date and time of directories creation and their attributes are now stored by the plugin
-    - it is possible to store full path name for directories
-
-ver. 3.0.1 
-    - empty File Types string on View page is understood as any file type "*.*". This value will be 
-      added instead file type value automatically if it is empty
-   
-ver. 3.1.2
-    - now plugin can open file from file list if file is present on disks and 
-      file list contains full file name. In other words if plugin can find the file
-      on disks it will open the file. Plugin emulates extraction of the file from
-      archive by copying this file to temporary dir which was provided by Total Commander.
-      After that plugin stops its work. The Total Commander opens the file and checks its
-      status. When this file will be closed Total Commander will delete it from the temp
-      directory.
-    - it was corrected bug - wrong dir`s date and attributes format in case
-      option "print extensions separately" is set
-   
-ver. 3.1.4
-    - fixed - reading problem of list files which contains full file names
-      and short directories names
-    - fixed - reading problem of list files which has small size < 1000 bytes
- 
-ver. 3.1.5
-    - fixed - crash if path to plugin is longer than 100 chars 
+ver. 2.0
+    - it was changed format of list file, because old one didn't provide
+      correct work. There were file names which could not be recognize correctly
+      It was added list header and all column were aligned
     
-ver. 3.1.6
-    - fixed - incorrect work with file sizes >2GB
+    - it was added new option - "Print extension separately"
+
+    - it was changed sort algorithm. Now the files with same extensions, date, time ...
+      will be sorted by file name
+
+    - it was correct GUI.     
+
+ver.1.9
+    - seconds display was added and directories comparing was enable
+
+ver.1.8
+    - it was corrected some errors
     
-ver. 3.1.7
-    - fixed - plugin didn't read configuration before file list creation.
-      config window sould be opened on order to load settings from ini file
+ver.1.7
+    - it was corrected some errors;
+    - size and date display was changed
 
-ver. 3.1.8
-    - added - the x64 inofficial port by Thomas Beutlich
-      (http://wincmd.ru/user/1093026.html). Thank you very much, Thomas!
-    - fixed - problem when user settings were not saved to hdd because of access denied, 
-      incorrect folder (current plugin dir) was used for that.
-
-ver. 3.1.9
-    - fixed - problem when ini file each time during the same TotalCmd session was written
-      one directory higher than previous time begining from working directory of TotalCmd.
-
-ver. 4.0.0 - 09/07/2019
-    - new - introduced Unicode characters support. Now file lists are written in UTF-16 LE BOM.
-      New file lists will not be read by the old version of plugin. 
-      New plugin supports old file lists created before. New plugin can also work with old versions of TotalCommander, 
-      since it keeps old API.
-	  
-ver. 4.1.0 - 26/04/2020
-    - new - directory size can be calculated now, new parameter is introduced on View page in Configuration window.
-      Warning: including directory size could decrease performance of the plugin.
-      So if you do not need directory size, keep this option unchecked.
-    - fixed - sorting issue in some rare cases, when some directory has name, 
-      which equals to begining of name of another directory, that followed by space. 
-      For example "Algorithms\Coursera" was greater than "Algorithms - CRC\"
-    - fixed - files in the root directory had wrong indent
-    
-ver. 4.1.1 - 08/03/2021
-    - fixed - possible crash when full file name length is longer than 259 characters
-
-ver. 4.1.3 - 28/12/2021
-    - fixed - wrong file info (size, attributes, date) if full file name is longer than 259 characters
-              Fixed unpack and execute function for such files.
-    - fixed - wrong size if file or directory bigger than 1Tb
+ver.1.6
+    -it was corrected file and date display inside file list 

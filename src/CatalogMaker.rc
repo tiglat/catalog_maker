@@ -86,8 +86,8 @@ BEGIN
     CONTROL         "Full names",IDC_CHK_FULL_NAME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,76,18,46,10
     CONTROL         "File extension",IDC_CHK_EXT,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,27,60,10
     CONTROL         "Files",IDC_CHK_FILE_NAME,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,15,29,10
-    LTEXT           "File types mask Ex.: *.doc;*.txt",IDC_STATIC,6,49,62,16
-    EDITTEXT        IDC_ED_FILE_TYPES,6,65,65,12,ES_AUTOHSCROLL
+    LTEXT           "File mask",IDC_STATIC,6,64,31,10
+    EDITTEXT        IDC_ED_FILE_TYPES,37,60,33,12,ES_AUTOHSCROLL
     CONTROL         "Directories",IDC_CHK_DIRECTORIES,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,6,5,49,10
     CONTROL         "Apply to dirs:",IDC_CHK_APPLY_TO_DIRS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | BS_FLAT | WS_TABSTOP,76,4,59,10
     CONTROL         "Dir size",IDC_CHECK_DIR_SIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,76,64,39,10
@@ -121,13 +121,11 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Catalog Maker plugin",IDC_STATIC,42,6,73,8
-    LTEXT           "Copyright (C) 2002-2021",IDC_STATIC,42,18,84,8
-    LTEXT           "version 4.1.3",IDC_STATIC,42,30,84,8
-    LTEXT           "by Konstantin Polyakov",IDC_STATIC,42,42,84,8
+    LTEXT           "Copyright (C) 2002-2026",IDC_STATIC,42,18,84,8
+    LTEXT           "version 4.2.0",IDC_STATIC,42,30,84,8
+    LTEXT           "by Konstantin Poliakov",IDC_STATIC,42,42,84,8
     LTEXT           "piligrim_pk@mail.ru",IDC_STATIC,42,54,75,8
     CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,6,6,32,30
-    CONTROL         "You can help ($3) <a HREF=""https://www.paypal.me/catalogmaker"">PayPal</a> or <a HREF=""https://money.yandex.ru/to/41001851918213"">Yandex</a>",IDC_SYSLINK2,
-                    "SysLink",WS_TABSTOP,7,66,119,14
 END
 
 
