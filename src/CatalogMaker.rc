@@ -126,6 +126,8 @@ BEGIN
     LTEXT           "by Konstantin Poliakov",IDC_STATIC,42,42,84,8
     LTEXT           "piligrim_pk@mail.ru",IDC_STATIC,42,54,75,8
     CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,6,6,32,30
+    CONTROL         "You can help <a HREF=""https://yoomoney.ru/bill/pay/1LIPFMAI7TB.261115"">Yoomoney</a>",IDC_SYSLINK2,
+                    "SysLink",WS_TABSTOP,42,66,81,14
 END
 
 
