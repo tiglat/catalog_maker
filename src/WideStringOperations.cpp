@@ -9,6 +9,8 @@ const WCHAR* IStringOperations<WCHAR, wstring>::EXT_COLUMN         = L"Ext";
 const WCHAR* IStringOperations<WCHAR, wstring>::SIZE_COLUMN        = L"Size";
 const WCHAR* IStringOperations<WCHAR, wstring>::DATE_COLUMN        = L"Date";
 const WCHAR* IStringOperations<WCHAR, wstring>::TIME_COLUMN        = L"Time";
+const WCHAR* IStringOperations<WCHAR, wstring>::CREATION_DATE_COLUMN   = L"CrDate";
+const WCHAR* IStringOperations<WCHAR, wstring>::CREATION_TIME_COLUMN   = L"CrTime";
 const WCHAR* IStringOperations<WCHAR, wstring>::ATTR_COLUMN        = L"Attr";
 
 const WCHAR* IStringOperations<WCHAR, wstring>::FOOTER_TOTAL_FILES = L"\r\ntotal files ";

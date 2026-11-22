@@ -10,6 +10,8 @@ public:
     static const TChar* SIZE_COLUMN;
     static const TChar* DATE_COLUMN;
     static const TChar* TIME_COLUMN;
+    static const TChar* CREATION_DATE_COLUMN;
+    static const TChar* CREATION_TIME_COLUMN;
     static const TChar* ATTR_COLUMN;
 
     static const TChar* FOOTER_TOTAL_FILES;

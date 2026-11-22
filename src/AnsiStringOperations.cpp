@@ -7,6 +7,8 @@ const char* IStringOperations<char, std::string>::EXT_COLUMN         = "Ext";
 const char* IStringOperations<char, std::string>::SIZE_COLUMN        = "Size";
 const char* IStringOperations<char, std::string>::DATE_COLUMN        = "Date";
 const char* IStringOperations<char, std::string>::TIME_COLUMN        = "Time";
+const char* IStringOperations<char, std::string>::CREATION_DATE_COLUMN   = "CrDate";
+const char* IStringOperations<char, std::string>::CREATION_TIME_COLUMN   = "CrTime";
 const char* IStringOperations<char, std::string>::ATTR_COLUMN        = "Attr";
 
 const char* IStringOperations<char, std::string>::FOOTER_TOTAL_FILES = "\r\ntotal files ";

@@ -17,6 +17,7 @@ struct FileListItem
     FileType    iType;
     DWORD64		iSize;
     FILETIME	DateTime;
+    FILETIME	CreationDateTime;
     DWORD		Attr;
 
     // Pointer to path part of file name passed into the plugin by TotalCommander.
@@ -224,6 +225,18 @@ public:
                 InsertIndent(result, 6);
             }
 
+            if (g_ViewParam.bCreationDateTime && g_ViewParam.bDate)
+            {
+                result += _pStringOperations->CREATION_DATE_COLUMN;
+                InsertIndent(result, 6);
+            }
+
+            if (g_ViewParam.bCreationDateTime && g_ViewParam.bTime)
+            {
+                result += _pStringOperations->CREATION_TIME_COLUMN;
+                InsertIndent(result, 4);
+            }
+
             if (g_ViewParam.bAttr)
             {
                 result += _pStringOperations->ATTR_COLUMN;
@@ -247,6 +260,18 @@ public:
             {
                 result += _pStringOperations->TIME_COLUMN;
                 InsertIndent(result, 6);
+            }
+
+            if (g_ViewParam.bCreationDateTime && g_ViewParam.bDate)
+            {
+                result += _pStringOperations->CREATION_DATE_COLUMN;
+                InsertIndent(result, 6);
+            }
+
+            if (g_ViewParam.bCreationDateTime && g_ViewParam.bTime)
+            {
+                result += _pStringOperations->CREATION_TIME_COLUMN;
+                InsertIndent(result, 4);
             }
 
             if (g_ViewParam.bAttr)
@@ -293,6 +318,18 @@ public:
                 InsertIndent(result, 2);
             }
 
+            if ( g_ViewParam.bCreationDateTime && g_ViewParam.bDate )
+            {
+                InsertChar(result, '-', 10);
+                InsertIndent(result, 2);
+            }
+
+            if ( g_ViewParam.bCreationDateTime && g_ViewParam.bTime )
+            {
+                InsertChar(result, '-', 8);
+                InsertIndent(result, 2);
+            }
+
             if ( g_ViewParam.bAttr )
             {
                 InsertChar(result, '-', 4);
@@ -314,6 +351,18 @@ public:
             }
 
             if (g_ViewParam.bTime)
+            {
+                InsertChar(result, '-', 8);
+                InsertIndent(result, 2);
+            }
+
+            if ( g_ViewParam.bCreationDateTime && g_ViewParam.bDate )
+            {
+                InsertChar(result, '-', 10);
+                InsertIndent(result, 2);
+            }
+
+            if ( g_ViewParam.bCreationDateTime && g_ViewParam.bTime )
             {
                 InsertChar(result, '-', 8);
                 InsertIndent(result, 2);
@@ -739,6 +788,12 @@ private:
                     InsertDateTime(str, pFileInfo);
                 }
 
+                // print file creation date
+                if (g_ViewParam.bCreationDateTime && (g_ViewParam.bDate || g_ViewParam.bTime))
+                {
+                    InsertCreationDateTime(str, pFileInfo);
+                }
+
                 // print file attributes
                 if (g_ViewParam.bAttr)
                 {
@@ -815,6 +870,12 @@ private:
             if (g_ViewParam.bDate || g_ViewParam.bTime)
             {
                 InsertDateTime(str, pFileInfo);
+            }
+
+            // print file creation date and time
+            if (g_ViewParam.bCreationDateTime && (g_ViewParam.bDate || g_ViewParam.bTime))
+            {
+                InsertCreationDateTime(str, pFileInfo);
             }
 
             // print file attributes
@@ -906,6 +967,25 @@ private:
         }
 
     }
+
+    void InsertCreationDateTime(TString& str, TFilePtr& pFileItem)
+    {
+        SYSTEMTIME FileTime;
+
+        FileTimeToLocalFileTime(&pFileItem->CreationDateTime, &pFileItem->CreationDateTime);
+        FileTimeToSystemTime(&pFileItem->CreationDateTime, &FileTime);
+
+        if (g_ViewParam.bDate)
+        {
+            str += _pStringOperations->ConvertDateToString(FileTime);
+        }
+
+        if (g_ViewParam.bTime)
+        {
+            str += _pStringOperations->ConvertTimeToString(FileTime);
+        }
+
+    }    
 
     /*****************************************************************************
         Routine:     CalculateIndent
@@ -1067,13 +1147,14 @@ private:
         pFileInfo->pPath = pFileName;
         pFileInfo->pName = nullptr;
 
-        if ((g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr) && g_ViewParam.bApplyToDirs)
+        if ((g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr || g_ViewParam.bCreationDateTime) && g_ViewParam.bApplyToDirs)
         {
             GetFileAttrProxy(pFileName, &FileDescription);
         }
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
         pFileInfo->DateTime = FileDescription.ftLastWriteTime;
+        pFileInfo->CreationDateTime = FileDescription.ftCreationTime;
         pFileInfo->iSize = 0;
         pFileInfo->pExt = nullptr;
         pFileInfo->iType = FileType::FTYPE_DIRECTORY;
@@ -1112,13 +1193,14 @@ private:
 
         bool rc = false;
 
-        if (g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr || g_ViewParam.bSize)
+        if (g_ViewParam.bDate || g_ViewParam.bTime || g_ViewParam.bAttr || g_ViewParam.bSize || g_ViewParam.bCreationDateTime)
         {
             rc = GetFileAttrProxy(pFileName, &FileDescription);
         }
 
         pFileInfo->Attr = FileDescription.dwFileAttributes;
         pFileInfo->DateTime = FileDescription.ftLastWriteTime;
+        pFileInfo->CreationDateTime = FileDescription.ftCreationTime;
         pFileInfo->iType = FileType::FTYPE_FILE;
 
         if (rc)
