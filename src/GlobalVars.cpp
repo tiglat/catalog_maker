@@ -23,6 +23,7 @@ TViewParam		g_ViewParam =
     FALSE,  // bDate;
     FALSE,  // bTime;
     FALSE,  // bAttr;
+    FALSE,  // bCreationDateTime;
     "*.*"   // sFileTypes
 };
 

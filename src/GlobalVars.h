@@ -52,6 +52,7 @@ typedef struct _TViewParam{
     BOOL	bDate;
     BOOL	bTime;
     BOOL	bAttr;
+	BOOL	bCreationDateTime;
     char	sFileTypes[MASK_LIST_LENGTH];
 } TViewParam;
 

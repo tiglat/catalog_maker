@@ -107,6 +107,26 @@ INT_PTR CALLBACK ChildDialogProc(
             LPARAM lParam
             )
 {
+    auto updateCreationDateTimeState = [hChildDlg]() {
+        LRESULT	rv, rv2;
+        HWND	hItem, hItem2;
+
+        hItem = GetDlgItem(hChildDlg, IDC_CHK_DATE);
+        rv = SendMessage(hItem, BM_GETCHECK, 0, 0);
+
+        hItem2 = GetDlgItem(hChildDlg, IDC_CHK_TIME);
+        rv2 = SendMessage(hItem2, BM_GETCHECK, 0, 0);
+
+        if (rv == BST_CHECKED || rv2 == BST_CHECKED)
+        {
+            EnableControl(hChildDlg, IDC_CHK_CREATION_DATETIME);
+        }
+        else
+        {
+            DisableControl(hChildDlg, IDC_CHK_CREATION_DATETIME);
+        }
+    };
+
     switch ( message )
     {
         case WM_INITDIALOG:
@@ -188,6 +208,7 @@ INT_PTR CALLBACK ChildDialogProc(
                     DisableControl(hChildDlg, IDC_CHK_TIME);
                     DisableControl(hChildDlg, IDC_CHK_EXT);
                     DisableControl(hChildDlg, IDC_CHK_ATTR);
+                    DisableControl(hChildDlg, IDC_CHK_CREATION_DATETIME);
                     DisableControl(hChildDlg, IDC_ED_FILE_TYPES);
                     DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
                 }
@@ -198,12 +219,19 @@ INT_PTR CALLBACK ChildDialogProc(
                     EnableControl(hChildDlg, IDC_CHK_TIME);
                     EnableControl(hChildDlg, IDC_CHK_ATTR);
                     EnableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
+                    updateCreationDateTimeState();
                 }
 
                 if (rv2 == BST_UNCHECKED)
                 { 
                     DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
                 }
+
+            case IDC_CHK_DATE:
+            case IDC_CHK_TIME:
+
+                updateCreationDateTimeState();
+                break;
 
             case IDC_CHK_FILE_NAME:
 
@@ -225,6 +253,7 @@ INT_PTR CALLBACK ChildDialogProc(
                         DisableControl(hChildDlg, IDC_CHK_DATE);
                         DisableControl(hChildDlg, IDC_CHK_TIME);
                         DisableControl(hChildDlg, IDC_CHK_ATTR);
+                        DisableControl(hChildDlg, IDC_CHK_CREATION_DATETIME);
                         DisableControl(hChildDlg, IDC_CHECK_DIR_SIZE);
                     }
 
@@ -244,6 +273,7 @@ INT_PTR CALLBACK ChildDialogProc(
                     EnableControl(hChildDlg, IDC_CHK_EXT);
                     EnableControl(hChildDlg, IDC_CHK_ATTR);
                     EnableControl(hChildDlg, IDC_ED_FILE_TYPES);
+                    updateCreationDateTimeState();
                 }
                 break;
 
@@ -403,12 +433,16 @@ void OnInitOptionDialog( HWND hDlg )
             DisableControl( hChildDlg, IDC_CHK_DATE );
             DisableControl( hChildDlg, IDC_CHK_TIME );
             DisableControl( hChildDlg, IDC_CHK_ATTR );
+            DisableControl( hChildDlg, IDC_CHK_CREATION_DATETIME );
         }
 
         DisableControl( hChildDlg, IDC_CHK_SIZE );
         DisableControl( hChildDlg, IDC_CHK_EXT );
         DisableControl( hChildDlg, IDC_ED_FILE_TYPES );
     }
+
+    if ( !g_ViewParam.bDate && !g_ViewParam.bTime )
+        DisableControl(g_DlgDesc.hChildDlg[0], IDC_CHK_CREATION_DATETIME);
 
     if ( g_ViewParam.bFullName )
         CheckButton( g_DlgDesc.hChildDlg[0], IDC_CHK_FULL_NAME );
@@ -427,6 +461,9 @@ void OnInitOptionDialog( HWND hDlg )
 
     if ( g_ViewParam.bAttr )
         CheckButton( g_DlgDesc.hChildDlg[0], IDC_CHK_ATTR );
+
+    if ( g_ViewParam.bCreationDateTime )
+        CheckButton( g_DlgDesc.hChildDlg[0], IDC_CHK_CREATION_DATETIME );
 
     if (g_ViewParam.bDirSize)
         CheckButton(g_DlgDesc.hChildDlg[0], IDC_CHECK_DIR_SIZE);
@@ -646,7 +683,19 @@ void GetOptionsFromWindow()
 
     rv = SendMessage( hItem, BM_GETCHECK, 0, 0 );
 
-    g_ViewParam.bAttr = 
+    ///////////////////////////////////////
+
+    g_ViewParam.bAttr =
+        rv == BST_CHECKED ? TRUE : FALSE;
+
+    hItem = GetDlgItem(
+                g_DlgDesc.hChildDlg[0],
+                IDC_CHK_CREATION_DATETIME
+                );
+
+    rv = SendMessage( hItem, BM_GETCHECK, 0, 0 );
+
+    g_ViewParam.bCreationDateTime =
         rv == BST_CHECKED ? TRUE : FALSE;
 
     ///////////////////////////////////////
