@@ -50,6 +50,9 @@ piligrim_pk@mail.ru
 Change history
 ==============
 
+ver. 4.2.0 - 23/11/2026
+    - new - it is possible now to include into a list file creation date and time of files or directories.
+
 ver. 4.1.3 - 28/12/2021
     - fixed - wrong file info (size, attributes, date) if full file name is longer than 259 characters
               Fixed unpack and execute function for such files.
